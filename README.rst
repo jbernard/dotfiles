@@ -4,10 +4,10 @@ Dotfile management made easy
 ``dotfiles`` is a tool to make managing your dotfile symlinks in ``$HOME``
 easy,  allowing you to keep all your dotfiles in a single directory.
 
-Hosting is left to you. Yes, I've seen `<http://dotfiles.org>`_ and I don't
-believe in that model. If you're advanced enough to need dotfile management,
-then you probably already know how you want to host them.  Using whatever VCS
-you prefer, or even rsync, you can easily distribute your dotfiles repository
+Hosting is left to you. Yes, I've seen `<http://dotfiles.org>`_ but I don't
+like that model. If you're advanced enough to need dotfile management, then you
+probably already know how you want to host them.  Using whatever VCS you
+prefer, or even rsync, you can easily distribute your dotfiles repository
 across multiple hosts.
 
 Installation
@@ -50,6 +50,22 @@ To make it available to all your hosts: ::
   $ git push
 
 You get the idea.
+
+Configuration
+-------------
+
+You can choose to create a configuration file to store personal
+customizations. By default, ``dotfiles`` will look in ``~/.dotfilesrc``. An
+example configuration file might look like: ::
+
+  [dotfiles]
+  repository = ~/Dotfiles
+  ignore = [
+      '.git',
+      '.gitignore']
+  externals = {
+      '.bzr.log':     '/dev/null',
+      '.uml':         '/tmp'}
 
 License
 -------

@@ -47,23 +47,16 @@ class Dotfile(object):
 
 class Dotfiles(object):
 
-    IGNORES = ['.metadata', '.git', '.gitignore']
-
-    EXTRAS = {'adobe':          '/tmp',
-              'bzr.log':        '/dev/null',
-              'macromedia':     '/tmp',
-              'uml':            '/tmp'}
-
-    def __init__(self, location):
+    def __init__(self, location, prefix, ignore, externals):
         self.location = location
         self.dotfiles = []
         contents = [x for x in os.listdir(self.location)
-                    if x not in Dotfiles.IGNORES]
+                    if x not in ignore]
         for file in contents:
             self.dotfiles.append(Dotfile(file,
                 os.path.join(self.location, file)))
-        for file in self.EXTRAS.keys():
-            self.dotfiles.append(Dotfile(file, self.EXTRAS[file]))
+        for file in externals.keys():
+            self.dotfiles.append(Dotfile(file, externals[file]))
 
     def list(self, **kwargs):
         for dotfile in sorted(self.dotfiles,
