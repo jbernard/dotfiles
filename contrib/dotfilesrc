@@ -1,0 +1,12 @@
+[dotfiles]
+repository = ~/Dotfiles
+prefix =
+ignore = [
+    '.metadata',
+    '.git',
+    '.gitignore']
+externals = {
+    '.adobe':       '/tmp',
+    '.bzr.log':     '/dev/null',
+    '.macromedia':  '/tmp',
+    '.uml':         '/tmp'}
