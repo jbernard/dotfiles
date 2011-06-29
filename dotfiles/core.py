@@ -36,7 +36,6 @@ class Dotfile(object):
         if self.status == '':
             print "Skipping \"%s\", already managed" % self.basename
             return
-        print "Adding \"%s\"" % self.basename
         shutil.move(self.name, self.target)
         os.symlink(self.target, self.name)
 
@@ -55,19 +54,18 @@ class Dotfiles(object):
 
     def __init__(self, location, prefix, ignore, externals, force):
         self.location = location
+        self.prefix = prefix
         self.force = force
         self.dotfiles = []
-        contents = [x for x in os.listdir(self.location)
-                    if x not in ignore]
+        contents = [x for x in os.listdir(self.location) if x not in ignore]
         for file in contents:
-            self.dotfiles.append(Dotfile(file,
+            self.dotfiles.append(Dotfile(file[len(prefix):],
                 os.path.join(self.location, file)))
         for file in externals.keys():
             self.dotfiles.append(Dotfile(file, externals[file]))
 
     def list(self, **kwargs):
-        for dotfile in sorted(self.dotfiles,
-                key=lambda dotfile: dotfile.name):
+        for dotfile in sorted(self.dotfiles, key=lambda dotfile: dotfile.name):
             if dotfile.status or kwargs.get('verbose', True):
                 print dotfile
 
@@ -83,7 +81,7 @@ class Dotfiles(object):
             if os.path.basename(file).startswith('.'):
                 Dotfile(file,
                         os.path.join(self.location,
-                                    os.path.basename(file).strip('.'))).add()
+                            self.prefix + os.path.basename(file).strip('.'))).add()
             else:
                 print "Skipping \"%s\", not a dotfile" % file
 
@@ -92,6 +90,6 @@ class Dotfiles(object):
             if os.path.basename(file).startswith('.'):
                 Dotfile(file,
                         os.path.join(self.location,
-                            os.path.basename(file).strip('.'))).remove()
+                            self.prefix + os.path.basename(file).strip('.'))).remove()
             else:
                 print "Skipping \"%s\", not a dotfile" % file
