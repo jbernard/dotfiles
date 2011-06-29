@@ -17,10 +17,16 @@ class Dotfile(object):
         if not os.path.lexists(self.name):
             self.status = 'missing'
         elif os.path.realpath(self.name) != self.target:
-            self.status = 'unmanged'
+            self.status = 'unmanaged'
 
-    def sync(self):
+    def sync(self, force):
         if self.status == 'missing':
+            os.symlink(self.target, self.name)
+        elif self.status == 'unmanaged':
+            if not force:
+                print "Skipping \"%s\", use --force to override" % self.basename
+                return
+            os.remove(self.name)
             os.symlink(self.target, self.name)
 
     def add(self):
@@ -47,8 +53,9 @@ class Dotfile(object):
 
 class Dotfiles(object):
 
-    def __init__(self, location, prefix, ignore, externals):
+    def __init__(self, location, prefix, ignore, externals, force):
         self.location = location
+        self.force = force
         self.dotfiles = []
         contents = [x for x in os.listdir(self.location)
                     if x not in ignore]
@@ -69,7 +76,7 @@ class Dotfiles(object):
 
     def sync(self, **kwargs):
         for dotfile in self.dotfiles:
-            dotfile.sync()
+            dotfile.sync(self.force)
 
     def add(self, **kwargs):
         for file in kwargs.get('files', None):

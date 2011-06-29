@@ -20,11 +20,14 @@ def parse_args():
     parser.set_defaults(ignore=[])
     parser.set_defaults(externals={})
 
-    parser.add_option("-C", "--config", type="string", dest="config",
-            help="set configuration file location (default is ~/.dotfilesrc)")
+    parser.add_option("-f", "--force", action="store_true", dest="force",
+            default=False, help="ignore unmanaged dotfiles (use with --sync)")
 
     parser.add_option("-R", "--repo", type="string", dest="repo",
             help="set repository location (default is ~/Dotfiles)")
+
+    parser.add_option("-C", "--config", type="string", dest="config",
+            help="set configuration file location (default is ~/.dotfilesrc)")
 
     action_group = OptionGroup(parser, "Actions")
 
@@ -86,4 +89,5 @@ def main():
     getattr(core.Dotfiles(location=opts.repo,
                           prefix=opts.prefix,
                           ignore=opts.ignore,
-                          externals=opts.externals), opts.action)(files=args)
+                          externals=opts.externals,
+                          force=opts.force), opts.action)(files=args)
