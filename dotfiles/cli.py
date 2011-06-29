@@ -5,6 +5,27 @@ from . import core
 import ConfigParser
 from optparse import OptionParser, OptionGroup
 
+USAGE = "Usage: %prog ACTION [OPTION...] [FILE...]"
+
+NO_REPO_MESSAGE = """Could not find dotfiles repository \"%s\"
+
+If this is your first time running dotfiles, you must first create a
+repository.  By default, dotfiles will look for '~/Dotfiles'. Something like:
+
+    $ mkdir ~/Dotfiles
+
+is all you need to do. If you don't like the default, you can put your
+repository wherever you like.  You have two choices once you've created your
+repository.  You can specify the path to the repository on the command line
+using the '-R' flag.  Alternatively, you can create a configuration file at
+'~/.dotfilesrc' and place the path to your repository in there.  The contents
+would look like:
+
+    [dotfiles]
+    repository = ~/.my-dotfiles-repo
+
+You can see more information by typing 'dotfiles -h'"""
+
 
 def method_list(object):
     return [method for method in dir(object)
@@ -12,7 +33,7 @@ def method_list(object):
 
 
 def parse_args():
-    parser = OptionParser(usage="Usage: %prog ACTION [OPTION...] [FILE...]")
+    parser = OptionParser(usage=USAGE)
 
     parser.set_defaults(config=os.path.expanduser("~/.dotfilesrc"))
     parser.set_defaults(ignore=[])
