@@ -1,5 +1,12 @@
 # -*- coding: utf-8 -*-
 
+"""
+dotfiles.core
+~~~~~~~~~~~~~
+
+This module provides the basic functionality of dotfiles.
+"""
+
 import os
 import shutil
 

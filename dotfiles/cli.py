@@ -1,9 +1,16 @@
 # -*- coding: utf-8 -*-
 
+"""
+dotfiles.cli
+
+This module provides the CLI interface to dotfiles.
+"""
+
 import os
 from . import core
 import ConfigParser
 from optparse import OptionParser, OptionGroup
+
 
 USAGE = "Usage: %prog ACTION [OPTION...] [FILE...]"
 
