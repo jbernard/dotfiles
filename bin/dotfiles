@@ -13,7 +13,7 @@ if (os.path.exists(os.path.join(PROJECT_ROOT_DIRECTORY, 'dotfiles'))
     sys.path.insert(0, PROJECT_ROOT_DIRECTORY)
     os.putenv('PYTHONPATH', PROJECT_ROOT_DIRECTORY)
 
-import dotfiles
+import dotfiles.cli
 
 if __name__ == '__main__':
     dotfiles.cli.main()
