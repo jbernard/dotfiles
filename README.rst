@@ -2,13 +2,32 @@ Dotfile management made easy
 ============================
 
 ``dotfiles`` is a tool to make managing your dotfile symlinks in ``$HOME``
-easy,  allowing you to keep all your dotfiles in a single directory.
+easy, allowing you to keep all your dotfiles in a single directory.
 
 Hosting is left to you. Yes, I've seen `<http://dotfiles.org>`_ but I don't
-like that model. If you're advanced enough to need dotfile management, then you
-probably already know how you want to host them.  Using whatever VCS you
+like that model. If you're advanced enough to need dotfile management, then
+you probably already know how you want to host them. Using whatever VCS you
 prefer, or even rsync, you can easily distribute your dotfiles repository
 across multiple hosts.
+
+Interface
+---------
+
+``-a, --add <file...>``
+    Add dotfile(s) to the repository.
+
+``-c, --check``
+    Check for missing or unmanged dotfiles.
+
+``-l, --list``
+    List currently managed dotfiles, one per line.
+
+``-r, --remove <file...>``
+    Remove dotfile(s) from the repository.
+
+``-s, --sync``
+    Update dotfile symlinks. You can overwrite unmanaged files with ``-f`` or
+    ``--force``.
 
 Installation
 ------------
@@ -49,7 +68,7 @@ To make it available to all your hosts: ::
   $ git commit -m "Added vimrc, welcome aboard!"
   $ git push
 
-You get the idea.
+You get the idea. Type ``dotfiles --help`` to see the available options.
 
 Configuration
 -------------
@@ -66,6 +85,48 @@ example configuration file might look like: ::
   externals = {
       '.bzr.log':     '/dev/null',
       '.uml':         '/tmp'}
+
+Prefixes
+--------
+
+Dotfiles are stored in the repository with no prefix by default. So,
+``~/.bashrc`` will link to ``~/Dotfiles/bashrc``. If your files already have a
+prefix, ``.`` is common, but I've also seen ``_``, then you can specify this
+in the configuration file and ``dotfiles`` will do the right thing. An example
+configuration in ``~/.dotfilesrc`` might look like: ::
+
+  [dotfiles]
+  prefix = .
+
+Externals
+---------
+
+You may want to link some dotfiles to external locations. For example, ``bzr``
+writes debug information to ``~/.bzr.log`` and there is no easy way to disable
+it. For that, I link ``~/.bzr.log`` to ``/dev/null``. Since ``/dev/null`` is
+not within the repository, this is called an external. You can have as many of
+these as you like. The list of externals is specified in the configuration
+file: ::
+
+  [dotfiles]
+  externals = {
+      '.bzr.log':     '/dev/null',
+      '.adobe':       '/tmp',
+      '.macromedia':  '/tmp'}
+
+Ignores
+-------
+
+If you're using a VCS to manage your repository of dotfiles, you'll want to
+tell ``dotfiles`` to ignore VCS-related files. For example, I use ``git``, so
+I have the following in my ``~/.dotfilesrc``: ::
+
+  [dotfiles]
+  ignore = [
+      '.git',
+      '.gitignore']
+
+Any file you list in ``ignore`` will be skipped.
 
 License
 -------

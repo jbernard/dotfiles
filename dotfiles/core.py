@@ -1,7 +1,19 @@
 # -*- coding: utf-8 -*-
 
+"""
+dotfiles.core
+~~~~~~~~~~~~~
+
+This module provides the basic functionality of dotfiles.
+"""
+
 import os
 import shutil
+
+
+__version__ = '0.3.0'
+__author__ = "Jon Bernard"
+__license__ = "GPL"
 
 
 class Dotfile(object):
@@ -17,10 +29,16 @@ class Dotfile(object):
         if not os.path.lexists(self.name):
             self.status = 'missing'
         elif os.path.realpath(self.name) != self.target:
-            self.status = 'unmanged'
+            self.status = 'unmanaged'
 
-    def sync(self):
+    def sync(self, force):
         if self.status == 'missing':
+            os.symlink(self.target, self.name)
+        elif self.status == 'unmanaged':
+            if not force:
+                print "Skipping \"%s\", use --force to override" % self.basename
+                return
+            os.remove(self.name)
             os.symlink(self.target, self.name)
 
     def add(self):
@@ -30,7 +48,6 @@ class Dotfile(object):
         if self.status == '':
             print "Skipping \"%s\", already managed" % self.basename
             return
-        print "Adding \"%s\"" % self.basename
         shutil.move(self.name, self.target)
         os.symlink(self.target, self.name)
 
@@ -47,20 +64,20 @@ class Dotfile(object):
 
 class Dotfiles(object):
 
-    def __init__(self, location, prefix, ignore, externals):
+    def __init__(self, location, prefix, ignore, externals, force):
         self.location = location
+        self.prefix = prefix
+        self.force = force
         self.dotfiles = []
-        contents = [x for x in os.listdir(self.location)
-                    if x not in ignore]
+        contents = [x for x in os.listdir(self.location) if x not in ignore]
         for file in contents:
-            self.dotfiles.append(Dotfile(file,
+            self.dotfiles.append(Dotfile(file[len(prefix):],
                 os.path.join(self.location, file)))
         for file in externals.keys():
             self.dotfiles.append(Dotfile(file, externals[file]))
 
     def list(self, **kwargs):
-        for dotfile in sorted(self.dotfiles,
-                key=lambda dotfile: dotfile.name):
+        for dotfile in sorted(self.dotfiles, key=lambda dotfile: dotfile.name):
             if dotfile.status or kwargs.get('verbose', True):
                 print dotfile
 
@@ -69,14 +86,14 @@ class Dotfiles(object):
 
     def sync(self, **kwargs):
         for dotfile in self.dotfiles:
-            dotfile.sync()
+            dotfile.sync(self.force)
 
     def add(self, **kwargs):
         for file in kwargs.get('files', None):
             if os.path.basename(file).startswith('.'):
                 Dotfile(file,
                         os.path.join(self.location,
-                                    os.path.basename(file).strip('.'))).add()
+                            self.prefix + os.path.basename(file).strip('.'))).add()
             else:
                 print "Skipping \"%s\", not a dotfile" % file
 
@@ -85,6 +102,6 @@ class Dotfiles(object):
             if os.path.basename(file).startswith('.'):
                 Dotfile(file,
                         os.path.join(self.location,
-                            os.path.basename(file).strip('.'))).remove()
+                            self.prefix + os.path.basename(file).strip('.'))).remove()
             else:
                 print "Skipping \"%s\", not a dotfile" % file
