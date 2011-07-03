@@ -1,8 +1,16 @@
-from distutils.core import setup
-import dotfiles
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+try:
+    from setuptools import setup
+except ImportError:
+    from distutils.core import setup
+
+from dotfiles.core import __version__
+
 
 setup(name='dotfiles',
-      version=dotfiles.__version__,
+      version=__version__,
       description='Easily manage your dotfiles',
       long_description=open('README.rst').read(),
       author='Jon Bernard',

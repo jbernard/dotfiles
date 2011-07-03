@@ -46,6 +46,10 @@ def parse_args():
     parser.set_defaults(ignore=[])
     parser.set_defaults(externals={})
 
+    parser.add_option("-v", "--version", action="store_true",
+            dest="show_version", default=False,
+            help="show version number and exit")
+
     parser.add_option("-f", "--force", action="store_true", dest="force",
             default=False, help="ignore unmanaged dotfiles (use with --sync)")
 
@@ -91,6 +95,10 @@ def parse_args():
 def main():
 
     (opts, args) = parse_args()
+
+    if opts.show_version:
+        print 'dotfiles v%s' % core.__version__
+        exit(0)
 
     config_defaults = {
             'repository':   opts.repo,

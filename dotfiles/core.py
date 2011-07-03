@@ -11,6 +11,11 @@ import os
 import shutil
 
 
+__version__ = '0.2.0'
+__author__ = "Jon Bernard"
+__license__ = "GPL"
+
+
 class Dotfile(object):
 
     def __init__(self, name, target):
