@@ -11,27 +11,7 @@ from . import core
 import ConfigParser
 from optparse import OptionParser, OptionGroup
 
-
-USAGE = "Usage: %prog ACTION [OPTION...] [FILE...]"
-
-NO_REPO_MESSAGE = """Could not find dotfiles repository \"%s\"
-
-If this is your first time running dotfiles, you must first create a
-repository.  By default, dotfiles will look for '~/Dotfiles'. Something like:
-
-    $ mkdir ~/Dotfiles
-
-is all you need to do. If you don't like the default, you can put your
-repository wherever you like.  You have two choices once you've created your
-repository.  You can specify the path to the repository on the command line
-using the '-R' flag.  Alternatively, you can create a configuration file at
-'~/.dotfilesrc' and place the path to your repository in there.  The contents
-would look like:
-
-    [dotfiles]
-    repository = ~/.my-dotfiles-repo
-
-You can see more information by typing 'dotfiles -h'"""
+DEFAULT_REPO = "~/Dotfiles"
 
 
 def method_list(object):
@@ -40,7 +20,7 @@ def method_list(object):
 
 
 def parse_args():
-    parser = OptionParser(usage=USAGE)
+    parser = OptionParser(usage="%prog ACTION [OPTION...] [FILE...]")
 
     parser.set_defaults(config=os.path.expanduser("~/.dotfilesrc"))
     parser.set_defaults(ignore=[])
@@ -53,8 +33,9 @@ def parse_args():
     parser.add_option("-f", "--force", action="store_true", dest="force",
             default=False, help="ignore unmanaged dotfiles (use with --sync)")
 
+    # OptionParser expands ~ constructions
     parser.add_option("-R", "--repo", type="string", dest="repo",
-            help="set repository location (default is ~/Dotfiles)")
+            help="set repository location (default is %s)" % DEFAULT_REPO)
 
     parser.add_option("-p", "--prefix", type="string", dest="prefix",
             help="set prefix character (default is None)")
@@ -107,38 +88,38 @@ def main():
             'externals':    opts.externals}
 
     parser = ConfigParser.SafeConfigParser(config_defaults)
+    parser.read(opts.config)
 
-    if opts.config:
-        parser.read(opts.config)
+    if 'dotfiles' in parser.sections():
 
-        if 'dotfiles' in parser.sections():
+        if not opts.repo and parser.get('dotfiles', 'repository'):
+            opts.repo = os.path.expanduser(parser.get('dotfiles', 'repository'))
 
-            if not opts.repo:
-                if parser.get('dotfiles', 'repository'):
-                    opts.repo = os.path.expanduser(parser.get('dotfiles', 'repository'))
-                else:
-                    opts.repo = os.path.expanduser("~/Dotfiles")
+        if not opts.prefix and parser.get('dotfiles', 'prefix'):
+            opts.prefix = parser.get('dotfiles', 'prefix')
 
-            if not opts.prefix:
-                if parser.get('dotfiles', 'prefix'):
-                    opts.prefix = parser.get('dotfiles', 'prefix')
-                else:
-                    opts.prefix = ''
+        if not opts.ignore and parser.get('dotfiles', 'ignore'):
+            opts.ignore = eval(parser.get('dotfiles', 'ignore'))
 
-            if not opts.ignore and parser.get('dotfiles', 'ignore'):
-                opts.ignore = eval(parser.get('dotfiles', 'ignore'))
+        if not opts.externals and parser.get('dotfiles', 'externals'):
+            opts.externals = eval(parser.get('dotfiles', 'externals'))
 
-            if not opts.externals and parser.get('dotfiles', 'externals'):
-                opts.externals = eval(parser.get('dotfiles', 'externals'))
+    if not opts.repo:
+        opts.repo = os.path.expanduser(DEFAULT_REPO)
+
+    if not opts.prefix:
+        opts.prefix = ''
 
     if not os.path.exists(opts.repo):
-        print "%s\n" % USAGE
-        print NO_REPO_MESSAGE % opts.repo
+        if opts.repo == os.path.expanduser(DEFAULT_REPO):
+            print "Error: Could not find dotfiles repository \"%s\"" % DEFAULT_REPO
+            missing_default_repo()
+        else:
+            print "Error: Could not find dotfiles repository \"%s\"" % opts.repo
         exit(-1)
 
     if not opts.action:
-        print "%s\n" % USAGE
-        print "Error: An action is required."
+        print "Error: An action is required. Type 'dotfiles -h' to see detailed usage information."
         exit(-1)
 
     getattr(core.Dotfiles(location=opts.repo,
@@ -146,3 +127,25 @@ def main():
                           ignore=opts.ignore,
                           externals=opts.externals,
                           force=opts.force), opts.action)(files=args)
+
+
+def missing_default_repo():
+    """Print a helpful message when the default repository is missing."""
+
+    print """
+If this is your first time running dotfiles, you must first create
+a repository.  By default, dotfiles will look for '{0}'. Something like:
+
+    $ mkdir {0}
+
+is all you need to do.  If you don't like the default, you can put your
+repository wherever you like.  You have two choices once you've created your
+repository.  You can specify the path to the repository on the command line
+using the '-R' flag.  Alternatively, you can create a configuration file at
+'~/.dotfilesrc' and place the path to your repository in there.  The contents
+would look like:
+
+    [dotfiles]
+    repository = {0}
+
+Type 'dotfiles -h' to see detailed usage information.""".format(DEFAULT_REPO)
