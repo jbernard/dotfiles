@@ -14,12 +14,8 @@ from optparse import OptionParser, OptionGroup
 DEFAULT_REPO = "~/Dotfiles"
 
 
-def method_list(object):
-    return [method for method in dir(object)
-            if callable(getattr(object, method))]
-
-
 def parse_args():
+
     parser = OptionParser(usage="%prog ACTION [OPTION...] [FILE...]")
 
     parser.set_defaults(config=os.path.expanduser("~/.dotfilesrc"))
