@@ -38,7 +38,10 @@ class Dotfile(object):
             if not force:
                 print "Skipping \"%s\", use --force to override" % self.basename
                 return
-            os.remove(self.name)
+            if os.path.isdir(self.name):
+                shutil.rmtree(self.name)
+            else:
+                os.remove(self.name)
             os.symlink(self.target, self.name)
 
     def add(self):
