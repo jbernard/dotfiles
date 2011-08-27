@@ -122,11 +122,28 @@ def main():
         print "Error: An action is required. Type 'dotfiles -h' to see detailed usage information."
         exit(-1)
 
-    getattr(core.Dotfiles(location=opts.repo,
-                          prefix=opts.prefix,
-                          ignore=opts.ignore,
-                          externals=opts.externals,
-                          force=opts.force), opts.action)(files=args)
+    dotfiles = core.Dotfiles(home='~/', repo=opts.repo, prefix=opts.prefix,
+            ignore=opts.ignore, externals=opts.externals)
+
+    if opts.action in ['list', 'check']:
+        getattr(dotfiles, opts.action)()
+
+    elif opts.action in ['add', 'remove']:
+        getattr(dotfiles, opts.action)(args)
+
+    elif opts.action == 'sync':
+        dotfiles.sync(opts.force)
+
+    elif opts.action == 'move':
+        if len(args) > 1:
+            print "Error: Move cannot handle multiple targets."
+            exit(-1)
+        if opts.repo != args[0]:
+            dotfiles.move(args[0])
+
+    else:
+        print "Error: Something truly terrible has happened."
+        exit(-1)
 
 
 def missing_default_repo():
