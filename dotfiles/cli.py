@@ -65,6 +65,10 @@ def parse_args():
     action_group.add_option("-s", "--sync", action="store_const",
             dest="action", const="sync", help="update dotfile symlinks")
 
+    action_group.add_option("-m", "--move", action="store_const",
+            dest="action", const="move", help="move dotfiles repository to " \
+            "another location")
+
     parser.add_option_group(action_group)
 
     (opts, args) = parser.parse_args()
@@ -97,6 +101,10 @@ def main():
 
         if not opts.repo and parser.get('dotfiles', 'repository'):
             opts.repo = os.path.expanduser(parser.get('dotfiles', 'repository'))
+            if opts.action == 'move':
+                # TODO: update the configuration file after the move
+                print 'Remember to update the repository location ' \
+                      'in your configuration file (%s).' % (opts.config)
 
         if not opts.prefix and parser.get('dotfiles', 'prefix'):
             opts.prefix = parser.get('dotfiles', 'prefix')
