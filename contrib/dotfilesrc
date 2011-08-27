@@ -8,5 +8,6 @@ ignore = [
 externals = {
     '.adobe':       '/tmp',
     '.bzr.log':     '/dev/null',
+    '.lastpass':    '/tmp',
     '.macromedia':  '/tmp',
     '.uml':         '/tmp'}

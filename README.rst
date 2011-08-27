@@ -4,11 +4,8 @@ Dotfile management made easy
 ``dotfiles`` is a tool to make managing your dotfile symlinks in ``$HOME``
 easy, allowing you to keep all your dotfiles in a single directory.
 
-Hosting is left to you. Yes, I've seen `<http://dotfiles.org>`_ but I don't
-like that model. If you're advanced enough to need dotfile management, then
-you probably already know how you want to host them. Using whatever VCS you
-prefer, or even rsync, you can easily distribute your dotfiles repository
-across multiple hosts.
+Hosting is left to you. Using whatever VCS you prefer, or even rsync, you can
+easily distribute your dotfiles repository across multiple hosts.
 
 Interface
 ---------
@@ -28,6 +25,9 @@ Interface
 ``-s, --sync``
     Update dotfile symlinks. You can overwrite unmanaged files with ``-f`` or
     ``--force``.
+
+``-m, --move``
+    Move dotfiles repository to another location.
 
 Installation
 ------------

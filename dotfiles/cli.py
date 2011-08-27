@@ -14,12 +14,8 @@ from optparse import OptionParser, OptionGroup
 DEFAULT_REPO = "~/Dotfiles"
 
 
-def method_list(object):
-    return [method for method in dir(object)
-            if callable(getattr(object, method))]
-
-
 def parse_args():
+
     parser = OptionParser(usage="%prog ACTION [OPTION...] [FILE...]")
 
     parser.set_defaults(config=os.path.expanduser("~/.dotfilesrc"))
@@ -43,6 +39,9 @@ def parse_args():
     parser.add_option("-C", "--config", type="string", dest="config",
             help="set configuration file location (default is ~/.dotfilesrc)")
 
+    parser.add_option("-H", "--home", type="string", dest="home",
+            help="set home directory location (default is ~/)")
+
     action_group = OptionGroup(parser, "Actions")
 
     action_group.add_option("-a", "--add", action="store_const", dest="action",
@@ -61,6 +60,10 @@ def parse_args():
 
     action_group.add_option("-s", "--sync", action="store_const",
             dest="action", const="sync", help="update dotfile symlinks")
+
+    action_group.add_option("-m", "--move", action="store_const",
+            dest="action", const="move", help="move dotfiles repository to " \
+            "another location")
 
     parser.add_option_group(action_group)
 
@@ -94,6 +97,10 @@ def main():
 
         if not opts.repo and parser.get('dotfiles', 'repository'):
             opts.repo = os.path.expanduser(parser.get('dotfiles', 'repository'))
+            if opts.action == 'move':
+                # TODO: update the configuration file after the move
+                print 'Remember to update the repository location ' \
+                      'in your configuration file (%s).' % (opts.config)
 
         if not opts.prefix and parser.get('dotfiles', 'prefix'):
             opts.prefix = parser.get('dotfiles', 'prefix')
@@ -122,11 +129,28 @@ def main():
         print "Error: An action is required. Type 'dotfiles -h' to see detailed usage information."
         exit(-1)
 
-    getattr(core.Dotfiles(location=opts.repo,
-                          prefix=opts.prefix,
-                          ignore=opts.ignore,
-                          externals=opts.externals,
-                          force=opts.force), opts.action)(files=args)
+    dotfiles = core.Dotfiles(home='~/', repo=opts.repo, prefix=opts.prefix,
+            ignore=opts.ignore, externals=opts.externals)
+
+    if opts.action in ['list', 'check']:
+        getattr(dotfiles, opts.action)()
+
+    elif opts.action in ['add', 'remove']:
+        getattr(dotfiles, opts.action)(args)
+
+    elif opts.action == 'sync':
+        dotfiles.sync(opts.force)
+
+    elif opts.action == 'move':
+        if len(args) > 1:
+            print "Error: Move cannot handle multiple targets."
+            exit(-1)
+        if opts.repo != args[0]:
+            dotfiles.move(args[0])
+
+    else:
+        print "Error: Something truly terrible has happened."
+        exit(-1)
 
 
 def missing_default_repo():

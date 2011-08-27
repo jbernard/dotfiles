@@ -11,18 +11,18 @@ import os
 import shutil
 
 
-__version__ = '0.3.1'
+__version__ = '0.4.0'
 __author__ = "Jon Bernard"
 __license__ = "GPL"
 
 
 class Dotfile(object):
 
-    def __init__(self, name, target):
+    def __init__(self, name, target, home):
         if name.startswith('/'):
             self.name = name
         else:
-            self.name = os.path.expanduser('~/.%s' % name.strip('.'))
+            self.name = os.path.expanduser(home + '/.%s' % name.strip('.'))
         self.basename = os.path.basename(self.name)
         self.target = target.rstrip('/')
         self.status = ''
@@ -38,7 +38,10 @@ class Dotfile(object):
             if not force:
                 print "Skipping \"%s\", use --force to override" % self.basename
                 return
-            os.remove(self.name)
+            if os.path.isdir(self.name):
+                shutil.rmtree(self.name)
+            else:
+                os.remove(self.name)
             os.symlink(self.target, self.name)
 
     def add(self):
@@ -63,45 +66,92 @@ class Dotfile(object):
 
 
 class Dotfiles(object):
+    """A Dotfiles Repository."""
 
-    def __init__(self, location, prefix, ignore, externals, force):
-        self.location = location
-        self.prefix = prefix
-        self.force = force
-        self.dotfiles = []
-        contents = [x for x in os.listdir(self.location) if x not in ignore]
-        for file in contents:
-            self.dotfiles.append(Dotfile(file[len(prefix):],
-                os.path.join(self.location, file)))
-        for file in externals.keys():
-            self.dotfiles.append(Dotfile(file, externals[file]))
+    __attrs__ = ['home', 'repo', 'prefix', 'ignore', 'externals']
 
-    def list(self, **kwargs):
+    def __init__(self, **kwargs):
+
+        # Map args from kwargs to instance-local variables
+        map(lambda k, v: (k in self.__attrs__) and setattr(self, k, v),
+                kwargs.iterkeys(), kwargs.itervalues())
+
+        self._load()
+
+
+    def _load(self):
+        """Load each dotfile in the repository."""
+
+        self.dotfiles = list()
+
+        for dotfile in list(x for x in os.listdir(self.repo) if x not in self.ignore):
+            self.dotfiles.append(Dotfile(dotfile[len(self.prefix):],
+                os.path.join(self.repo, dotfile), self.home))
+
+        for dotfile in self.externals.keys():
+            self.dotfiles.append(Dotfile(dotfile, self.externals[dotfile], self.home))
+
+
+    def _fqpn(self, dotfile):
+        """Return the fully qualified path to a dotfile."""
+
+        return os.path.join(self.repo,
+                            self.prefix + os.path.basename(dotfile).strip('.'))
+
+
+    def list(self, verbose=True):
+        """List the contents of this repository."""
+
         for dotfile in sorted(self.dotfiles, key=lambda dotfile: dotfile.name):
-            if dotfile.status or kwargs.get('verbose', True):
+            if dotfile.status or verbose:
                 print dotfile
 
-    def check(self, **kwargs):
+
+    def check(self):
+        """List only unmanaged and/or missing dotfiles."""
+
         self.list(verbose=False)
 
-    def sync(self, **kwargs):
+
+    def sync(self, force=False):
+
+        """Synchronize this repository, creating and updating the necessary
+        symbolic links."""
+
         for dotfile in self.dotfiles:
-            dotfile.sync(self.force)
+            dotfile.sync(force)
 
-    def add(self, **kwargs):
-        for file in kwargs.get('files', None):
+
+    def add(self, files):
+        """Add dotfile(s) to the repository."""
+
+        self._perform_action('add', files)
+
+
+    def remove(self, files):
+        """Remove dotfile(s) from the repository."""
+
+        self._perform_action('remove', files)
+
+
+    def _perform_action(self, action, files):
+        for file in files:
             if os.path.basename(file).startswith('.'):
-                Dotfile(file,
-                        os.path.join(self.location,
-                            self.prefix + os.path.basename(file).strip('.'))).add()
+                getattr(Dotfile(file, self._fqpn(file), self.home), action)()
             else:
                 print "Skipping \"%s\", not a dotfile" % file
 
-    def remove(self, **kwargs):
-        for file in kwargs.get('files', None):
-            if os.path.basename(file).startswith('.'):
-                Dotfile(file,
-                        os.path.join(self.location,
-                            self.prefix + os.path.basename(file).strip('.'))).remove()
-            else:
-                print "Skipping \"%s\", not a dotfile" % file
+
+    def move(self, target):
+        """Move the repository to another location."""
+
+        if os.path.exists(target):
+            raise ValueError('Target already exists: %s' % (target))
+
+        shutil.copytree(self.repo, target)
+        shutil.rmtree(self.repo)
+
+        self.repo = target
+
+        self._load()
+        self.sync(force=True)
