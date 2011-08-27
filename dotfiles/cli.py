@@ -43,6 +43,9 @@ def parse_args():
     parser.add_option("-C", "--config", type="string", dest="config",
             help="set configuration file location (default is ~/.dotfilesrc)")
 
+    parser.add_option("-H", "--home", type="string", dest="home",
+            help="set home directory location (default is ~/)")
+
     action_group = OptionGroup(parser, "Actions")
 
     action_group.add_option("-a", "--add", action="store_const", dest="action",

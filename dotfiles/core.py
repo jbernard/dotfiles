@@ -18,11 +18,11 @@ __license__ = "GPL"
 
 class Dotfile(object):
 
-    def __init__(self, name, target):
+    def __init__(self, name, target, home):
         if name.startswith('/'):
             self.name = name
         else:
-            self.name = os.path.expanduser('~/.%s' % name.strip('.'))
+            self.name = os.path.expanduser(home + '/.%s' % name.strip('.'))
         self.basename = os.path.basename(self.name)
         self.target = target.rstrip('/')
         self.status = ''
