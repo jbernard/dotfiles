@@ -1,12 +1,25 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import os
+import sys
+
 try:
     from setuptools import setup
 except ImportError:
     from distutils.core import setup
 
 from dotfiles.core import __version__
+
+
+if sys.argv[-1] == "publish":
+    os.system("python setup.py sdist upload")
+    sys.exit()
+
+
+if sys.argv[-1] == "test":
+    os.system("python test_dotfiles.py")
+    sys.exit()
 
 
 setup(name='dotfiles',
