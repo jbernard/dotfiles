@@ -11,7 +11,7 @@ from . import core
 import ConfigParser
 from optparse import OptionParser, OptionGroup
 
-DEFAULT_REPO = "~/Dotfiles"
+DEFAULT_REPO = os.path.expanduser('~/Dotfiles')
 
 
 def parse_args():
@@ -96,7 +96,7 @@ def main():
     if 'dotfiles' in parser.sections():
 
         if not opts.repo and parser.get('dotfiles', 'repository'):
-            opts.repo = os.path.expanduser(parser.get('dotfiles', 'repository'))
+            opts.repo = parser.get('dotfiles', 'repository')
             if opts.action == 'move':
                 # TODO: update the configuration file after the move
                 print 'Remember to update the repository location ' \
@@ -112,17 +112,17 @@ def main():
             opts.externals = eval(parser.get('dotfiles', 'externals'))
 
     if not opts.repo:
-        opts.repo = os.path.expanduser(DEFAULT_REPO)
+        opts.repo = DEFAULT_REPO
+
+    opts.repo = os.path.realpath(os.path.expanduser(opts.repo))
 
     if not opts.prefix:
         opts.prefix = ''
 
     if not os.path.exists(opts.repo):
-        if opts.repo == os.path.expanduser(DEFAULT_REPO):
-            print "Error: Could not find dotfiles repository \"%s\"" % DEFAULT_REPO
+        print 'Error: Could not find dotfiles repository \"%s\"' % (opts.repo)
+        if opts.repo == DEFAULT_REPO:
             missing_default_repo()
-        else:
-            print "Error: Could not find dotfiles repository \"%s\"" % opts.repo
         exit(-1)
 
     if not opts.action:
@@ -158,7 +158,8 @@ def missing_default_repo():
 
     print """
 If this is your first time running dotfiles, you must first create
-a repository.  By default, dotfiles will look for '{0}'. Something like:
+a repository.  By default, dotfiles will look for '{0}'.
+Something like:
 
     $ mkdir {0}
 
