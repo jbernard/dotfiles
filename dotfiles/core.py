@@ -11,7 +11,7 @@ import os
 import shutil
 
 
-__version__ = '0.4.1'
+__version__ = '0.4.2'
 __author__ = "Jon Bernard"
 __license__ = "GPL"
 
@@ -38,7 +38,7 @@ class Dotfile(object):
             if not force:
                 print "Skipping \"%s\", use --force to override" % self.basename
                 return
-            if os.path.isdir(self.name):
+            if os.path.isdir(self.name) and not os.path.islink(self.name):
                 shutil.rmtree(self.name)
             else:
                 os.remove(self.name)

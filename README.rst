@@ -151,7 +151,9 @@ GPL License. ::
 Contribute
 ----------
 
-If you'd like to contribute, simply fork `the repository`_, commit your changes
-and send a pull request.
+If you'd like to contribute, simply fork `the repository`_, commit your
+changes to the **develop** branch (or branch off of it), and send a pull
+request. Make sure you add yourself to AUTHORS_.
 
 .. _`the repository`: https://github.com/jbernard/dotfiles
+.. _AUTHORS: https://github.com/jbernard/dotfiles/blob/master/AUTHORS

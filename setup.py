@@ -25,7 +25,8 @@ if sys.argv[-1] == "test":
 setup(name='dotfiles',
       version=__version__,
       description='Easily manage your dotfiles',
-      long_description=open('README.rst').read(),
+      long_description=open('README.rst').read() + '\n\n' +
+                       open('HISTORY.rst').read(),
       author='Jon Bernard',
       author_email='jbernard@tuxion.com',
       url='https://github.com/jbernard/dotfiles',
