@@ -21,7 +21,7 @@ class DotfilesTestCase(unittest.TestCase):
 
         self.home = tempfile.mkdtemp()
 
-        # create a repository for the tests to use
+        # Create a repository for the tests to use.
         self.repo = os.path.join(self.home, 'Dotfiles')
         os.mkdir(self.repo)
 
@@ -62,7 +62,7 @@ class DotfilesTestCase(unittest.TestCase):
 
         dotfiles.sync()
 
-        # make sure sync() did the right thing
+        # Make sure sync() did the right thing.
         self.assertEqual(
                 os.path.realpath(os.path.join(self.home, '.bashrc')),
                 os.path.join(self.repo, 'bashrc'))
@@ -75,6 +75,41 @@ class DotfilesTestCase(unittest.TestCase):
         self.assertEqual(
                 os.path.realpath(os.path.join(self.home, '.bashrc')),
                 os.path.join(target, 'bashrc'))
+
+    def test_sync_unmanaged_directory_symlink(self):
+        """Test a forced sync on a directory symlink.
+
+        A bug was reported where a user wanted to replace a dotfile repository
+        with an other one. They had a .vim directory in their home directory
+        which was obviously also a symbolic link. This caused:
+
+        OSError: Cannot call rmtree on a symbolic link
+        """
+
+        # Create a dotfile symlink to some directory
+        os.mkdir(os.path.join(self.home, 'vim'))
+        os.symlink(os.path.join(self.home, 'vim'),
+                   os.path.join(self.home, '.vim'))
+
+        # Create a vim directory in the repository. This will cause the above
+        # symlink to be overwritten on sync.
+        os.mkdir(os.path.join(self.repo, 'vim'))
+
+        # Make sure the symlink points to the correct location.
+        self.assertEqual(
+                os.path.realpath(os.path.join(self.home, '.vim')),
+                os.path.join(self.home, 'vim'))
+
+        dotfiles = core.Dotfiles(
+                home=self.home, repo=self.repo, prefix='',
+                ignore=[], externals={})
+
+        dotfiles.sync(force=True)
+
+        # The symlink should now point to the directory in the repository.
+        self.assertEqual(
+                os.path.realpath(os.path.join(self.home, '.vim')),
+                os.path.join(self.repo, 'vim'))
 
 
 def suite():
