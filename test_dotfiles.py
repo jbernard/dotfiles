@@ -133,7 +133,7 @@ class DotfilesTestCase(unittest.TestCase):
         .vimrc -> Dotfiles/vimrc
 
         """
-        ignore = ['*.swp', '.py?', 'install.sh']
+        ignore = ['*.swp', '*.py?', 'install.sh']
 
         all_repo_files = (
             ('myscript.py', '.myscript.py'),
@@ -162,7 +162,7 @@ class DotfilesTestCase(unittest.TestCase):
         # exist in the home dir.
         self.assertEqual(
             sorted(os.listdir(self.home)),
-            sorted([f[1] for f in all_dotfiles]))
+            sorted([f[1] for f in all_dotfiles] + ['Dotfiles']))
 
         for original, symlink in all_dotfiles:
             original_path = os.path.join(self.repo, original)

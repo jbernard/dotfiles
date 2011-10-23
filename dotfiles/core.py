@@ -9,6 +9,7 @@ This module provides the basic functionality of dotfiles.
 
 import os
 import shutil
+import fnmatch
 
 
 __version__ = '0.4.2'
@@ -83,7 +84,13 @@ class Dotfiles(object):
 
         self.dotfiles = list()
 
-        for dotfile in list(x for x in os.listdir(self.repo) if x not in self.ignore):
+        all_repofiles = os.listdir(self.repo)
+        repofiles_to_symlink = set(all_repofiles)
+        
+        for pat in self.ignore:
+            repofiles_to_symlink.difference_update(fnmatch.filter(all_repofiles, pat))
+
+        for dotfile in repofiles_to_symlink:
             self.dotfiles.append(Dotfile(dotfile[len(self.prefix):],
                 os.path.join(self.repo, dotfile), self.home))
 
