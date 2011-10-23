@@ -112,6 +112,66 @@ class DotfilesTestCase(unittest.TestCase):
                 os.path.realpath(os.path.join(self.home, '.vim')),
                 os.path.realpath(os.path.join(self.repo, 'vim')))
 
+    def test_glob_ignore_pattern(self):
+        """ Test that the use of glob pattern matching works in the ignores list.
+
+        The following repo dir exists:
+
+        myscript.py
+        myscript.pyc
+        myscript.pyo
+        bashrc
+        bashrc.swp
+        vimrc
+        vimrc.swp
+        install.sh
+
+        Using the glob pattern dotfiles should have the following sync result in home:
+
+        .myscript.py -> Dotfiles/myscript.py
+        .bashrc -> Dotfiles/bashrc
+        .vimrc -> Dotfiles/vimrc
+
+        """
+        ignore = ['*.swp', '.py?', 'install.sh']
+
+        all_repo_files = (
+            ('myscript.py', '.myscript.py'),
+            ('myscript.pyc', None),
+            ('myscript.pyo', None),
+            ('bashrc', '.bashrc'),
+            ('bashrc.swp', None),
+            ('vimrc', '.vimrc'),
+            ('vimrc.swp', None),
+            ('install.sh', None)
+        )
+
+        all_dotfiles = [f for f in all_repo_files if f[1] is not None]
+
+        for original, symlink in all_repo_files:
+            touch(os.path.join(self.repo, original))
+
+        dotfiles = core.Dotfiles(
+                home=self.home, repo=self.repo, prefix='',
+                ignore=ignore, externals={})
+
+        dotfiles.sync()
+
+        # Now check that the files that should have a symlink
+        # point to the correct file and are the only files that
+        # exist in the home dir.
+        self.assertEqual(
+            sorted(os.listdir(self.home)),
+            sorted([f[1] for f in all_dotfiles]))
+
+        for original, symlink in all_dotfiles:
+            original_path = os.path.join(self.repo, original)
+            symlink_path = os.path.join(self.home, symlink)
+
+            self.assertEqual(
+                os.path.realpath(original_path),
+                os.path.realpath(symlink_path))
+
 
 def suite():
     suite = unittest.TestLoader().loadTestsFromTestCase(DotfilesTestCase)
