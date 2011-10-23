@@ -49,7 +49,8 @@ class DotfilesTestCase(unittest.TestCase):
         dotfiles.sync(force=True)
 
         self.assertEqual(
-                os.path.realpath(os.path.join(self.home, '.lastpass')), '/tmp')
+                os.path.realpath(os.path.join(self.home, '.lastpass')),
+                os.path.realpath('/tmp'))
 
     def test_move_repository(self):
         """Test the move() method for a Dotfiles repository."""
@@ -65,7 +66,7 @@ class DotfilesTestCase(unittest.TestCase):
         # Make sure sync() did the right thing.
         self.assertEqual(
                 os.path.realpath(os.path.join(self.home, '.bashrc')),
-                os.path.join(self.repo, 'bashrc'))
+                os.path.realpath(os.path.join(self.repo, 'bashrc')))
 
         target = os.path.join(self.home, 'MyDotfiles')
 
@@ -74,7 +75,7 @@ class DotfilesTestCase(unittest.TestCase):
         self.assertTrue(os.path.exists(os.path.join(target, 'bashrc')))
         self.assertEqual(
                 os.path.realpath(os.path.join(self.home, '.bashrc')),
-                os.path.join(target, 'bashrc'))
+                os.path.realpath(os.path.join(target, 'bashrc')))
 
     def test_sync_unmanaged_directory_symlink(self):
         """Test a forced sync on a directory symlink.
@@ -98,7 +99,7 @@ class DotfilesTestCase(unittest.TestCase):
         # Make sure the symlink points to the correct location.
         self.assertEqual(
                 os.path.realpath(os.path.join(self.home, '.vim')),
-                os.path.join(self.home, 'vim'))
+                os.path.realpath(os.path.join(self.home, 'vim')))
 
         dotfiles = core.Dotfiles(
                 home=self.home, repo=self.repo, prefix='',
@@ -109,7 +110,7 @@ class DotfilesTestCase(unittest.TestCase):
         # The symlink should now point to the directory in the repository.
         self.assertEqual(
                 os.path.realpath(os.path.join(self.home, '.vim')),
-                os.path.join(self.repo, 'vim'))
+                os.path.realpath(os.path.join(self.repo, 'vim')))
 
 
 def suite():
