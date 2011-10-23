@@ -78,7 +78,6 @@ class Dotfiles(object):
 
         self._load()
 
-
     def _load(self):
         """Load each dotfile in the repository."""
 
@@ -91,13 +90,11 @@ class Dotfiles(object):
         for dotfile in self.externals.keys():
             self.dotfiles.append(Dotfile(dotfile, self.externals[dotfile], self.home))
 
-
     def _fqpn(self, dotfile):
         """Return the fully qualified path to a dotfile."""
 
         return os.path.join(self.repo,
                             self.prefix + os.path.basename(dotfile).strip('.'))
-
 
     def list(self, verbose=True):
         """List the contents of this repository."""
@@ -106,12 +103,10 @@ class Dotfiles(object):
             if dotfile.status or verbose:
                 print dotfile
 
-
     def check(self):
         """List only unmanaged and/or missing dotfiles."""
 
         self.list(verbose=False)
-
 
     def sync(self, force=False):
 
@@ -121,18 +116,15 @@ class Dotfiles(object):
         for dotfile in self.dotfiles:
             dotfile.sync(force)
 
-
     def add(self, files):
         """Add dotfile(s) to the repository."""
 
         self._perform_action('add', files)
 
-
     def remove(self, files):
         """Remove dotfile(s) from the repository."""
 
         self._perform_action('remove', files)
-
 
     def _perform_action(self, action, files):
         for file in files:
@@ -140,7 +132,6 @@ class Dotfiles(object):
                 getattr(Dotfile(file, self._fqpn(file), self.home), action)()
             else:
                 print "Skipping \"%s\", not a dotfile" % file
-
 
     def move(self, target):
         """Move the repository to another location."""
