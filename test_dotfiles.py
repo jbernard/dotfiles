@@ -30,6 +30,11 @@ class DotfilesTestCase(unittest.TestCase):
 
         shutil.rmtree(self.home)
 
+    def assertPathEqual(self, path1, path2):
+        self.assertEqual(
+            os.path.realpath(path1),
+            os.path.realpath(path2))
+
     def test_force_sync_directory(self):
         """Test forced sync when the dotfile is a directory.
 
@@ -48,9 +53,9 @@ class DotfilesTestCase(unittest.TestCase):
 
         dotfiles.sync(force=True)
 
-        self.assertEqual(
-                os.path.realpath(os.path.join(self.home, '.lastpass')),
-                os.path.realpath('/tmp'))
+        self.assertPathEqual(
+                os.path.join(self.home, '.lastpass'),
+                '/tmp')
 
     def test_move_repository(self):
         """Test the move() method for a Dotfiles repository."""
@@ -64,18 +69,18 @@ class DotfilesTestCase(unittest.TestCase):
         dotfiles.sync()
 
         # Make sure sync() did the right thing.
-        self.assertEqual(
-                os.path.realpath(os.path.join(self.home, '.bashrc')),
-                os.path.realpath(os.path.join(self.repo, 'bashrc')))
+        self.assertPathEqual(
+                os.path.join(self.home, '.bashrc'),
+                os.path.join(self.repo, 'bashrc'))
 
         target = os.path.join(self.home, 'MyDotfiles')
 
         dotfiles.move(target)
 
         self.assertTrue(os.path.exists(os.path.join(target, 'bashrc')))
-        self.assertEqual(
-                os.path.realpath(os.path.join(self.home, '.bashrc')),
-                os.path.realpath(os.path.join(target, 'bashrc')))
+        self.assertPathEqual(
+                os.path.join(self.home, '.bashrc'),
+                os.path.join(target, 'bashrc'))
 
     def test_sync_unmanaged_directory_symlink(self):
         """Test a forced sync on a directory symlink.
@@ -97,9 +102,9 @@ class DotfilesTestCase(unittest.TestCase):
         os.mkdir(os.path.join(self.repo, 'vim'))
 
         # Make sure the symlink points to the correct location.
-        self.assertEqual(
-                os.path.realpath(os.path.join(self.home, '.vim')),
-                os.path.realpath(os.path.join(self.home, 'vim')))
+        self.assertPathEqual(
+                os.path.join(self.home, '.vim'),
+                os.path.join(self.home, 'vim'))
 
         dotfiles = core.Dotfiles(
                 home=self.home, repo=self.repo, prefix='',
@@ -108,9 +113,9 @@ class DotfilesTestCase(unittest.TestCase):
         dotfiles.sync(force=True)
 
         # The symlink should now point to the directory in the repository.
-        self.assertEqual(
-                os.path.realpath(os.path.join(self.home, '.vim')),
-                os.path.realpath(os.path.join(self.repo, 'vim')))
+        self.assertPathEqual(
+                os.path.join(self.home, '.vim'),
+                os.path.join(self.repo, 'vim'))
 
     def test_glob_ignore_pattern(self):
         """ Test that the use of glob pattern matching works in the ignores list.
@@ -165,13 +170,9 @@ class DotfilesTestCase(unittest.TestCase):
             sorted([f[1] for f in all_dotfiles] + ['Dotfiles']))
 
         for original, symlink in all_dotfiles:
-            original_path = os.path.join(self.repo, original)
-            symlink_path = os.path.join(self.home, symlink)
-
-            self.assertEqual(
-                os.path.realpath(original_path),
-                os.path.realpath(symlink_path))
-
+            self.assertPathEqual(
+                os.path.join(self.repo, original),
+                os.path.join(self.home, symlink))
 
 def suite():
     suite = unittest.TestLoader().loadTestsFromTestCase(DotfilesTestCase)
