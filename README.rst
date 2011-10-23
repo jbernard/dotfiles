@@ -81,7 +81,8 @@ example configuration file might look like: ::
   repository = ~/Dotfiles
   ignore = [
       '.git',
-      '.gitignore']
+      '.gitignore',
+      '*.swp']
   externals = {
       '.bzr.log':     '/dev/null',
       '.uml':         '/tmp'}
@@ -124,9 +125,11 @@ I have the following in my ``~/.dotfilesrc``: ::
   [dotfiles]
   ignore = [
       '.git',
-      '.gitignore']
+      '.gitignore',
+      '*.swp]
 
-Any file you list in ``ignore`` will be skipped.
+Any file you list in ``ignore`` will be skipped. The ``ignore`` option supports
+glob file patterns.
 
 License
 -------
