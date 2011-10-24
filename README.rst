@@ -126,7 +126,7 @@ I have the following in my ``~/.dotfilesrc``: ::
   ignore = [
       '.git',
       '.gitignore',
-      '*.swp]
+      '*.swp']
 
 Any file you list in ``ignore`` will be skipped. The ``ignore`` option supports
 glob file patterns.
