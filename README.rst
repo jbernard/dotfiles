@@ -81,7 +81,8 @@ example configuration file might look like: ::
   repository = ~/Dotfiles
   ignore = [
       '.git',
-      '.gitignore']
+      '.gitignore',
+      '*.swp']
   externals = {
       '.bzr.log':     '/dev/null',
       '.uml':         '/tmp'}
@@ -124,9 +125,11 @@ I have the following in my ``~/.dotfilesrc``: ::
   [dotfiles]
   ignore = [
       '.git',
-      '.gitignore']
+      '.gitignore',
+      '*.swp]
 
-Any file you list in ``ignore`` will be skipped.
+Any file you list in ``ignore`` will be skipped. The ``ignore`` option supports
+glob file patterns.
 
 License
 -------
@@ -156,4 +159,4 @@ changes to the **develop** branch (or branch off of it), and send a pull
 request. Make sure you add yourself to AUTHORS_.
 
 .. _`the repository`: https://github.com/jbernard/dotfiles
-.. _AUTHORS: https://github.com/jbernard/dotfiles/blob/master/AUTHORS
+.. _AUTHORS: https://github.com/jbernard/dotfiles/blob/master/AUTHORS.rst

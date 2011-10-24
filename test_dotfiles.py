@@ -30,6 +30,11 @@ class DotfilesTestCase(unittest.TestCase):
 
         shutil.rmtree(self.home)
 
+    def assertPathEqual(self, path1, path2):
+        self.assertEqual(
+            os.path.realpath(path1),
+            os.path.realpath(path2))
+
     def test_force_sync_directory(self):
         """Test forced sync when the dotfile is a directory.
 
@@ -48,8 +53,9 @@ class DotfilesTestCase(unittest.TestCase):
 
         dotfiles.sync(force=True)
 
-        self.assertEqual(
-                os.path.realpath(os.path.join(self.home, '.lastpass')), '/tmp')
+        self.assertPathEqual(
+                os.path.join(self.home, '.lastpass'),
+                '/tmp')
 
     def test_move_repository(self):
         """Test the move() method for a Dotfiles repository."""
@@ -63,8 +69,8 @@ class DotfilesTestCase(unittest.TestCase):
         dotfiles.sync()
 
         # Make sure sync() did the right thing.
-        self.assertEqual(
-                os.path.realpath(os.path.join(self.home, '.bashrc')),
+        self.assertPathEqual(
+                os.path.join(self.home, '.bashrc'),
                 os.path.join(self.repo, 'bashrc'))
 
         target = os.path.join(self.home, 'MyDotfiles')
@@ -72,8 +78,8 @@ class DotfilesTestCase(unittest.TestCase):
         dotfiles.move(target)
 
         self.assertTrue(os.path.exists(os.path.join(target, 'bashrc')))
-        self.assertEqual(
-                os.path.realpath(os.path.join(self.home, '.bashrc')),
+        self.assertPathEqual(
+                os.path.join(self.home, '.bashrc'),
                 os.path.join(target, 'bashrc'))
 
     def test_sync_unmanaged_directory_symlink(self):
@@ -96,8 +102,8 @@ class DotfilesTestCase(unittest.TestCase):
         os.mkdir(os.path.join(self.repo, 'vim'))
 
         # Make sure the symlink points to the correct location.
-        self.assertEqual(
-                os.path.realpath(os.path.join(self.home, '.vim')),
+        self.assertPathEqual(
+                os.path.join(self.home, '.vim'),
                 os.path.join(self.home, 'vim'))
 
         dotfiles = core.Dotfiles(
@@ -107,10 +113,66 @@ class DotfilesTestCase(unittest.TestCase):
         dotfiles.sync(force=True)
 
         # The symlink should now point to the directory in the repository.
-        self.assertEqual(
-                os.path.realpath(os.path.join(self.home, '.vim')),
+        self.assertPathEqual(
+                os.path.join(self.home, '.vim'),
                 os.path.join(self.repo, 'vim'))
 
+    def test_glob_ignore_pattern(self):
+        """ Test that the use of glob pattern matching works in the ignores list.
+
+        The following repo dir exists:
+
+        myscript.py
+        myscript.pyc
+        myscript.pyo
+        bashrc
+        bashrc.swp
+        vimrc
+        vimrc.swp
+        install.sh
+
+        Using the glob pattern dotfiles should have the following sync result in home:
+
+        .myscript.py -> Dotfiles/myscript.py
+        .bashrc -> Dotfiles/bashrc
+        .vimrc -> Dotfiles/vimrc
+
+        """
+        ignore = ['*.swp', '*.py?', 'install.sh']
+
+        all_repo_files = (
+            ('myscript.py', '.myscript.py'),
+            ('myscript.pyc', None),
+            ('myscript.pyo', None),
+            ('bashrc', '.bashrc'),
+            ('bashrc.swp', None),
+            ('vimrc', '.vimrc'),
+            ('vimrc.swp', None),
+            ('install.sh', None)
+        )
+
+        all_dotfiles = [f for f in all_repo_files if f[1] is not None]
+
+        for original, symlink in all_repo_files:
+            touch(os.path.join(self.repo, original))
+
+        dotfiles = core.Dotfiles(
+                home=self.home, repo=self.repo, prefix='',
+                ignore=ignore, externals={})
+
+        dotfiles.sync()
+
+        # Now check that the files that should have a symlink
+        # point to the correct file and are the only files that
+        # exist in the home dir.
+        self.assertEqual(
+            sorted(os.listdir(self.home)),
+            sorted([f[1] for f in all_dotfiles] + ['Dotfiles']))
+
+        for original, symlink in all_dotfiles:
+            self.assertPathEqual(
+                os.path.join(self.repo, original),
+                os.path.join(self.home, symlink))
 
 def suite():
     suite = unittest.TestLoader().loadTestsFromTestCase(DotfilesTestCase)
