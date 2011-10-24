@@ -86,7 +86,7 @@ class Dotfiles(object):
 
         all_repofiles = os.listdir(self.repo)
         repofiles_to_symlink = set(all_repofiles)
-        
+
         for pat in self.ignore:
             repofiles_to_symlink.difference_update(fnmatch.filter(all_repofiles, pat))
 
