@@ -12,7 +12,7 @@ import shutil
 import fnmatch
 
 
-__version__ = '0.4.3'
+__version__ = '0.4.4'
 __author__ = "Jon Bernard"
 __license__ = "GPL"
 

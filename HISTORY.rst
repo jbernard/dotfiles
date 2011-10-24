@@ -1,6 +1,11 @@
 History
 -------
 
+0.4.4
++++++
+
+* Restore python 2.5 compatibility
+
 0.4.3
 +++++
 
