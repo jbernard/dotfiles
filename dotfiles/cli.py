@@ -6,6 +6,8 @@ dotfiles.cli
 This module provides the CLI interface to dotfiles.
 """
 
+from __future__ import absolute_import
+
 import os
 from . import core
 import ConfigParser
