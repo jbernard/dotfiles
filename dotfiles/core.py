@@ -9,6 +9,7 @@ This module provides the basic functionality of dotfiles.
 
 import os
 import shutil
+import fnmatch
 
 
 __version__ = '0.4.2'
@@ -78,26 +79,29 @@ class Dotfiles(object):
 
         self._load()
 
-
     def _load(self):
         """Load each dotfile in the repository."""
 
         self.dotfiles = list()
 
-        for dotfile in list(x for x in os.listdir(self.repo) if x not in self.ignore):
+        all_repofiles = os.listdir(self.repo)
+        repofiles_to_symlink = set(all_repofiles)
+
+        for pat in self.ignore:
+            repofiles_to_symlink.difference_update(fnmatch.filter(all_repofiles, pat))
+
+        for dotfile in repofiles_to_symlink:
             self.dotfiles.append(Dotfile(dotfile[len(self.prefix):],
                 os.path.join(self.repo, dotfile), self.home))
 
         for dotfile in self.externals.keys():
             self.dotfiles.append(Dotfile(dotfile, self.externals[dotfile], self.home))
 
-
     def _fqpn(self, dotfile):
         """Return the fully qualified path to a dotfile."""
 
         return os.path.join(self.repo,
                             self.prefix + os.path.basename(dotfile).strip('.'))
-
 
     def list(self, verbose=True):
         """List the contents of this repository."""
@@ -106,12 +110,10 @@ class Dotfiles(object):
             if dotfile.status or verbose:
                 print dotfile
 
-
     def check(self):
         """List only unmanaged and/or missing dotfiles."""
 
         self.list(verbose=False)
-
 
     def sync(self, force=False):
 
@@ -121,18 +123,15 @@ class Dotfiles(object):
         for dotfile in self.dotfiles:
             dotfile.sync(force)
 
-
     def add(self, files):
         """Add dotfile(s) to the repository."""
 
         self._perform_action('add', files)
 
-
     def remove(self, files):
         """Remove dotfile(s) from the repository."""
 
         self._perform_action('remove', files)
-
 
     def _perform_action(self, action, files):
         for file in files:
@@ -140,7 +139,6 @@ class Dotfiles(object):
                 getattr(Dotfile(file, self._fqpn(file), self.home), action)()
             else:
                 print "Skipping \"%s\", not a dotfile" % file
-
 
     def move(self, target):
         """Move the repository to another location."""
