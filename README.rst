@@ -159,4 +159,4 @@ changes to the **develop** branch (or branch off of it), and send a pull
 request. Make sure you add yourself to AUTHORS_.
 
 .. _`the repository`: https://github.com/jbernard/dotfiles
-.. _AUTHORS: https://github.com/jbernard/dotfiles/blob/master/AUTHORS
+.. _AUTHORS: https://github.com/jbernard/dotfiles/blob/master/AUTHORS.rst
