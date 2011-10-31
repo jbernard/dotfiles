@@ -4,7 +4,7 @@ Dotfile management made easy
 ``dotfiles`` is a tool to make managing your dotfile symlinks in ``$HOME``
 easy, allowing you to keep all your dotfiles in a single directory.
 
-Hosting is left to you. Using whatever VCS you prefer, or even rsync, you can
+Hosting is up to you. Using whatever VCS you prefer, or even rsync, you can
 easily distribute your dotfiles repository across multiple hosts.
 
 Interface
@@ -73,9 +73,9 @@ You get the idea. Type ``dotfiles --help`` to see the available options.
 Configuration
 -------------
 
-You can choose to create a configuration file to store personal
-customizations. By default, ``dotfiles`` will look in ``~/.dotfilesrc``. An
-example configuration file might look like: ::
+You can choose to create a configuration file to store personal customizations.
+By default, ``dotfiles`` will look for ``~/.dotfilesrc``. You can change this
+with the ``-C`` flag. An example configuration file might look like: ::
 
   [dotfiles]
   repository = ~/Dotfiles
@@ -86,6 +86,11 @@ example configuration file might look like: ::
   externals = {
       '.bzr.log':     '/dev/null',
       '.uml':         '/tmp'}
+
+You can also store your configuration file inside your repository. Put your
+settings in ``.dotfilesrc`` at the root of your repository and ``dotfiles`` will
+find it. Note that ``ignore`` and ``externals`` are appended to any values
+previously discovered.
 
 Prefixes
 --------
