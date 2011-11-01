@@ -1,6 +1,11 @@
 History
 -------
 
+0.5.0
++++++
+
+* Add support for in-repo configuration files
+
 0.4.4
 +++++
 
