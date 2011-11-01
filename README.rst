@@ -4,7 +4,7 @@ Dotfile management made easy
 ``dotfiles`` is a tool to make managing your dotfile symlinks in ``$HOME``
 easy, allowing you to keep all your dotfiles in a single directory.
 
-Hosting is left to you. Using whatever VCS you prefer, or even rsync, you can
+Hosting is up to you. Using whatever VCS you prefer, or even rsync, you can
 easily distribute your dotfiles repository across multiple hosts.
 
 Interface
@@ -73,9 +73,9 @@ You get the idea. Type ``dotfiles --help`` to see the available options.
 Configuration
 -------------
 
-You can choose to create a configuration file to store personal
-customizations. By default, ``dotfiles`` will look in ``~/.dotfilesrc``. An
-example configuration file might look like: ::
+You can choose to create a configuration file to store personal customizations.
+By default, ``dotfiles`` will look for ``~/.dotfilesrc``. You can change this
+with the ``-C`` flag. An example configuration file might look like: ::
 
   [dotfiles]
   repository = ~/Dotfiles
@@ -86,6 +86,11 @@ example configuration file might look like: ::
   externals = {
       '.bzr.log':     '/dev/null',
       '.uml':         '/tmp'}
+
+You can also store your configuration file inside your repository. Put your
+settings in ``.dotfilesrc`` at the root of your repository and ``dotfiles`` will
+find it. Note that ``ignore`` and ``externals`` are appended to any values
+previously discovered.
 
 Prefixes
 --------
@@ -130,26 +135,6 @@ I have the following in my ``~/.dotfilesrc``: ::
 
 Any file you list in ``ignore`` will be skipped. The ``ignore`` option supports
 glob file patterns.
-
-License
--------
-
-GPL License. ::
-
-    Copyright (C) 2011  Jon Bernard
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 Contribute
 ----------

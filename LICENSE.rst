@@ -1,4 +1,9 @@
-Copyright (C) 2011  Jon Bernard <jbernard@tuxion.com>
+License
+-------
+
+GPL License. ::
+
+Copyright (C) 2011  Jon Bernard and contributers
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

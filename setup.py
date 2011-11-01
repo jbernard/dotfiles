@@ -26,6 +26,7 @@ setup(name='dotfiles',
       version=__version__,
       description='Easily manage your dotfiles',
       long_description=open('README.rst').read() + '\n\n' +
+                       open('LICENSE.rst').read() + '\n\n' +
                        open('HISTORY.rst').read(),
       author='Jon Bernard',
       author_email='jbernard@tuxion.com',

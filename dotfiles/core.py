@@ -23,7 +23,7 @@ class Dotfile(object):
         if name.startswith('/'):
             self.name = name
         else:
-            self.name = os.path.expanduser(home + '/.%s' % name.strip('.'))
+            self.name = home + '/.%s' % name.strip('.')
         self.basename = os.path.basename(self.name)
         self.target = target.rstrip('/')
         self.status = ''
@@ -69,7 +69,7 @@ class Dotfile(object):
 class Dotfiles(object):
     """A Dotfiles Repository."""
 
-    __attrs__ = ['home', 'repo', 'prefix', 'ignore', 'externals']
+    __attrs__ = ['homedir', 'repository', 'prefix', 'ignore', 'externals']
 
     def __init__(self, **kwargs):
 
@@ -84,23 +84,25 @@ class Dotfiles(object):
 
         self.dotfiles = list()
 
-        all_repofiles = os.listdir(self.repo)
+        all_repofiles = os.listdir(self.repository)
         repofiles_to_symlink = set(all_repofiles)
 
         for pat in self.ignore:
-            repofiles_to_symlink.difference_update(fnmatch.filter(all_repofiles, pat))
+            repofiles_to_symlink.difference_update(
+                    fnmatch.filter(all_repofiles, pat))
 
         for dotfile in repofiles_to_symlink:
             self.dotfiles.append(Dotfile(dotfile[len(self.prefix):],
-                os.path.join(self.repo, dotfile), self.home))
+                os.path.join(self.repository, dotfile), self.homedir))
 
         for dotfile in self.externals.keys():
-            self.dotfiles.append(Dotfile(dotfile, self.externals[dotfile], self.home))
+            self.dotfiles.append(Dotfile(dotfile, self.externals[dotfile],
+                self.homedir))
 
     def _fqpn(self, dotfile):
         """Return the fully qualified path to a dotfile."""
 
-        return os.path.join(self.repo,
+        return os.path.join(self.repository,
                             self.prefix + os.path.basename(dotfile).strip('.'))
 
     def list(self, verbose=True):
@@ -136,7 +138,7 @@ class Dotfiles(object):
     def _perform_action(self, action, files):
         for file in files:
             if os.path.basename(file).startswith('.'):
-                getattr(Dotfile(file, self._fqpn(file), self.home), action)()
+                getattr(Dotfile(file, self._fqpn(file), self.homedir), action)()
             else:
                 print "Skipping \"%s\", not a dotfile" % file
 
@@ -146,10 +148,10 @@ class Dotfiles(object):
         if os.path.exists(target):
             raise ValueError('Target already exists: %s' % (target))
 
-        shutil.copytree(self.repo, target)
-        shutil.rmtree(self.repo)
+        shutil.copytree(self.repository, target)
+        shutil.rmtree(self.repository)
 
-        self.repo = target
+        self.repository = target
 
         self._load()
         self.sync(force=True)

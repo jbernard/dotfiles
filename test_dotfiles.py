@@ -21,16 +21,16 @@ class DotfilesTestCase(unittest.TestCase):
     def setUp(self):
         """Create a temporary home directory."""
 
-        self.home = tempfile.mkdtemp()
+        self.homedir = tempfile.mkdtemp()
 
         # Create a repository for the tests to use.
-        self.repo = os.path.join(self.home, 'Dotfiles')
-        os.mkdir(self.repo)
+        self.repository = os.path.join(self.homedir, 'Dotfiles')
+        os.mkdir(self.repository)
 
     def tearDown(self):
         """Delete the temporary home directory and its contents."""
 
-        shutil.rmtree(self.home)
+        shutil.rmtree(self.homedir)
 
     def assertPathEqual(self, path1, path2):
         self.assertEqual(
@@ -47,41 +47,42 @@ class DotfilesTestCase(unittest.TestCase):
         a directory.
         """
 
-        os.mkdir(os.path.join(self.home, '.lastpass'))
+        os.mkdir(os.path.join(self.homedir, '.lastpass'))
         externals = {'.lastpass': '/tmp'}
 
-        dotfiles = core.Dotfiles(home=self.home, repo=self.repo, prefix='',
-                                ignore=[], externals=externals)
+        dotfiles = core.Dotfiles(
+                homedir=self.homedir, repository=self.repository,
+                prefix='', ignore=[], externals=externals)
 
         dotfiles.sync(force=True)
 
         self.assertPathEqual(
-                os.path.join(self.home, '.lastpass'),
+                os.path.join(self.homedir, '.lastpass'),
                 '/tmp')
 
     def test_move_repository(self):
         """Test the move() method for a Dotfiles repository."""
 
-        touch(os.path.join(self.repo, 'bashrc'))
+        touch(os.path.join(self.repository, 'bashrc'))
 
         dotfiles = core.Dotfiles(
-                home=self.home, repo=self.repo, prefix='',
-                ignore=[], force=True, externals={})
+                homedir=self.homedir, repository=self.repository,
+                prefix='', ignore=[], force=True, externals={})
 
         dotfiles.sync()
 
         # Make sure sync() did the right thing.
         self.assertPathEqual(
-                os.path.join(self.home, '.bashrc'),
-                os.path.join(self.repo, 'bashrc'))
+                os.path.join(self.homedir, '.bashrc'),
+                os.path.join(self.repository, 'bashrc'))
 
-        target = os.path.join(self.home, 'MyDotfiles')
+        target = os.path.join(self.homedir, 'MyDotfiles')
 
         dotfiles.move(target)
 
         self.assertTrue(os.path.exists(os.path.join(target, 'bashrc')))
         self.assertPathEqual(
-                os.path.join(self.home, '.bashrc'),
+                os.path.join(self.homedir, '.bashrc'),
                 os.path.join(target, 'bashrc'))
 
     def test_sync_unmanaged_directory_symlink(self):
@@ -95,29 +96,29 @@ class DotfilesTestCase(unittest.TestCase):
         """
 
         # Create a dotfile symlink to some directory
-        os.mkdir(os.path.join(self.home, 'vim'))
-        os.symlink(os.path.join(self.home, 'vim'),
-                   os.path.join(self.home, '.vim'))
+        os.mkdir(os.path.join(self.homedir, 'vim'))
+        os.symlink(os.path.join(self.homedir, 'vim'),
+                   os.path.join(self.homedir, '.vim'))
 
         # Create a vim directory in the repository. This will cause the above
         # symlink to be overwritten on sync.
-        os.mkdir(os.path.join(self.repo, 'vim'))
+        os.mkdir(os.path.join(self.repository, 'vim'))
 
         # Make sure the symlink points to the correct location.
         self.assertPathEqual(
-                os.path.join(self.home, '.vim'),
-                os.path.join(self.home, 'vim'))
+                os.path.join(self.homedir, '.vim'),
+                os.path.join(self.homedir, 'vim'))
 
         dotfiles = core.Dotfiles(
-                home=self.home, repo=self.repo, prefix='',
-                ignore=[], externals={})
+                homedir=self.homedir, repository=self.repository,
+                prefix='', ignore=[], externals={})
 
         dotfiles.sync(force=True)
 
         # The symlink should now point to the directory in the repository.
         self.assertPathEqual(
-                os.path.join(self.home, '.vim'),
-                os.path.join(self.repo, 'vim'))
+                os.path.join(self.homedir, '.vim'),
+                os.path.join(self.repository, 'vim'))
 
     def test_glob_ignore_pattern(self):
         """ Test that the use of glob pattern matching works in the ignores list.
@@ -156,11 +157,11 @@ class DotfilesTestCase(unittest.TestCase):
         all_dotfiles = [f for f in all_repo_files if f[1] is not None]
 
         for original, symlink in all_repo_files:
-            touch(os.path.join(self.repo, original))
+            touch(os.path.join(self.repository, original))
 
         dotfiles = core.Dotfiles(
-                home=self.home, repo=self.repo, prefix='',
-                ignore=ignore, externals={})
+                homedir=self.homedir, repository=self.repository,
+                prefix='', ignore=ignore, externals={})
 
         dotfiles.sync()
 
@@ -168,13 +169,13 @@ class DotfilesTestCase(unittest.TestCase):
         # point to the correct file and are the only files that
         # exist in the home dir.
         self.assertEqual(
-            sorted(os.listdir(self.home)),
+            sorted(os.listdir(self.homedir)),
             sorted([f[1] for f in all_dotfiles] + ['Dotfiles']))
 
         for original, symlink in all_dotfiles:
             self.assertPathEqual(
-                os.path.join(self.repo, original),
-                os.path.join(self.home, symlink))
+                os.path.join(self.repository, original),
+                os.path.join(self.homedir, symlink))
 
 def suite():
     suite = unittest.TestLoader().loadTestsFromTestCase(DotfilesTestCase)
