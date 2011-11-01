@@ -196,6 +196,7 @@ def check_repository_exists():
             missing_default_repo()
         exit(-1)
 
+
 def update_settings(opts, key):
     global settings
 

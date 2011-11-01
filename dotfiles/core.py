@@ -13,8 +13,8 @@ import fnmatch
 
 
 __version__ = '0.4.4'
-__author__ = "Jon Bernard"
-__license__ = "GPL"
+__author__ = 'Jon Bernard'
+__license__ = 'ISC'
 
 
 class Dotfile(object):
