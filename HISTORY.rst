@@ -1,6 +1,11 @@
 History
 -------
 
+0.5.1
++++++
+
+* Fix license formatting
+
 0.5.0
 +++++
 
