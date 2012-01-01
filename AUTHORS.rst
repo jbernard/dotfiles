@@ -12,3 +12,4 @@ Patches and Suggestions
 - Anaël Beutot
 - Remco Wendt <remco@maykinmedia.nl>
 - Sebastian Rahlf
+- Reinout van Rees <reinout@vanrees.org>
