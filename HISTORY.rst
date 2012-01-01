@@ -1,6 +1,13 @@
 History
 -------
 
+0.5.2
++++++
+
+* Improve wording of "unmanaged" with "unsynced"
+* Fix adding a directory with a trailing slash
+* Mention support for directories in documentation
+
 0.5.1
 +++++
 
