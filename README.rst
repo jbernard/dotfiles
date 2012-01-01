@@ -7,6 +7,13 @@ easy, allowing you to keep all your dotfiles in a single directory.
 Hosting is up to you. Using whatever VCS you prefer, or even rsync, you can
 easily distribute your dotfiles repository across multiple hosts.
 
+The repository can be specified at runtime, so you can manage multiple
+repositories without hassle. See the Configuration_ section below for further
+details.
+
+Directories are supported as well. Any file object in your home directory that
+starts with a ``.`` is fair game.
+
 Interface
 ---------
 
@@ -14,7 +21,7 @@ Interface
     Add dotfile(s) to the repository.
 
 ``-c, --check``
-    Check for missing or unmanged dotfiles.
+    Check for missing or unsynced dotfiles.
 
 ``-l, --list``
     List currently managed dotfiles, one per line.

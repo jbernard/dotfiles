@@ -12,7 +12,7 @@ import shutil
 import fnmatch
 
 
-__version__ = '0.5.1'
+__version__ = '0.5.2'
 __author__ = 'Jon Bernard'
 __license__ = 'ISC'
 
@@ -113,7 +113,7 @@ class Dotfiles(object):
                 print dotfile
 
     def check(self):
-        """List only unmanaged and/or missing dotfiles."""
+        """List only unsynced and/or missing dotfiles."""
 
         self.list(verbose=False)
 
@@ -137,6 +137,7 @@ class Dotfiles(object):
 
     def _perform_action(self, action, files):
         for file in files:
+            file = file.rstrip('/')
             if os.path.basename(file).startswith('.'):
                 getattr(Dotfile(file, self._fqpn(file), self.homedir), action)()
             else:

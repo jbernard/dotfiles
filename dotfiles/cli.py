@@ -91,7 +91,7 @@ def add_action_group(parser):
 
     action_group.add_option("-c", "--check",
             action="store_const", dest="action", const="check",
-            help="check for broken and unmanaged dotfiles")
+            help="check for broken and unsynced dotfiles")
 
     action_group.add_option("-l", "--list",
             action="store_const", dest="action", const="list",
