@@ -7,6 +7,9 @@ easy, allowing you to keep all your dotfiles in a single directory.
 Hosting is up to you. Using whatever VCS you prefer, or even rsync, you can
 easily distribute your dotfiles repository across multiple hosts.
 
+Directories are supported as well. Any file object in your home directory that
+starts with a ``.`` is fair game.
+
 Interface
 ---------
 
