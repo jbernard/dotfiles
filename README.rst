@@ -17,7 +17,7 @@ Interface
     Add dotfile(s) to the repository.
 
 ``-c, --check``
-    Check for missing or unmanged dotfiles.
+    Check for missing or unsynced dotfiles.
 
 ``-l, --list``
     List currently managed dotfiles, one per line.

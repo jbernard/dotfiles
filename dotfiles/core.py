@@ -113,7 +113,7 @@ class Dotfiles(object):
                 print dotfile
 
     def check(self):
-        """List only unmanaged and/or missing dotfiles."""
+        """List only unsynced and/or missing dotfiles."""
 
         self.list(verbose=False)
 
