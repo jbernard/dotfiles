@@ -137,6 +137,7 @@ class Dotfiles(object):
 
     def _perform_action(self, action, files):
         for file in files:
+            file = file.rstrip('/')
             if os.path.basename(file).startswith('.'):
                 getattr(Dotfile(file, self._fqpn(file), self.homedir), action)()
             else:
