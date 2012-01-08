@@ -30,12 +30,12 @@ class Dotfile(object):
         if not os.path.lexists(self.name):
             self.status = 'missing'
         elif os.path.realpath(self.name) != self.target:
-            self.status = 'unmanaged'
+            self.status = 'unsynced'
 
     def sync(self, force):
         if self.status == 'missing':
             os.symlink(self.target, self.name)
-        elif self.status == 'unmanaged':
+        elif self.status == 'unsynced':
             if not force:
                 print "Skipping \"%s\", use --force to override" % self.basename
                 return

@@ -85,7 +85,7 @@ class DotfilesTestCase(unittest.TestCase):
                 os.path.join(self.homedir, '.bashrc'),
                 os.path.join(target, 'bashrc'))
 
-    def test_sync_unmanaged_directory_symlink(self):
+    def test_force_sync_directory_symlink(self):
         """Test a forced sync on a directory symlink.
 
         A bug was reported where a user wanted to replace a dotfile repository
