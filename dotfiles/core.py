@@ -96,7 +96,8 @@ class Dotfiles(object):
                 os.path.join(self.repository, dotfile), self.homedir))
 
         for dotfile in self.externals.keys():
-            self.dotfiles.append(Dotfile(dotfile, self.externals[dotfile],
+            self.dotfiles.append(Dotfile(dotfile,
+                os.path.expanduser(self.externals[dotfile]),
                 self.homedir))
 
     def _fqpn(self, dotfile):
