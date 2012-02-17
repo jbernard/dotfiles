@@ -97,9 +97,12 @@ class Dotfiles(object):
 
         for dotfile in self.externals.keys():
             self.dotfiles.append(Dotfile(dotfile,
-                os.path.expanduser(self.externals[dotfile]),
+                os.path.expanduser(self._expandvars(self.externals[dotfile])),
                 self.homedir))
 
+    def _expandvars(self, s):        
+        """Expand application/configuration defined variables."""
+        return s.replace("{{repository}}", self.repository)
     def _fqpn(self, dotfile):
         """Return the fully qualified path to a dotfile."""
 
