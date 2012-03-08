@@ -13,3 +13,4 @@ Patches and Suggestions
 - Remco Wendt <remco@maykinmedia.nl>
 - Sebastian Rahlf
 - Reinout van Rees <reinout@vanrees.org>
+- Daniel Harding
