@@ -37,7 +37,8 @@ class Dotfile(object):
             os.symlink(self.target, self.name)
         elif self.status == 'unsynced':
             if not force:
-                print "Skipping \"%s\", use --force to override" % self.basename
+                print("Skipping \"%s\", use --force to override"
+                        % self.basename)
                 return
             if os.path.isdir(self.name) and not os.path.islink(self.name):
                 shutil.rmtree(self.name)
@@ -47,17 +48,17 @@ class Dotfile(object):
 
     def add(self):
         if self.status == 'missing':
-            print "Skipping \"%s\", file not found" % self.basename
+            print("Skipping \"%s\", file not found" % self.basename)
             return
         if self.status == '':
-            print "Skipping \"%s\", already managed" % self.basename
+            print("Skipping \"%s\", already managed" % self.basename)
             return
         shutil.move(self.name, self.target)
         os.symlink(self.target, self.name)
 
     def remove(self):
         if self.status != '':
-            print "Skipping \"%s\", file is %s" % (self.basename, self.status)
+            print("Skipping \"%s\", file is %s" % (self.basename, self.status))
             return
         os.remove(self.name)
         shutil.move(self.target, self.name)
@@ -74,8 +75,9 @@ class Dotfiles(object):
     def __init__(self, **kwargs):
 
         # Map args from kwargs to instance-local variables
-        map(lambda k, v: (k in self.__attrs__) and setattr(self, k, v),
-                kwargs.iterkeys(), kwargs.itervalues())
+        for k, v in kwargs.items():
+            if k in self.__attrs__:
+                setattr(self, k, v)
 
         self._load()
 
@@ -111,7 +113,7 @@ class Dotfiles(object):
 
         for dotfile in sorted(self.dotfiles, key=lambda dotfile: dotfile.name):
             if dotfile.status or verbose:
-                print dotfile
+                print(dotfile)
 
     def check(self):
         """List only unsynced and/or missing dotfiles."""
@@ -142,7 +144,7 @@ class Dotfiles(object):
             if os.path.basename(file).startswith('.'):
                 getattr(Dotfile(file, self._fqpn(file), self.homedir), action)()
             else:
-                print "Skipping \"%s\", not a dotfile" % file
+                print("Skipping \"%s\", not a dotfile" % file)
 
     def move(self, target):
         """Move the repository to another location."""
