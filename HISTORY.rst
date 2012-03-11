@@ -1,6 +1,14 @@
 History
 -------
 
+0.5.3
++++++
+
+* Update remaining references to 'unmanaged'
+* Allow ~ in configuration file external targets
+* Make source compatible with Python 3
+* Add specific Python version trove classifiers
+
 0.5.2
 +++++
 

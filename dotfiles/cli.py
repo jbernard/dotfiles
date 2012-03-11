@@ -59,7 +59,7 @@ def add_global_flags(parser):
 
     parser.add_option("-f", "--force",
             action="store_true", dest="force", default=False,
-            help="ignore unmanaged dotfiles (use with --sync)")
+            help="overwrite colliding dotfiles (use with --sync)")
 
     parser.add_option("-R", "--repo",
             type="string", dest="repository",

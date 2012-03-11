@@ -30,7 +30,7 @@ Interface
     Remove dotfile(s) from the repository.
 
 ``-s, --sync``
-    Update dotfile symlinks. You can overwrite unmanaged files with ``-f`` or
+    Update dotfile symlinks. You can overwrite colliding files with ``-f`` or
     ``--force``.
 
 ``-m, --move``
