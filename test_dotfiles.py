@@ -21,16 +21,23 @@ class DotfilesTestCase(unittest.TestCase):
     def setUp(self):
         """Create a temporary home directory."""
 
-        self.homedir = tempfile.mkdtemp()
+        self.rootdir = tempfile.mkdtemp()
+
+        self.homedir = os.path.join(self.rootdir, 'home')
+        os.mkdir(self.homedir)
 
         # Create a repository for the tests to use.
         self.repository = os.path.join(self.homedir, 'Dotfiles')
         os.mkdir(self.repository)
 
+        # Create a directory for testing externals
+        self.tmpdir = os.path.join(self.rootdir, 'tmp')
+        os.mkdir(self.tmpdir)
+
     def tearDown(self):
         """Delete the temporary home directory and its contents."""
 
-        shutil.rmtree(self.homedir)
+        shutil.rmtree(self.rootdir)
 
     def assertPathEqual(self, path1, path2):
         self.assertEqual(
@@ -48,7 +55,7 @@ class DotfilesTestCase(unittest.TestCase):
         """
 
         os.mkdir(os.path.join(self.homedir, '.lastpass'))
-        externals = {'.lastpass': '/tmp'}
+        externals = {'.lastpass': self.tmpdir}
 
         dotfiles = core.Dotfiles(
                 homedir=self.homedir, repository=self.repository,
@@ -58,7 +65,7 @@ class DotfilesTestCase(unittest.TestCase):
 
         self.assertPathEqual(
                 os.path.join(self.homedir, '.lastpass'),
-                '/tmp')
+                self.tmpdir)
 
     def test_move_repository(self):
         """Test the move() method for a Dotfiles repository."""

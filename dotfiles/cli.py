@@ -180,8 +180,8 @@ def dispatch(dotfiles, action, force, args):
 
 
 def compare_path(path1, path2):
-    return (os.path.realpath(os.path.expanduser(path1)) ==
-            os.path.realpath(os.path.expanduser(path2)))
+    return os.path.samefile(os.path.expanduser(path1),
+                            os.path.expanduser(path2))
 
 
 def realpath(path):

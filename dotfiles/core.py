@@ -10,6 +10,7 @@ This module provides the basic functionality of dotfiles.
 import os
 import shutil
 import fnmatch
+import sys
 
 
 __version__ = '0.5.3'
@@ -17,24 +18,35 @@ __author__ = 'Jon Bernard'
 __license__ = 'ISC'
 
 
+if sys.platform != 'win32':
+    symlink = os.symlink
+else:
+    def symlink(source, link_name):
+        os.symlink(source, link_name, os.path.isdir(source))
+
+
+SEPARATORS = os.sep + (os.altsep if os.altsep else '')
+
+
 class Dotfile(object):
 
     def __init__(self, name, target, home):
-        if name.startswith('/'):
-            self.name = name
-        else:
-            self.name = home + '/.%s' % name.strip('.')
+        self.name = os.path.join(home, name)
         self.basename = os.path.basename(self.name)
-        self.target = target.rstrip('/')
+        self.target = target.rstrip(SEPARATORS)
         self.status = ''
         if not os.path.lexists(self.name):
             self.status = 'missing'
-        elif os.path.realpath(self.name) != self.target:
+        # need to call os.path.exists(self.name) on Windows, because
+        # os.path.samefile will throw an exception if passed a path to a broken
+        # symlink
+        elif not os.path.exists(self.name) \
+                or not os.path.samefile(self.name, self.target):
             self.status = 'unsynced'
 
     def sync(self, force):
         if self.status == 'missing':
-            os.symlink(self.target, self.name)
+            symlink(self.target, self.name)
         elif self.status == 'unsynced':
             if not force:
                 print("Skipping \"%s\", use --force to override"
@@ -44,7 +56,7 @@ class Dotfile(object):
                 shutil.rmtree(self.name)
             else:
                 os.remove(self.name)
-            os.symlink(self.target, self.name)
+            symlink(self.target, self.name)
 
     def add(self):
         if self.status == 'missing':
@@ -54,7 +66,7 @@ class Dotfile(object):
             print("Skipping \"%s\", already managed" % self.basename)
             return
         shutil.move(self.name, self.target)
-        os.symlink(self.target, self.name)
+        symlink(self.target, self.name)
 
     def remove(self):
         if self.status != '':
@@ -64,7 +76,7 @@ class Dotfile(object):
         shutil.move(self.target, self.name)
 
     def __str__(self):
-        return '%-18s %-s' % (self.name.split('/')[-1], self.status)
+        return '%-18s %-s' % (self.basename, self.status)
 
 
 class Dotfiles(object):
@@ -94,7 +106,7 @@ class Dotfiles(object):
                     fnmatch.filter(all_repofiles, pat))
 
         for dotfile in repofiles_to_symlink:
-            self.dotfiles.append(Dotfile(dotfile[len(self.prefix):],
+            self.dotfiles.append(Dotfile('.' + dotfile[len(self.prefix):],
                 os.path.join(self.repository, dotfile), self.homedir))
 
         for dotfile in self.externals.keys():
@@ -106,7 +118,7 @@ class Dotfiles(object):
         """Return the fully qualified path to a dotfile."""
 
         return os.path.join(self.repository,
-                            self.prefix + os.path.basename(dotfile).strip('.'))
+                            self.prefix + os.path.basename(dotfile)[1:])
 
     def list(self, verbose=True):
         """List the contents of this repository."""
@@ -140,7 +152,7 @@ class Dotfiles(object):
 
     def _perform_action(self, action, files):
         for file in files:
-            file = file.rstrip('/')
+            file = file.rstrip(SEPARATORS)
             if os.path.basename(file).startswith('.'):
                 getattr(Dotfile(file, self._fqpn(file), self.homedir), action)()
             else:
