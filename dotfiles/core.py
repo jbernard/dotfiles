@@ -37,7 +37,11 @@ class Dotfile(object):
         self.status = ''
         if not os.path.lexists(self.name):
             self.status = 'missing'
-        elif os.path.realpath(self.name) != self.target:
+        # need to call os.path.exists(self.name) on Windows, because
+        # os.path.samefile will throw an exception if passed a path to a broken
+        # symlink
+        elif not os.path.exists(self.name) \
+                or not os.path.samefile(self.name, self.target):
             self.status = 'unsynced'
 
     def sync(self, force):
