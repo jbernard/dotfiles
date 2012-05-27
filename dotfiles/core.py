@@ -10,11 +10,19 @@ This module provides the basic functionality of dotfiles.
 import os
 import shutil
 import fnmatch
+import sys
 
 
 __version__ = '0.5.3'
 __author__ = 'Jon Bernard'
 __license__ = 'ISC'
+
+
+if sys.platform != 'win32':
+    symlink = os.symlink
+else:
+    def symlink(source, link_name):
+        os.symlink(source, link_name, os.path.isdir(source))
 
 
 class Dotfile(object):
@@ -34,7 +42,7 @@ class Dotfile(object):
 
     def sync(self, force):
         if self.status == 'missing':
-            os.symlink(self.target, self.name)
+            symlink(self.target, self.name)
         elif self.status == 'unsynced':
             if not force:
                 print("Skipping \"%s\", use --force to override"
@@ -44,7 +52,7 @@ class Dotfile(object):
                 shutil.rmtree(self.name)
             else:
                 os.remove(self.name)
-            os.symlink(self.target, self.name)
+            symlink(self.target, self.name)
 
     def add(self):
         if self.status == 'missing':
@@ -54,7 +62,7 @@ class Dotfile(object):
             print("Skipping \"%s\", already managed" % self.basename)
             return
         shutil.move(self.name, self.target)
-        os.symlink(self.target, self.name)
+        symlink(self.target, self.name)
 
     def remove(self):
         if self.status != '':
