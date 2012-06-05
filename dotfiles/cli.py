@@ -10,7 +10,10 @@ from __future__ import absolute_import
 
 import os
 from . import core
-import ConfigParser
+try:
+    import ConfigParser as configparser
+except ImportError:
+    import configparser
 from optparse import OptionParser, OptionGroup
 
 defaults = {
@@ -31,7 +34,7 @@ settings = {
 def missing_default_repo():
     """Print a helpful message when the default repository is missing."""
 
-    print """
+    print("""
 If this is your first time running dotfiles, you must first create
 a repository.  By default, dotfiles will look for '{0}'.
 Something like:
@@ -49,7 +52,7 @@ would look like:
     repository = {0}
 
 Type 'dotfiles -h' to see detailed usage information.""".format(
-        defaults['repository'])
+        defaults['repository']))
 
 
 def add_global_flags(parser):
@@ -122,12 +125,12 @@ def parse_args():
     (opts, args) = parser.parse_args()
 
     if opts.show_version:
-        print 'dotfiles v%s' % core.__version__
+        print('dotfiles v%s' % core.__version__)
         exit(0)
 
     if not opts.action:
-        print "Error: An action is required. Type 'dotfiles -h' to see " \
-              "detailed usage information."
+        print("Error: An action is required. Type 'dotfiles -h' to see " \
+              "detailed usage information.")
         exit(-1)
 
     return (opts, args)
@@ -135,7 +138,7 @@ def parse_args():
 
 def parse_config(config_file):
 
-    parser = ConfigParser.SafeConfigParser()
+    parser = configparser.SafeConfigParser()
     parser.read(config_file)
 
     opts = {'repository': None,
@@ -146,17 +149,17 @@ def parse_config(config_file):
     for entry in ('repository', 'prefix'):
         try:
             opts[entry] = parser.get('dotfiles', entry)
-        except ConfigParser.NoOptionError:
+        except configparser.NoOptionError:
             pass
-        except ConfigParser.NoSectionError:
+        except configparser.NoSectionError:
             break
 
     for entry in ('ignore', 'externals'):
         try:
             opts[entry] = eval(parser.get('dotfiles', entry))
-        except ConfigParser.NoOptionError:
+        except configparser.NoOptionError:
             pass
-        except ConfigParser.NoSectionError:
+        except configparser.NoSectionError:
             break
 
     return opts
@@ -171,11 +174,11 @@ def dispatch(dotfiles, action, force, args):
         dotfiles.sync(force)
     elif action == 'move':
         if len(args) > 1:
-            print "Error: Move cannot handle multiple targets."
+            print("Error: Move cannot handle multiple targets.")
             exit(-1)
         dotfiles.move(args[0])
     else:
-        print "Error: Something truly terrible has happened."
+        print("Error: Something truly terrible has happened.")
         exit(-1)
 
 
@@ -190,8 +193,8 @@ def realpath(path):
 
 def check_repository_exists():
     if not os.path.exists(settings['repository']):
-        print 'Error: Could not find dotfiles repository \"%s\"' % (
-                settings['repository'])
+        print('Error: Could not find dotfiles repository \"%s\"' % (
+                settings['repository']))
         if compare_path(settings['repository'], defaults['repository']):
             missing_default_repo()
         exit(-1)
