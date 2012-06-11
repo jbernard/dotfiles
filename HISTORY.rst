@@ -1,6 +1,11 @@
 History
 -------
 
+0.5.4
++++++
+
+* More Python 3 fixes
+
 0.5.3
 +++++
 
