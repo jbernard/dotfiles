@@ -23,8 +23,8 @@ class Dotfile(object):
         if name.startswith('/'):
             self.name = name
         else:
-            self.name = home + '/.%s' % name.strip('.')
-        self.basename = os.path.basename(self.name)
+            self.name = home + '/.%s' % name.lstrip('.')
+        self.relpath = self.name[len(home):]
         self.target = target.rstrip('/')
         self.status = ''
         if not os.path.lexists(self.name):
@@ -38,7 +38,7 @@ class Dotfile(object):
         elif self.status == 'unsynced':
             if not force:
                 print("Skipping \"%s\", use --force to override"
-                        % self.basename)
+                        % self.relpath)
                 return
             if os.path.isdir(self.name) and not os.path.islink(self.name):
                 shutil.rmtree(self.name)
@@ -48,17 +48,21 @@ class Dotfile(object):
 
     def add(self):
         if self.status == 'missing':
-            print("Skipping \"%s\", file not found" % self.basename)
+            print("Skipping \"%s\", file not found" % self.relpath)
             return
         if self.status == '':
-            print("Skipping \"%s\", already managed" % self.basename)
+            print("Skipping \"%s\", already managed" % self.relpath)
             return
+
+        target_dir = os.path.dirname(self.target)
+        if not os.path.isdir(target_dir):
+            os.makedirs(target_dir)
         shutil.move(self.name, self.target)
         os.symlink(self.target, self.name)
 
     def remove(self):
         if self.status != '':
-            print("Skipping \"%s\", file is %s" % (self.basename, self.status))
+            print("Skipping \"%s\", file is %s" % (self.relpath, self.status))
             return
         os.remove(self.name)
         shutil.move(self.target, self.name)
@@ -86,7 +90,17 @@ class Dotfiles(object):
 
         self.dotfiles = list()
 
-        all_repofiles = os.listdir(self.repository)
+        all_repofiles = list()
+        for root, dirs, files in os.walk(self.repository):
+            for f in files:
+                f_rel_path = os.path.join(root, f)[len(self.repository)+1:]
+                all_repofiles.append(f_rel_path)
+            for d in dirs:
+                dotdir = self._home_fqpn(os.path.join(root, d))
+                if os.path.islink(dotdir):
+                    dirs.remove(d)
+                    d_rel_path = os.path.join(root, d)[len(self.repository)+1:]
+                    all_repofiles.append(d_rel_path)
         repofiles_to_symlink = set(all_repofiles)
 
         for pat in self.ignore:
@@ -102,11 +116,19 @@ class Dotfiles(object):
                 os.path.expanduser(self.externals[dotfile]),
                 self.homedir))
 
-    def _fqpn(self, dotfile):
-        """Return the fully qualified path to a dotfile."""
+    def _repo_fqpn(self, homepath):
+        """Return the fully qualified path to a dotfile in the repository."""
 
-        return os.path.join(self.repository,
-                            self.prefix + os.path.basename(dotfile).strip('.'))
+        dotfile_rel_path = homepath[len(self.homedir)+1:]
+        dotfile_rel_repopath = self.prefix\
+                               + dotfile_rel_path[1:] # remove leading '.'
+        return os.path.join(self.repository, dotfile_rel_repopath)
+
+    def _home_fqpn(self, repopath):
+        """Return the fully qualified path to a dotfile in the home dir."""
+
+        dotfile_rel_path = repopath[len(self.repository)+1+len(self.prefix):]
+        return os.path.join(self.homedir, '.%s' % dotfile_rel_path)
 
     def list(self, verbose=True):
         """List the contents of this repository."""
@@ -141,8 +163,9 @@ class Dotfiles(object):
     def _perform_action(self, action, files):
         for file in files:
             file = file.rstrip('/')
-            if os.path.basename(file).startswith('.'):
-                getattr(Dotfile(file, self._fqpn(file), self.homedir), action)()
+            if file[len(self.homedir)+1:].startswith('.'):
+                getattr(Dotfile(file, self._repo_fqpn(file), self.homedir),
+                        action)()
             else:
                 print("Skipping \"%s\", not a dotfile" % file)
 

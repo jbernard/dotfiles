@@ -37,6 +37,17 @@ class DotfilesTestCase(unittest.TestCase):
             os.path.realpath(path1),
             os.path.realpath(path2))
 
+    def verifyFileStatus(self, home_rel_path):
+        homepath = os.path.join(self.homedir, home_rel_path)
+        repopath = os.path.join(self.repository, home_rel_path[1:])
+
+        self.assertTrue(os.path.islink(homepath),
+                        '%s is not a symlink' % homepath)
+        self.assertTrue(not os.path.islink(repopath))
+        self.assertTrue(os.path.isfile(repopath),
+                        '%s does not exist (in repo)' % repopath)
+        self.assertPathEqual(homepath, repopath)
+
     def test_force_sync_directory(self):
         """Test forced sync when the dotfile is a directory.
 
@@ -176,6 +187,73 @@ class DotfilesTestCase(unittest.TestCase):
             self.assertPathEqual(
                 os.path.join(self.repository, original),
                 os.path.join(self.homedir, symlink))
+
+    def test_dotdir_file_add_sync_remove(self):
+        """Test that is is possible to add files in dot-directories
+        and that they are managed correctly.
+
+        This is especially usefull for applications that mix state files and
+        configuration files in their dot-directory, for instance :
+            - .unison which contains *prf and state files
+            - .lftp which contains rc (conf file) and log, cwd_history.
+        """
+        os.mkdir(os.path.join(self.homedir, '.unison'))
+        os.mkdir(os.path.join(self.homedir, '.lftp'))
+        all_repo_files = (
+            ('.vimrc', True),
+            ('.unison/home.prf', True),
+            ('.unison/are8d491ed362b0a4cf3e8d77ef3e08a1c', False),
+            ('.unison/fpe8d491ed362b0a4cf3e8d77ef3e08a1c', False),
+            ('.lftp/log', False),
+            ('.lftp/rc', True),
+            ('.lftp/cwd_history', False),
+        )
+        repo_dir = '.ikiwiki'
+
+        for homefile, in_repository in all_repo_files:
+            touch(os.path.join(self.homedir, homefile))
+        os.mkdir(os.path.join(self.homedir, repo_dir))
+
+        dotfiles = core.Dotfiles(homedir=self.homedir,
+                                 repository=self.repository,
+                                 prefix='', ignore=[], externals={})
+
+        dotfiles.add([os.path.join(self.homedir, homefile)
+                      for homefile, in_repo in all_repo_files
+                      if in_repo])
+        for homefile, in_repository in all_repo_files:
+            if in_repository:
+                self.verifyFileStatus(homefile)
+
+            for dotdir in ('.unison', '.lftp'):
+                homepath = os.path.join(self.homedir, dotdir)
+                self.assertTrue(not os.path.islink(homepath))
+                self.assertTrue(os.path.isdir(homepath))
+
+        os.unlink(os.path.join(self.homedir, '.vimrc'))
+        os.unlink(os.path.join(self.homedir, '.lftp/rc'))
+
+        os.unlink(os.path.join(self.homedir, '.unison/home.prf'))
+        touch(os.path.join(self.homedir, '.unison/home.prf'))
+
+        dotfiles._load() # refresh file states
+        dotfiles.sync()
+        for homefile in ('.vimrc', '.lftp/rc'):
+            self.verifyFileStatus(homefile)
+        self.assertTrue(not os.path.islink(os.path.join(self.homedir,
+                                                        '.unison/home.prf')))
+        self.assertTrue(os.path.isfile(os.path.join(self.homedir,
+                                       '.unison/home.prf')))
+
+        dotfiles._load() # refresh file states
+        dotfiles.sync(force=True)
+        self.verifyFileStatus('.unison/home.prf')
+
+        dotfiles.remove([os.path.join(self.homedir, '.lftp/rc')])
+        self.assertTrue(not os.path.islink(os.path.join(self.homedir,
+                                                        '.lftp/rc')))
+        self.assertTrue(os.path.isfile(os.path.join(self.homedir, '.lftp/rc')))
+
 
 def suite():
     suite = unittest.TestLoader().loadTestsFromTestCase(DotfilesTestCase)
