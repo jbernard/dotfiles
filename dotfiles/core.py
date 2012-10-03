@@ -24,7 +24,7 @@ class Dotfile(object):
             self.name = name
         else:
             self.name = home + '/.%s' % name.lstrip('.')
-        self.relpath = self.name[len(home):]
+        self.relpath = self.name[len(home)+1:]
         self.target = target.rstrip('/')
         self.status = ''
         if not os.path.lexists(self.name):
