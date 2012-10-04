@@ -20,7 +20,9 @@ defaults = {
         'prefix': '',
         'homedir': '~/',
         'repository': '~/Dotfiles',
-        'config_file': '~/.dotfilesrc'}
+        'config_file': '~/.dotfilesrc',
+        'hostname': 'all',
+}
 
 settings = {
         'prefix': None,
@@ -83,6 +85,10 @@ def add_global_flags(parser):
             type="string", dest="homedir",
             help="set home directory location (default: %s)" % (
                 defaults['homedir']))
+
+    parser.add_option("-n", "--hostname",
+            type="string", dest="hostname",
+            help="Host to apply command to (default: 'all')")
 
 
 def add_action_group(parser):
@@ -165,13 +171,13 @@ def parse_config(config_file):
     return opts
 
 
-def dispatch(dotfiles, action, force, args):
+def dispatch(dotfiles, action, force, hostname, args):
     if action in ['list', 'check']:
         getattr(dotfiles, action)()
     elif action in ['add', 'remove']:
-        getattr(dotfiles, action)(args)
+        getattr(dotfiles, action)(args, hostname)
     elif action == 'sync':
-        dotfiles.sync(force)
+        dotfiles.sync(force, hostname)
     elif action == 'move':
         if len(args) > 1:
             print("Error: Move cannot handle multiple targets.")
@@ -239,4 +245,4 @@ def main():
 
     dotfiles = core.Dotfiles(**settings)
 
-    dispatch(dotfiles, cli_opts.action, cli_opts.force, args)
+    dispatch(dotfiles, cli_opts.action, cli_opts.force, cli_opts.hostname, args)

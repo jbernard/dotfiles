@@ -8,8 +8,10 @@ This module provides the basic functionality of dotfiles.
 """
 
 import os
+import glob
 import shutil
 import fnmatch
+import socket
 
 
 __version__ = '0.5.4'
@@ -92,24 +94,63 @@ class Dotfiles(object):
 
         self._load()
 
+    def hosts_mode(self):
+        return os.path.isdir(os.path.join(self.repository, 'all.host'))
+
+    def host_dirname(self, hostname=None):
+        if hostname is None and not self.hosts_mode():
+            return self.repository
+        else:
+            if hostname is None:
+                hostname = 'all'
+            return os.path.join(self.repository, '%s.host' % hostname)
+
+    def this_host_dotfiles(self, hostname=None):
+        dotfiles = list(self.dotfiles['all']) # make a copy
+
+        if self.hosts_mode():
+            if hostname is None:
+                hostname = socket.gethostname()
+            try:
+                dotfiles.extend(self.dotfiles[hostname])
+            except KeyError:
+                pass
+
+        return dotfiles
+
     def _load(self):
         """Load each dotfile in the repository."""
 
-        self.dotfiles = list()
+        self.dotfiles = {}
+
+        if self.hosts_mode():
+            for hostdir in glob.glob("%s/*.host" % self.repository):
+                if os.path.isdir(hostdir):
+                    hostname = os.path.basename(hostdir).split('.')[0]
+                    self.dotfiles[hostname] = self._load_host(hostname)
+        else:
+             self.dotfiles['all'] = self._load_host()
+
+    def _load_host(self, hostname=None):
+        """Load each dotfile for the supplied host."""
+
+        directory = self.host_dirname(hostname)
+
+        dotfiles = list()
 
         all_repofiles = list()
-        for root, dirs, files in os.walk(self.repository):
+        for root, dirs, files in os.walk(directory):
             for f in files:
-                f_rel_path = os.path.join(root, f)[len(self.repository)+1:]
+                f_rel_path = os.path.join(root, f)[len(directory)+1:]
                 all_repofiles.append(f_rel_path)
             for d in dirs:
                 if d[0] == '.':
                     dirs.remove(d)
                     continue
-                dotdir = self._home_fqpn(os.path.join(root, d))
+                dotdir = self._home_fqpn(os.path.join(root, d), hostname)
                 if os.path.islink(dotdir):
                     dirs.remove(d)
-                    d_rel_path = os.path.join(root, d)[len(self.repository)+1:]
+                    d_rel_path = os.path.join(root, d)[len(directory)+1:]
                     all_repofiles.append(d_rel_path)
         repofiles_to_symlink = set(all_repofiles)
 
@@ -118,32 +159,35 @@ class Dotfiles(object):
                     fnmatch.filter(all_repofiles, pat))
 
         for dotfile in repofiles_to_symlink:
-            self.dotfiles.append(Dotfile(dotfile[len(self.prefix):],
-                os.path.join(self.repository, dotfile), self.homedir))
+            dotfiles.append(Dotfile(dotfile[len(self.prefix):],
+                os.path.join(directory, dotfile), self.homedir))
 
         for dotfile in self.externals.keys():
-            self.dotfiles.append(Dotfile(dotfile,
+            dotfiles.append(Dotfile(dotfile,
                 os.path.expanduser(self.externals[dotfile]),
                 self.homedir))
 
-    def _repo_fqpn(self, homepath):
+        return dotfiles
+
+    def _repo_fqpn(self, homepath, hostname=None):
         """Return the fully qualified path to a dotfile in the repository."""
 
         dotfile_rel_path = homepath[len(self.homedir)+1:]
         dotfile_rel_repopath = self.prefix\
                                + dotfile_rel_path[1:] # remove leading '.'
-        return os.path.join(self.repository, dotfile_rel_repopath)
+        return os.path.join(self.host_dirname(hostname), dotfile_rel_repopath)
 
-    def _home_fqpn(self, repopath):
+    def _home_fqpn(self, repopath, hostname=None):
         """Return the fully qualified path to a dotfile in the home dir."""
 
-        dotfile_rel_path = repopath[len(self.repository)+1+len(self.prefix):]
+        dotfile_rel_path = repopath[len(self.host_dirname(hostname))+1+len(self.prefix):]
         return os.path.join(self.homedir, '.%s' % dotfile_rel_path)
 
     def list(self, verbose=True):
         """List the contents of this repository."""
 
-        for dotfile in sorted(self.dotfiles, key=lambda dotfile: dotfile.name):
+        for dotfile in sorted(self.this_host_dotfiles(),
+                              key=lambda dotfile: dotfile.name):
             if dotfile.status or verbose:
                 print(dotfile)
 
@@ -152,29 +196,31 @@ class Dotfiles(object):
 
         self.list(verbose=False)
 
-    def sync(self, force=False):
+    def sync(self, force=False, hostname=None):
 
         """Synchronize this repository, creating and updating the necessary
         symbolic links."""
 
-        for dotfile in self.dotfiles:
+        for dotfile in self.this_host_dotfiles(hostname):
             dotfile.sync(force)
 
-    def add(self, files):
+    def add(self, files, hostname=None):
         """Add dotfile(s) to the repository."""
 
-        self._perform_action('add', files)
+        self._perform_action('add', hostname, files)
 
-    def remove(self, files):
+    def remove(self, files, hostname=None):
         """Remove dotfile(s) from the repository."""
 
-        self._perform_action('remove', files)
+        self._perform_action('remove', hostname, files)
 
-    def _perform_action(self, action, files):
+    def _perform_action(self, action, hostname, files):
         for file in files:
             file = file.rstrip('/')
+            file = os.path.abspath(os.path.expanduser(file))
             if file[len(self.homedir)+1:].startswith('.'):
-                getattr(Dotfile(file, self._repo_fqpn(file), self.homedir),
+                getattr(Dotfile(file, self._repo_fqpn(file, hostname),
+                                self.homedir),
                         action)()
             else:
                 print("Skipping \"%s\", not a dotfile" % file)

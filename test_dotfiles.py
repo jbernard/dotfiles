@@ -37,9 +37,13 @@ class DotfilesTestCase(unittest.TestCase):
             os.path.realpath(path1),
             os.path.realpath(path2))
 
-    def verifyFileStatus(self, home_rel_path):
+    def verifyFileStatus(self, home_rel_path, host=None):
         homepath = os.path.join(self.homedir, home_rel_path)
-        repopath = os.path.join(self.repository, home_rel_path[1:])
+        if host is None:
+            repopath = os.path.join(self.repository, home_rel_path[1:])
+        else:
+            repopath = os.path.join(self.repository, '%s.host' % host,
+                                    home_rel_path[1:])
 
         self.assertTrue(os.path.islink(homepath),
                         '%s is not a symlink' % homepath)
@@ -253,6 +257,49 @@ class DotfilesTestCase(unittest.TestCase):
         self.assertTrue(not os.path.islink(os.path.join(self.homedir,
                                                         '.lftp/rc')))
         self.assertTrue(os.path.isfile(os.path.join(self.homedir, '.lftp/rc')))
+
+    def test_hosts_mode(self):
+        """Test that host mode behaves correctly."""
+
+        all_repo_files = (
+            ('.vimrc', 'all'),
+            ('.mozilla', 'guiworkstation'),
+        )
+
+        for homefile, host in all_repo_files:
+            touch(os.path.join(self.homedir, homefile))
+
+        os.makedirs(os.path.join(self.homedir, self.repository, 'all.host'))
+
+        dotfiles = core.Dotfiles(homedir=self.homedir,
+                                 repository=self.repository,
+                                 prefix='', ignore=[], externals={})
+        self.assertTrue(dotfiles.hosts_mode())
+
+        for homefile, host in all_repo_files:
+            dotfiles.add([os.path.join(self.homedir, homefile)], host)
+            self.verifyFileStatus(homefile, host)
+
+        for homefile, host in all_repo_files:
+            os.unlink(os.path.join(self.homedir, homefile))
+
+        dotfiles._load()
+        dotfiles.sync()
+        self.verifyFileStatus('.vimrc', 'all')
+        self.assertTrue(not os.path.exists(os.path.join(self.homedir, '.mozilla')))
+
+        dotfiles._load()
+        dotfiles.sync(hostname='guiworkstation')
+        self.assertTrue(os.path.exists(os.path.join(self.homedir, '.mozilla')))
+
+        dotfiles._load()
+        dotfiles.remove([os.path.join(self.homedir, '.mozilla')],
+                        'guiworkstation')
+
+        dotfiles._load()
+        dotfiles.sync(hostname='guiworkstation')
+        self.verifyFileStatus('.vimrc', 'all')
+        self.assertTrue(not os.path.islink(os.path.join(self.homedir, '.mozilla')))
 
 
 def suite():

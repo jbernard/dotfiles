@@ -143,6 +143,27 @@ I have the following in my ``~/.dotfilesrc``: ::
 Any file you list in ``ignore`` will be skipped. The ``ignore`` option supports
 glob file patterns.
 
+Hosts
+-----
+
+Host mode is activated when your repository contains a ``all.host`` directory.
+Migrating to host mode consists in the following: ::
+
+  $ mkdir all.host
+  $ mv ~/Dotfiles/* all.host
+  $ mv all.host ~/Dotfiles/
+
+Now, adding a file will link to the ``~/Dotfiles/all.host`` directory by
+default. ::
+
+  $ dotfiles --add ~/.vimrc # adds to ~/Dotfiles/all.host
+  $ dotfiles -n guiworkstation --add ~/.mozilla # adds to ~/Dotfiles/guiworkstation.host
+
+Syncing will always include the special ``all`` host and eventually the one
+supplied on the command line: ::
+
+  $ dotfiles -n guiworkstation --sync # syncs ~/.mozilla and ~/.vimrc
+
 Contribute
 ----------
 
