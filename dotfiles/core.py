@@ -96,6 +96,9 @@ class Dotfiles(object):
                 f_rel_path = os.path.join(root, f)[len(self.repository)+1:]
                 all_repofiles.append(f_rel_path)
             for d in dirs:
+                if d[0] == '.':
+                    dirs.remove(d)
+                    continue
                 dotdir = self._home_fqpn(os.path.join(root, d))
                 if os.path.islink(dotdir):
                     dirs.remove(d)
