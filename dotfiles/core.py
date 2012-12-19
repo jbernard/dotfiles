@@ -19,6 +19,7 @@ __license__ = 'ISC'
 
 if hasattr(os, 'symlink'):
     symlink = os.symlink
+    islink = os.path.islink
     realpath = os.path.realpath
 else:
     # Windows symlinks -- ctypes version
