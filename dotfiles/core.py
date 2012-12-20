@@ -55,7 +55,9 @@ else:
 
     kdll = windll.LoadLibrary("kernel32.dll")
     CreateSymbolicLinkA = windll.kernel32.CreateSymbolicLinkA
+    CreateSymbolicLinkA.restype = wintypes.BOOLEAN
     CreateSymbolicLinkW = windll.kernel32.CreateSymbolicLinkW
+    CreateSymbolicLinkW.restype = wintypes.BOOLEAN
     GetFileAttributesA = windll.kernel32.GetFileAttributesA
     GetFileAttributesW = windll.kernel32.GetFileAttributesW
     CloseHandle = windll.kernel32.CloseHandle
@@ -81,7 +83,10 @@ else:
         else:
             stat = CreateSymbolicLinkA(name, target, is_dir)
         if win32_verbose:
-            print "CreateSymbolicLink(name=%s, target=%s, is_dir=%d) = %s"%(name,target,is_dir, stat)
+            print "CreateSymbolicLink(name=%s, target=%s, is_dir=%d) = %#x"%(name,target,is_dir, stat)
+        if not stat:
+            print "Can't create symlink %s -> %s"%(name, target)
+            raise ctypes.WinError()
 
     def symlink(target, name):
         CreateSymbolicLink(name, target, 0)
@@ -211,8 +216,10 @@ else:
 
 
 def is_link_to(path, target):
+    def normalize(path):
+        return os.path.normcase(os.path.normpath(path))
     return islink(path) and \
-        realpath(path) == os.path.normpath(target)
+        normalize(realpath(path)) == normalize(target)
 
 class Dotfile(object):
 
