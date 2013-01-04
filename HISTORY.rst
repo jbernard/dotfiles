@@ -1,6 +1,11 @@
 History
 -------
 
+0.5.5
++++++
+
+* Add support for Windows symlinks with Python 2
+
 0.5.4
 +++++
 
