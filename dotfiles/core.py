@@ -85,9 +85,9 @@ else:
         else:
             stat = CreateSymbolicLinkA(name, target, is_dir)
         if win32_verbose:
-            print "CreateSymbolicLink(name=%s, target=%s, is_dir=%d) = %#x"%(name,target,is_dir, stat)
+            print("CreateSymbolicLink(name=%s, target=%s, is_dir=%d) = %#x"%(name,target,is_dir, stat))
         if not stat:
-            print "Can't create symlink %s -> %s"%(name, target)
+            print("Can't create symlink %s -> %s"%(name, target))
             raise ctypes.WinError()
 
     def symlink(target, name):
@@ -103,7 +103,7 @@ else:
         assert path
         has_link_attr = GetFileAttributes(path) & FILE_ATTRIBUTE_REPARSE_POINT
         if win32_verbose:
-            print "islink(%s): attrs=%#x: %s"%(path, GetFileAttributes(path), has_link_attr != 0)
+            print("islink(%s): attrs=%#x: %s"%(path, GetFileAttributes(path), has_link_attr != 0))
         return has_link_attr != 0
 
     def DeviceIoControl(hDevice, ioControlCode, input, output):
@@ -121,7 +121,7 @@ else:
         status = _DevIoCtl(hDevice, ioControlCode, input,
                            input_size, output, output_size, bytesReturned, None)
         if win32_verbose:
-            print "DeviceIOControl: status = %d" % status
+            print("DeviceIOControl: status = %d" % status)
         if status != 0:
             return output[:bytesReturned.value]
         else:
@@ -142,7 +142,7 @@ else:
         # This wouldn't return true if the file didn't exist, as far as I know.
         if not islink(path):
             if win32_verbose:
-                print "readlink(%s): not a link."%path
+                print("readlink(%s): not a link."%path)
             return None
 
         # Open the file correctly depending on the string type.
@@ -155,7 +155,7 @@ else:
         # Minimum possible length (assuming length of the target is bigger than 0)
         if not buffer or len(buffer) < 9:
             if win32_verbose:
-                print "readlink(%s): no reparse buffer."%path
+                print("readlink(%s): no reparse buffer."%path)
             return None
 
         # Parse and return our result.
@@ -194,16 +194,16 @@ else:
         start = SubstituteNameOffset + SymbolicLinkReparseSize
         actualPath = buffer[start : start + SubstituteNameLength].decode("utf-16")
         # This utf-16 string is null terminated
-        index = actualPath.find(u"\0")
+        index = actualPath.find("\0")
         if index > 0:
             actualPath = actualPath[:index]
-        if actualPath.startswith(u"\\??\\"): # ASCII 92, 63, 63, 92
+        if actualPath.startswith("\\??\\"): # ASCII 92, 63, 63, 92
             ret = actualPath[4:]             # strip off leading junk
         else:
             ret = actualPath
         if win32_verbose:
-            print "readlink(%s->%s->%s): index(null) = %d"%\
-                (path,repr(actualPath),repr(ret),index)
+            print("readlink(%s->%s->%s): index(null) = %d"%\
+                (path,repr(actualPath),repr(ret),index))
         return ret
 
     def realpath(fpath):
