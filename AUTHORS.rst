@@ -15,3 +15,4 @@ Patches and Suggestions
 - Reinout van Rees <reinout@vanrees.org>
 - Daniel Harding
 - Gary Oberbrunner
+- Alexandre Rossi <alexandre.rossi@gmail.com>
