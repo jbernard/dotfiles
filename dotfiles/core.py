@@ -217,12 +217,13 @@ class Dotfiles(object):
 
     def move(self, target):
         """Move the repository to another location."""
+        target = realpath_expanduser(target)
 
         if os.path.exists(target):
             raise ValueError('Target already exists: %s' % (target))
         
         if not self.dry_run:
-            shutil.copytree(self.repository, target)
+            shutil.copytree(self.repository, target, symlinks=True)
             shutil.rmtree(self.repository)
         else:
             print("Recursive copy %s => %s" % (self.repository, target))
