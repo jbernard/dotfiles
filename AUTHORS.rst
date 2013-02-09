@@ -16,3 +16,4 @@ Patches and Suggestions
 - Daniel Harding
 - Gary Oberbrunner
 - Alexandre Rossi <alexandre.rossi@gmail.com>
+- Luper Rouch <luper.rouch@gmail.com>
