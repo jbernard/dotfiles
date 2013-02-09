@@ -16,6 +16,9 @@ except ImportError:
     import configparser
 from optparse import OptionParser, OptionGroup
 
+from dotfiles.utils import compare_path, realpath_expanduser
+
+
 defaults = {
         'prefix': '',
         'homedir': '~/',
@@ -28,7 +31,8 @@ settings = {
         'repository': None,
         'config_file': None,
         'ignore': set(['.dotfilesrc']),
-        'externals': dict()}
+        'externals': dict(),
+        'packages': set()}
 
 
 def missing_default_repo():
@@ -83,6 +87,10 @@ def add_global_flags(parser):
             type="string", dest="homedir",
             help="set home directory location (default: %s)" % (
                 defaults['homedir']))
+
+    parser.add_option("-d", "--dry-run",
+            action="store_true", default=False,
+            help="don't modify anything, just print commands")
 
 
 def add_action_group(parser):
@@ -144,7 +152,8 @@ def parse_config(config_file):
     opts = {'repository': None,
             'prefix': None,
             'ignore': set(),
-            'externals': dict()}
+            'externals': dict(),
+            'packages': set()}
 
     for entry in ('repository', 'prefix'):
         try:
@@ -154,7 +163,7 @@ def parse_config(config_file):
         except configparser.NoSectionError:
             break
 
-    for entry in ('ignore', 'externals'):
+    for entry in ('ignore', 'externals', 'packages'):
         try:
             opts[entry] = eval(parser.get('dotfiles', entry))
         except configparser.NoOptionError:
@@ -182,15 +191,6 @@ def dispatch(dotfiles, action, force, args):
         exit(-1)
 
 
-def compare_path(path1, path2):
-    return (os.path.realpath(os.path.expanduser(path1)) ==
-            os.path.realpath(os.path.expanduser(path2)))
-
-
-def realpath(path):
-    return os.path.realpath(os.path.expanduser(path))
-
-
 def check_repository_exists():
     if not os.path.exists(settings['repository']):
         print('Error: Could not find dotfiles repository \"%s\"' % (
@@ -212,19 +212,21 @@ def main():
 
     (cli_opts, args) = parse_args()
 
-    settings['homedir'] = realpath(cli_opts.homedir or defaults['homedir'])
-    settings['config_file'] = realpath(cli_opts.config_file or
+    settings['homedir'] = realpath_expanduser(cli_opts.homedir or 
+            defaults['homedir'])
+    settings['config_file'] = realpath_expanduser(cli_opts.config_file or
             defaults['config_file'])
 
     config_opts = parse_config(settings['config_file'])
 
-    settings['repository'] = realpath(cli_opts.repository or
+    settings['repository'] = realpath_expanduser(cli_opts.repository or
             config_opts['repository'] or defaults['repository'])
 
     check_repository_exists()
 
     update_settings(config_opts, 'ignore')
     update_settings(config_opts, 'externals')
+    update_settings(config_opts, 'packages')
 
     repo_config_file = os.path.join(settings['repository'], '.dotfilesrc')
     repo_config_opts = parse_config(repo_config_file)
@@ -234,8 +236,11 @@ def main():
                           config_opts['prefix'] or
                           defaults['prefix'])
 
+    settings['dry_run'] = cli_opts.dry_run
+
     update_settings(repo_config_opts, 'ignore')
     update_settings(repo_config_opts, 'externals')
+    update_settings(repo_config_opts, 'packages')
 
     dotfiles = core.Dotfiles(**settings)
 
