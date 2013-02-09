@@ -52,7 +52,8 @@ class DotfilesTestCase(unittest.TestCase):
 
         dotfiles = core.Dotfiles(
                 homedir=self.homedir, repository=self.repository,
-                prefix='', ignore=[], externals=externals)
+                prefix='', ignore=[], externals=externals, packages=[],
+                dry_run=False)
 
         dotfiles.sync(force=True)
 
@@ -67,7 +68,8 @@ class DotfilesTestCase(unittest.TestCase):
 
         dotfiles = core.Dotfiles(
                 homedir=self.homedir, repository=self.repository,
-                prefix='', ignore=[], force=True, externals={})
+                prefix='', ignore=[], force=True, externals={}, packages=[],
+                dry_run=False)
 
         dotfiles.sync()
 
@@ -111,7 +113,7 @@ class DotfilesTestCase(unittest.TestCase):
 
         dotfiles = core.Dotfiles(
                 homedir=self.homedir, repository=self.repository,
-                prefix='', ignore=[], externals={})
+                prefix='', ignore=[], externals={}, packages=[], dry_run=False)
 
         dotfiles.sync(force=True)
 
@@ -161,7 +163,8 @@ class DotfilesTestCase(unittest.TestCase):
 
         dotfiles = core.Dotfiles(
                 homedir=self.homedir, repository=self.repository,
-                prefix='', ignore=ignore, externals={})
+                prefix='', ignore=ignore, externals={}, packages=[],
+                dry_run=False)
 
         dotfiles.sync()
 
@@ -176,6 +179,8 @@ class DotfilesTestCase(unittest.TestCase):
             self.assertPathEqual(
                 os.path.join(self.repository, original),
                 os.path.join(self.homedir, symlink))
+        
+
 
 def suite():
     suite = unittest.TestLoader().loadTestsFromTestCase(DotfilesTestCase)
