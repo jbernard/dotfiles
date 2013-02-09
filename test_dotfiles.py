@@ -208,7 +208,7 @@ class DotfilesTestCase(unittest.TestCase):
 
         # Verify it created what we expect
         def check_all(files, symlinks):
-            self.assertTrue(join(self.homedir, '.package'))
+            self.assertTrue(os.path.isdir(join(self.homedir, '.package')))
             for src, dst in zip(files, symlinks):
                 self.assertTrue(is_link_to(join(self.homedir, dst),
                     join(self.repository, src)))
