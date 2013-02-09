@@ -1,14 +1,7 @@
-Dotfiles is written and maintained by Jon Bernard and various contributors:
-
-Development
-```````````
+Dotfiles was written by Jon Bernard and is developed and maintained by the
+following folks:
 
 - Jon Bernard <jbernard@tuxion.com>
-
-
-Patches and Suggestions
-```````````````````````
-
 - Anaël Beutot
 - Remco Wendt <remco@maykinmedia.nl>
 - Sebastian Rahlf
