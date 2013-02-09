@@ -9,6 +9,7 @@ import tempfile
 import unittest
 
 from dotfiles import core
+from dotfiles.utils import is_link_to
 
 
 def touch(fname, times=None):
@@ -180,6 +181,56 @@ class DotfilesTestCase(unittest.TestCase):
                 os.path.join(self.repository, original),
                 os.path.join(self.homedir, symlink))
         
+    def test_packages(self):
+        """
+        Test packages.
+        """
+        files = ['foo', 'package/bar']
+        symlinks = ['.foo', '.package/bar']
+        join = os.path.join
+
+        # Create files
+        for filename in files:
+            path = join(self.repository, filename)
+            dirname = os.path.dirname(path)
+            if not os.path.exists(dirname):
+                os.makedirs(dirname)
+            touch(path)
+
+        # Create Dotiles object
+        dotfiles = core.Dotfiles(
+                homedir=self.homedir, repository=self.repository,
+                prefix='', ignore=[], externals={}, packages=['package'],
+                dry_run=False)
+
+        # Create symlinks in homedir
+        dotfiles.sync()
+
+        # Verify it created what we expect
+        def check_all(files, symlinks):
+            self.assertTrue(join(self.homedir, '.package'))
+            for src, dst in zip(files, symlinks):
+                self.assertTrue(is_link_to(join(self.homedir, dst),
+                    join(self.repository, src)))
+        check_all(files, symlinks)
+
+        # Add files to the repository
+        new_files = [join(self.homedir, f) for f in ['.bar', '.package/foo']]
+        for filename in new_files:
+            path = join(self.homedir, filename)
+            touch(path)
+        new_repo_files = ['bar', 'package/foo']
+        dotfiles.add(new_files)
+        check_all(files + new_repo_files, symlinks + new_files)
+
+        # Remove them from the repository
+        dotfiles.remove(new_files)
+        check_all(files, symlinks)
+
+        # Move the repository
+        self.repository = join(self.homedir, 'Dotfiles2')
+        dotfiles.move(self.repository)
+        check_all(files, symlinks)
 
 
 def suite():
