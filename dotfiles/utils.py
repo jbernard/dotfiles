@@ -19,5 +19,4 @@ def is_link_to(path, target):
     def normalize(path):
         return os.path.normcase(os.path.normpath(path))
     return islink(path) and \
-        normalize(realpath(path)) == normalize(target)
-
+        normalize(realpath(path)) == normalize(realpath(target))
