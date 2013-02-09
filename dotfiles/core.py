@@ -230,5 +230,6 @@ class Dotfiles(object):
 
         self.repository = target
 
-        self._load()
-        self.sync(force=True)
+        if not self.dry_run:
+            self._load()
+            self.sync(force=True)
