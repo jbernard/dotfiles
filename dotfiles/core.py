@@ -12,7 +12,7 @@ import os.path
 import shutil
 import fnmatch
 
-from dotfiles.utils import realpath_expanduser, compare_path, is_link_to
+from dotfiles.utils import realpath_expanduser, is_link_to
 from dotfiles.compat import symlink
 
 
@@ -42,6 +42,9 @@ class Dotfile(object):
 
     def _symlink(self, target, name):
         if not self.dry_run:
+            dirname = os.path.dirname(name)
+            if not os.path.isdir(dirname):
+                os.makedirs(dirname)
             symlink(target, name)
         else:
             print("Creating symlink %s => %s" % (target, name))
