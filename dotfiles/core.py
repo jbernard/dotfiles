@@ -155,10 +155,12 @@ class Dotfiles(object):
                     os.path.join(src_dir, dotfile), dst_dir, 
                     add_dot=not bool(sub_dir), dry_run=self.dry_run))
 
-        for dotfile in self.externals.keys():
-            self.dotfiles.append(Dotfile(dotfile,
-                os.path.expanduser(self.externals[dotfile]),
-                dst_dir, add_dot=not bool(sub_dir), dry_run=self.dry_run))
+        # Externals are top-level only
+        if not sub_dir:
+            for dotfile in self.externals.keys():
+                self.dotfiles.append(Dotfile(dotfile,
+                    os.path.expanduser(self.externals[dotfile]),
+                    dst_dir, add_dot=not bool(sub_dir), dry_run=self.dry_run))
 
     def _fqpn(self, dotfile, pkg_name=None):
         """Return the fully qualified path to a dotfile."""
