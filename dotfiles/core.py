@@ -138,7 +138,7 @@ class Dotfiles(object):
             dst_dir = os.path.join(self.homedir, '.%s' % sub_dir)
         else:
             dst_dir = os.path.join(self.homedir, sub_dir)
-        
+
         all_repofiles = os.listdir(src_dir)
         repofiles_to_symlink = set(all_repofiles)
 
@@ -224,7 +224,7 @@ class Dotfiles(object):
 
         if os.path.exists(target):
             raise ValueError('Target already exists: %s' % (target))
-        
+
         if not self.dry_run:
             shutil.copytree(self.repository, target, symlinks=True)
             shutil.rmtree(self.repository)
