@@ -16,7 +16,7 @@ from dotfiles.utils import realpath_expanduser, is_link_to
 from dotfiles.compat import symlink
 
 
-__version__ = '0.5.6'
+__version__ = '0.6.0'
 __author__ = 'Jon Bernard'
 __license__ = 'ISC'
 
