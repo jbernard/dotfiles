@@ -1,6 +1,13 @@
 History
 -------
 
+0.6.0
++++++
+
+* Add "packages" feature
+* Add --dry-run option
+* Much needed code cleanup
+
 0.5.6
 +++++
 
