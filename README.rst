@@ -36,6 +36,9 @@ Interface
 ``-m, --move``
     Move dotfiles repository to another location.
 
+For all commands you can use the ``--dry-run`` option, which will print actions
+and won't modify anything on your drive.
+
 Installation
 ------------
 
@@ -142,6 +145,31 @@ I have the following in my ``~/.dotfilesrc``: ::
 
 Any file you list in ``ignore`` will be skipped. The ``ignore`` option supports
 glob file patterns.
+
+Packages
+--------
+
+Many programs store their configuration in ``~/.config``. It's quite cluttered
+and you probably don't want to keep all its content in your repository. For this
+situation you can use the ``packages`` setting::
+
+    [dotfiles]
+    packages = ['config']
+
+This tells ``dotfiles`` that the contents of the ``config`` subdirectory of
+your repository must be symlinked to ``~/.config``. If for example you have a
+directory ``config/awesome`` in your repository, it will be symlinked to
+``~/.config/awesome``.
+
+This feature allows one additional level of nesting, but further subdirectories
+are not eligible for being a package.  For example, ``config`` is valid, but
+``config/transmission`` is not valid.  Arbitrary nesting is a feature under
+current consideration.
+
+At the moment, packages can not be added or removed through the command line
+interface.  They must be constructed and configured manually.  Once this is
+done, ``sync``, ``list``, ``check``, and ``move`` will do the right thing.
+Support for ``add`` and ``remove`` is a current TODO item.
 
 Contribute
 ----------
