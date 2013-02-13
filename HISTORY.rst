@@ -1,6 +1,11 @@
 History
 -------
 
+0.5.6
++++++
+
+* Restore python 3 compatibility
+
 0.5.5
 +++++
 
