@@ -202,7 +202,7 @@ class Dotfiles(object):
 
     def _perform_action(self, action, files):
         for file in files:
-            file = file.rstrip('/')
+            file = os.path.abspath(file).rstrip('/')
             # See if file is inside a package
             file_dir, file_name = os.path.split(file)
             common_prefix = os.path.commonprefix([self.homedir, file_dir])
