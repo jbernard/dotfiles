@@ -212,7 +212,7 @@ def main():
 
     (cli_opts, args) = parse_args()
 
-    settings['homedir'] = realpath_expanduser(cli_opts.homedir or 
+    settings['homedir'] = realpath_expanduser(cli_opts.homedir or
             defaults['homedir'])
     settings['config_file'] = realpath_expanduser(cli_opts.config_file or
             defaults['config_file'])

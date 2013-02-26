@@ -180,7 +180,7 @@ class DotfilesTestCase(unittest.TestCase):
             self.assertPathEqual(
                 os.path.join(self.repository, original),
                 os.path.join(self.homedir, symlink))
-        
+
     def test_packages(self):
         """
         Test packages.
@@ -197,7 +197,7 @@ class DotfilesTestCase(unittest.TestCase):
                 os.makedirs(dirname)
             touch(path)
 
-        # Create Dotiles object
+        # Create Dotfiles object
         dotfiles = core.Dotfiles(
                 homedir=self.homedir, repository=self.repository,
                 prefix='', ignore=[], externals={}, packages=['package'],
