@@ -152,7 +152,7 @@ class Dotfiles(object):
                 self._load_recursive(pkg_path)
             else:
                 self.dotfiles.append(Dotfile(dotfile[len(self.prefix):],
-                    os.path.join(src_dir, dotfile), dst_dir, 
+                    os.path.join(src_dir, dotfile), dst_dir,
                     add_dot=not bool(sub_dir), dry_run=self.dry_run))
 
         # Externals are top-level only
@@ -202,7 +202,7 @@ class Dotfiles(object):
 
     def _perform_action(self, action, files):
         for file in files:
-            file = file.rstrip('/')
+            file = os.path.abspath(file).rstrip('/')
             # See if file is inside a package
             file_dir, file_name = os.path.split(file)
             common_prefix = os.path.commonprefix([self.homedir, file_dir])
