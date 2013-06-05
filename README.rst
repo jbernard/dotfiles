@@ -4,8 +4,8 @@ Dotfile management made easy
 ``dotfiles`` is a tool to make managing your dotfile symlinks in ``$HOME``
 easy, allowing you to keep all your dotfiles in a single directory.
 
-Hosting is up to you. Using whatever VCS you prefer, or even rsync, you can
-easily distribute your dotfiles repository across multiple hosts.
+Hosting is up to you. You can use a VCS like git, Dropbox, or even rsync to
+distribute your dotfiles repository across multiple hosts.
 
 The repository can be specified at runtime, so you can manage multiple
 repositories without hassle. See the Configuration_ section below for further
