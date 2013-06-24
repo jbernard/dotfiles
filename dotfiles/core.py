@@ -182,7 +182,7 @@ class Dotfiles(object):
 
         self.list(verbose=False)
 
-    def sync(self, force=False):
+    def sync(self, files=None, force=False):
 
         """Synchronize this repository, creating and updating the necessary
         symbolic links."""
