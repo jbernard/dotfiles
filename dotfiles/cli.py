@@ -177,10 +177,8 @@ def parse_config(config_file):
 def dispatch(dotfiles, action, force, args):
     if action in ['list', 'check']:
         getattr(dotfiles, action)()
-    elif action in ['add', 'remove']:
+    elif action in ['add', 'remove', 'sync']:
         getattr(dotfiles, action)(args)
-    elif action == 'sync':
-        dotfiles.sync(force)
     elif action == 'move':
         if len(args) > 1:
             print("Error: Move cannot handle multiple targets.")
