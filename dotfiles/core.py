@@ -187,7 +187,11 @@ class Dotfiles(object):
         """Synchronize this repository, creating and updating the necessary
         symbolic links."""
 
-        for dotfile in self.dotfiles:
+        # unless a set of files is specified, operate on all files
+        if not files:
+            files = self.dotfiles
+
+        for dotfile in files:
             dotfile.sync(force)
 
     def add(self, files):
