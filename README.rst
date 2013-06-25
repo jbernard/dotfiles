@@ -35,9 +35,10 @@ Interface
 ``-r, --remove <file...>``
     Remove dotfile(s) from the repository.
 
-``-s, --sync``
+``-s, --sync <file...>``
     Update dotfile symlinks. You can overwrite colliding files with ``-f`` or
-    ``--force``.
+    ``--force``.  All dotfiles are assumed if you do not specify any files to
+    this command.
 
 ``-m, --move``
     Move dotfiles repository to another location.
