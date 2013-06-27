@@ -232,6 +232,27 @@ class DotfilesTestCase(unittest.TestCase):
         dotfiles.move(self.repository)
         check_all(files, symlinks)
 
+    def test_missing_package(self):
+        """
+        Test a non-existent package.
+        """
+
+        package_file = '.package/bar'
+
+        # Create Dotfiles object
+        dotfiles = core.Dotfiles(
+                homedir=self.homedir, repository=self.repository,
+                prefix='', ignore=[], externals={}, packages=['package'],
+                dry_run=False)
+
+        path = os.path.join(self.homedir, package_file)
+        dirname = os.path.dirname(path)
+        if not os.path.exists(dirname):
+            os.makedirs(dirname)
+        touch(path)
+
+        dotfiles.add([os.path.join(self.homedir, package_file)])
+
 
 def suite():
     suite = unittest.TestLoader().loadTestsFromTestCase(DotfilesTestCase)
