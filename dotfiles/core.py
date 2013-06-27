@@ -211,6 +211,9 @@ class Dotfiles(object):
             if pkg_name in self.packages:
                 home = os.path.join(self.homedir, sub_dir)
                 target = self._fqpn(file, pkg_name=pkg_name)
+                dirname = os.path.dirname(target)
+                if not os.path.exists(dirname):
+                    os.makedirs(dirname)
             else:
                 home = self.homedir
                 target = self._fqpn(file)
