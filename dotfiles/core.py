@@ -189,9 +189,14 @@ class Dotfiles(object):
 
         # unless a set of files is specified, operate on all files
         if not files:
-            files = self.dotfiles
+            dotfiles = self.dotfiles
+        else:
+            files = map(lambda x: os.path.join(self.homedir, x), files)
+            dotfiles = [x for x in self.dotfiles if x.name in files]
+            if not dotfiles:
+                raise Exception("file not found")
 
-        for dotfile in files:
+        for dotfile in dotfiles:
             dotfile.sync(force)
 
     def add(self, files):
