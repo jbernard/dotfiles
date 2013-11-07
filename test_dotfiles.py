@@ -301,9 +301,5 @@ class DotfilesTestCase(unittest.TestCase):
                     os.path.join(self.homedir, dotfile)))
 
 
-def suite():
-    suite = unittest.TestLoader().loadTestsFromTestCase(DotfilesTestCase)
-    return suite
-
 if __name__ == '__main__':
-    unittest.TextTestRunner().run(suite())
+    unittest.main()
