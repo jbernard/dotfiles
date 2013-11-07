@@ -182,9 +182,9 @@ Support for ``add`` and ``remove`` is a current TODO item.
 Contribute
 ----------
 
-If you'd like to contribute, simply fork `the repository`_, commit your
-changes to the **develop** branch (or branch off of it), and send a pull
-request. Make sure you add yourself to AUTHORS_.
+If you'd like to contribute, simply fork `the repository`_, commit your changes,
+make sure tests pass, and send a pull request. Go ahead and add yourself to
+AUTHORS_ or I'll do it when I merge your changes.
 
 .. _`the repository`: https://github.com/jbernard/dotfiles
 .. _AUTHORS: https://github.com/jbernard/dotfiles/blob/master/AUTHORS.rst
