@@ -40,8 +40,9 @@ Interface
     ``--force``.  All dotfiles are assumed if you do not specify any files to
     this command.
 
-``-m, --move``
-    Move dotfiles repository to another location.
+``-m, --move <path>``
+    Move dotfiles repository to another location, updating all symlinks in the
+    process.
 
 For all commands you can use the ``--dry-run`` option, which will print actions
 and won't modify anything on your drive.
