@@ -152,7 +152,7 @@ class Dotfiles(object):
                 self._load_recursive(pkg_path)
             else:
                 self.dotfiles.append(Dotfile(dotfile[len(self.prefix):],
-                    os.path.join(src_dir, dotfile), dst_dir, 
+                    os.path.join(src_dir, dotfile), dst_dir,
                     add_dot=not bool(sub_dir), dry_run=self.dry_run))
 
         # Externals are top-level only
@@ -182,12 +182,21 @@ class Dotfiles(object):
 
         self.list(verbose=False)
 
-    def sync(self, force=False):
+    def sync(self, files=None, force=False):
 
         """Synchronize this repository, creating and updating the necessary
         symbolic links."""
 
-        for dotfile in self.dotfiles:
+        # unless a set of files is specified, operate on all files
+        if not files:
+            dotfiles = self.dotfiles
+        else:
+            files = map(lambda x: os.path.join(self.homedir, x), files)
+            dotfiles = [x for x in self.dotfiles if x.name in files]
+            if not dotfiles:
+                raise Exception("file not found")
+
+        for dotfile in dotfiles:
             dotfile.sync(force)
 
     def add(self, files):
@@ -211,6 +220,9 @@ class Dotfiles(object):
             if pkg_name in self.packages:
                 home = os.path.join(self.homedir, sub_dir)
                 target = self._fqpn(file, pkg_name=pkg_name)
+                dirname = os.path.dirname(target)
+                if not os.path.exists(dirname):
+                    os.makedirs(dirname)
             else:
                 home = self.homedir
                 target = self._fqpn(file)

@@ -177,10 +177,8 @@ def parse_config(config_file):
 def dispatch(dotfiles, action, force, args):
     if action in ['list', 'check']:
         getattr(dotfiles, action)()
-    elif action in ['add', 'remove']:
+    elif action in ['add', 'remove', 'sync']:
         getattr(dotfiles, action)(args)
-    elif action == 'sync':
-        dotfiles.sync(force)
     elif action == 'move':
         if len(args) > 1:
             print("Error: Move cannot handle multiple targets.")
@@ -212,7 +210,7 @@ def main():
 
     (cli_opts, args) = parse_args()
 
-    settings['homedir'] = realpath_expanduser(cli_opts.homedir or 
+    settings['homedir'] = realpath_expanduser(cli_opts.homedir or
             defaults['homedir'])
     settings['config_file'] = realpath_expanduser(cli_opts.config_file or
             defaults['config_file'])
