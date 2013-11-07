@@ -1,6 +1,13 @@
 History
 -------
 
+0.6.1
++++++
+
+* Add ability to sync only specified files
+* Create non-existent package directories
+* Mention using Dropbox to synchronize a dotfiles repository
+
 0.6.0
 +++++
 
