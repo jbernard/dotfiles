@@ -4,7 +4,7 @@ Dotfile management made easy
 .. image:: https://pypip.in/v/dotfiles/badge.png
   :target: https://pypi.python.org/pypi/dotfiles
 
-.. image:: https://secure.travis-ci.org/jbernard/dotfiles.png?branch=develop
+.. image:: https://secure.travis-ci.org/jbernard/dotfiles.png?branch=master
   :target: http://travis-ci.org/jbernard/dotfiles
 
 ``dotfiles`` is a tool to make managing your dotfile symlinks in ``$HOME``
