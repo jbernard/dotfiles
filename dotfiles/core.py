@@ -191,7 +191,7 @@ class Dotfiles(object):
         if not files:
             dotfiles = self.dotfiles
         else:
-            files = list(map(lambda x: os.path.join(self.homedir, x), files))
+            files = set(map(lambda x: os.path.join(self.homedir, x), files))
             dotfiles = [x for x in self.dotfiles if x.name in files]
             if not dotfiles:
                 raise Exception("file not found")
