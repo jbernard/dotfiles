@@ -1,6 +1,9 @@
 Dotfile management made easy
 ============================
 
+.. image:: https://badge.waffle.io/jbernard/dotfiles.png?label=ready
+  :target: http://waffle.io/jbernard/dotfiles
+
 .. image:: https://pypip.in/v/dotfiles/badge.png
   :target: https://pypi.python.org/pypi/dotfiles
 
