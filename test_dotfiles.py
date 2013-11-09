@@ -9,6 +9,7 @@ import tempfile
 import unittest
 
 from dotfiles import core
+from dotfiles import cli
 from dotfiles.utils import is_link_to
 
 
@@ -61,6 +62,14 @@ class DotfilesTestCase(unittest.TestCase):
         self.assertPathEqual(
                 os.path.join(self.homedir, '.lastpass'),
                 '/tmp')
+
+    def test_dispatch(self):
+        """Test that the force option is handed on to the sync method."""
+        class MockDotfiles(object):
+            def sync(self, files=None, force=False):
+                assert bool(force)
+        dotfiles = MockDotfiles()
+        cli.dispatch(dotfiles, 'sync', True, [])
 
     def test_move_repository(self):
         """Test the move() method for a Dotfiles repository."""
