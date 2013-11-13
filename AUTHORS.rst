@@ -10,3 +10,5 @@ following folks:
 - Gary Oberbrunner
 - Alexandre Rossi <alexandre.rossi@gmail.com>
 - Luper Rouch <luper.rouch@gmail.com>
+- Jesús García Crespo <jesus@sevein.com>
+- Jay Sweeney <writetojay@gmail.com>

@@ -18,7 +18,7 @@ from dotfiles.utils import realpath_expanduser, is_link_to
 from dotfiles.compat import symlink
 
 
-__version__ = '0.6.0'
+__version__ = '0.6.2'
 __author__ = 'Jon Bernard'
 __license__ = 'ISC'
 
@@ -203,12 +203,13 @@ class Dotfiles(object):
 
         for dotfile in repofiles_to_symlink:
             dotfiles.append(Dotfile(dotfile[len(self.prefix):],
-                os.path.join(directory, dotfile), self.homedir))
+                os.path.join(directory, dotfile),
+                self.homedir, dry_run=self.dry_run))
 
         for dotfile in self.externals.keys():
             dotfiles.append(Dotfile(dotfile,
                 os.path.expanduser(self.externals[dotfile]),
-                self.homedir))
+                self.homedir, dry_run=self.dry_run))
 
         return dotfiles
 
@@ -239,12 +240,21 @@ class Dotfiles(object):
 
         self.list(verbose=False)
 
-    def sync(self, force=False, hostname=None):
-
+    def sync(self, files=None, force=False, hostname=None):
         """Synchronize this repository, creating and updating the necessary
         symbolic links."""
 
-        for dotfile in self.this_host_dotfiles(hostname):
+        # unless a set of files is specified, operate on all files
+        if not files:
+            dotfiles = self.this_host_dotfiles(hostname)
+        else:
+            files = set(map(lambda x: os.path.join(self.homedir, x), files))
+            dotfiles = [x for x in self.this_host_dotfiles(hostname)\
+                        if x.name in files]
+            if not dotfiles:
+                raise Exception("file not found")
+
+        for dotfile in dotfiles:
             dotfile.sync(force)
 
     def add(self, files, hostname=None):

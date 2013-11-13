@@ -186,7 +186,7 @@ def dispatch(dotfiles, action, force, hostname, args):
     elif action in ['add', 'remove']:
         getattr(dotfiles, action)(args, hostname)
     elif action == 'sync':
-        dotfiles.sync(force, hostname)
+        getattr(dotfiles, action)(files=args, force=force, hostname=hostname)
     elif action == 'move':
         if len(args) > 1:
             print("Error: Move cannot handle multiple targets.")

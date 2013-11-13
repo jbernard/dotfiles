@@ -1,6 +1,20 @@
 History
 -------
 
+0.6.2
++++++
+
+* Fix single-sync in python 3.x (map is lazy)
+* Fix sync --force regression
+* Fix unit tests to exit with the correct return code
+
+0.6.1
++++++
+
+* Add ability to sync only specified files
+* Create non-existent package directories
+* Mention using Dropbox to synchronize a dotfiles repository
+
 0.6.0
 +++++
 

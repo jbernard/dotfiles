@@ -9,6 +9,7 @@ import tempfile
 import unittest
 
 from dotfiles import core
+from dotfiles import cli
 from dotfiles.utils import is_link_to
 
 
@@ -76,6 +77,14 @@ class DotfilesTestCase(unittest.TestCase):
         self.assertPathEqual(
                 os.path.join(self.homedir, '.lastpass'),
                 '/tmp')
+
+    def test_dispatch(self):
+        """Test that the force option is handed on to the sync method."""
+        class MockDotfiles(object):
+            def sync(self, files=None, force=False, hostname=None):
+                assert bool(force)
+        dotfiles = MockDotfiles()
+        cli.dispatch(dotfiles, 'sync', True, [], None)
 
     def test_move_repository(self):
         """Test the move() method for a Dotfiles repository."""
@@ -212,7 +221,7 @@ class DotfilesTestCase(unittest.TestCase):
                 os.makedirs(dirname)
             touch(path)
 
-        # Create Dotiles object
+        # Create Dotfiles object
         dotfiles = core.Dotfiles(
                 homedir=self.homedir, repository=self.repository,
                 prefix='', ignore=[], externals={}, packages=['package'],
@@ -246,6 +255,74 @@ class DotfilesTestCase(unittest.TestCase):
         self.repository = join(self.homedir, 'Dotfiles2')
         dotfiles.move(self.repository)
         check_all(files, symlinks)
+
+    def test_missing_package(self):
+        """
+        Test a non-existent package.
+        """
+
+        package_file = '.package/bar'
+
+        # Create Dotfiles object
+        dotfiles = core.Dotfiles(
+                homedir=self.homedir, repository=self.repository,
+                prefix='', ignore=[], externals={}, packages=['package'],
+                dry_run=False)
+
+        path = os.path.join(self.homedir, package_file)
+        dirname = os.path.dirname(path)
+        if not os.path.exists(dirname):
+            os.makedirs(dirname)
+        touch(path)
+
+        dotfiles.add([os.path.join(self.homedir, package_file)])
+
+
+    def test_single_sync(self):
+        """
+        Test syncing a single file in the repo
+
+        The following repo dir exists:
+
+        bashrc
+        netrc
+        vimrc
+
+        Syncing only vimrc should have the folowing sync result in home:
+
+        .vimrc -> Dotfiles/vimrc
+
+        """
+
+        # define the repository contents
+        repo_files = (
+            ('bashrc', False),
+            ('netrc',  False),
+            ('vimrc',  True))
+
+        # populate the repository
+        for dotfile, _ in repo_files:
+            touch(os.path.join(self.repository, dotfile))
+
+        dotfiles = core.Dotfiles(
+                homedir=self.homedir, repository=self.repository,
+                prefix='', ignore=[], externals={}, packages=[],
+                dry_run=False)
+
+        # sync only certain dotfiles
+        for dotfile, should_sync in repo_files:
+            if should_sync:
+                dotfiles.sync(files=['.%s' % dotfile])
+
+        # verify home directory contents
+        for dotfile, should_sync in repo_files:
+            if should_sync:
+                self.assertPathEqual(
+                    os.path.join(self.repository, dotfile),
+                    os.path.join(self.homedir, '.%s' % dotfile))
+            else:
+                self.assertFalse(os.path.exists(
+                    os.path.join(self.homedir, dotfile)))
 
     def test_dotdir_file_add_sync_remove(self):
         """Test that is is possible to add files in dot-directories
@@ -359,9 +436,5 @@ class DotfilesTestCase(unittest.TestCase):
         self.assertTrue(not os.path.islink(os.path.join(self.homedir, '.mozilla')))
 
 
-def suite():
-    suite = unittest.TestLoader().loadTestsFromTestCase(DotfilesTestCase)
-    return suite
-
 if __name__ == '__main__':
-    unittest.TextTestRunner().run(suite())
+    unittest.main()

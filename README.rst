@@ -1,11 +1,20 @@
 Dotfile management made easy
 ============================
 
+.. image:: https://badge.waffle.io/jbernard/dotfiles.png?label=ready
+  :target: http://waffle.io/jbernard/dotfiles
+
+.. image:: https://pypip.in/v/dotfiles/badge.png
+  :target: https://pypi.python.org/pypi/dotfiles
+
+.. image:: https://secure.travis-ci.org/jbernard/dotfiles.png?branch=master
+  :target: http://travis-ci.org/jbernard/dotfiles
+
 ``dotfiles`` is a tool to make managing your dotfile symlinks in ``$HOME``
 easy, allowing you to keep all your dotfiles in a single directory.
 
-Hosting is up to you. Using whatever VCS you prefer, or even rsync, you can
-easily distribute your dotfiles repository across multiple hosts.
+Hosting is up to you. You can use a VCS like git, Dropbox, or even rsync to
+distribute your dotfiles repository across multiple hosts.
 
 The repository can be specified at runtime, so you can manage multiple
 repositories without hassle. See the Configuration_ section below for further
@@ -29,12 +38,14 @@ Interface
 ``-r, --remove <file...>``
     Remove dotfile(s) from the repository.
 
-``-s, --sync``
+``-s, --sync [file...]``
     Update dotfile symlinks. You can overwrite colliding files with ``-f`` or
-    ``--force``.
+    ``--force``.  All dotfiles are assumed if you do not specify any files to
+    this command.
 
-``-m, --move``
-    Move dotfiles repository to another location.
+``-m, --move <path>``
+    Move dotfiles repository to another location, updating all symlinks in the
+    process.
 
 For all commands you can use the ``--dry-run`` option, which will print actions
 and won't modify anything on your drive.
@@ -195,9 +206,9 @@ supplied on the command line: ::
 Contribute
 ----------
 
-If you'd like to contribute, simply fork `the repository`_, commit your
-changes to the **develop** branch (or branch off of it), and send a pull
-request. Make sure you add yourself to AUTHORS_.
+If you'd like to contribute, simply fork `the repository`_, commit your changes,
+make sure tests pass, and send a pull request. Go ahead and add yourself to
+AUTHORS_ or I'll do it when I merge your changes.
 
 .. _`the repository`: https://github.com/jbernard/dotfiles
 .. _AUTHORS: https://github.com/jbernard/dotfiles/blob/master/AUTHORS.rst
