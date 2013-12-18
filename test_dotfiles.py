@@ -310,5 +310,26 @@ class DotfilesTestCase(unittest.TestCase):
                     os.path.join(self.homedir, dotfile)))
 
 
+    def test_missing_remove(self):
+        """Test removing a dotfile that's been removed from the repository."""
+
+        repo_file = os.path.join(self.repository, 'testdotfile')
+
+        touch(repo_file)
+
+        dotfiles = core.Dotfiles(
+                homedir=self.homedir, repository=self.repository,
+                prefix='', ignore=[], externals={}, packages=[],
+                dry_run=False)
+
+        dotfiles.sync()
+
+        # remove the dotfile from the repository, homedir symlink is now broken
+        os.remove(repo_file)
+
+        # remove the broken symlink
+        dotfiles.remove(['.testdotfile'])
+
+
 if __name__ == '__main__':
     unittest.main()
