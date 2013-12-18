@@ -330,6 +330,10 @@ class DotfilesTestCase(unittest.TestCase):
         # remove the broken symlink
         dotfiles.remove(['.testdotfile'])
 
+        # verify symlink was removed
+        self.assertFalse(os.path.exists(
+            os.path.join(self.homedir, '.testdotfile')))
+
 
 if __name__ == '__main__':
     unittest.main()
