@@ -92,11 +92,17 @@ class Dotfile(object):
         self._symlink(self.target, self.name)
 
     def remove(self):
+
         if self.status != '':
             print("Skipping \"%s\", file is %s" % (self.basename, self.status))
             return
+
+        # remove the existing symlink
         self._remove(self.name)
-        self._move(self.target, self.name)
+
+        # return dotfile to its original location
+        if os.path.exists(self.target):
+            self._move(self.target, self.name)
 
     def __str__(self):
         user_home = os.environ['HOME']
