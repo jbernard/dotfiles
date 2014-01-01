@@ -1,6 +1,12 @@
 History
 -------
 
+0.6.3
++++++
+
+* Prevent adding toplevel package directories (bugfix)
+* Only replace existing dotfiles on remove operation (bugfix)
+
 0.6.2
 +++++
 
