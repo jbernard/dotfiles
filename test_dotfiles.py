@@ -335,5 +335,28 @@ class DotfilesTestCase(unittest.TestCase):
             os.path.join(self.homedir, '.testdotfile')))
 
 
+    def test_add_package(self):
+        """
+        Test adding a package that isn't already in the repository
+
+        """
+
+        package_dir = os.path.join(self.homedir,
+            '.%s/%s' % ('config', 'gtk-3.0'))
+
+        os.makedirs(package_dir)
+        touch('%s/testfile' % package_dir)
+
+        dotfiles = core.Dotfiles(
+                homedir=self.homedir, repository=self.repository,
+                prefix='', ignore=[], externals={}, packages=['config'],
+                dry_run=False, quiet=True)
+
+        # This should fail, you should not be able to add dotfiles that are
+        # defined to be packages.
+        dotfiles.add(['.config'])
+        self.assertFalse(os.path.islink(os.path.join(self.homedir, '.config')))
+
+
 if __name__ == '__main__':
     unittest.main()
