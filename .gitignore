@@ -2,3 +2,5 @@
 *.pyo
 __pycache__/
 .venv/
+dist/
+dotfiles.egg-info/
