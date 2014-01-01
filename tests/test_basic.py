@@ -358,6 +358,30 @@ class DotfilesTestCase(unittest.TestCase):
         self.assertFalse(os.path.islink(os.path.join(self.homedir, '.config')))
 
 
+    def test_add_package_file(self):
+        """
+        Test adding a package that isn't already in the repository
+
+        """
+
+        package_dir = os.path.join(self.homedir,
+            '.%s/%s' % ('config', 'gtk-3.0'))
+
+        os.makedirs(package_dir)
+        touch('%s/testfile' % package_dir)
+
+        dotfiles = core.Dotfiles(
+                homedir=self.homedir, repository=self.repository,
+                prefix='', ignore=[], externals={}, packages=['config'],
+                dry_run=False)
+
+        # This should succeed and the directory structure in the repository
+        # should be created since it didn't already exist.
+        dotfiles.add(['.config/gtk-3.0'])
+        self.assertTrue(os.path.islink(
+            os.path.join(self.homedir, '.config/gtk-3.0')))
+
+
     def test_package_and_prefix(self):
         """Test syncing a package when using a non-default prefix."""
 
