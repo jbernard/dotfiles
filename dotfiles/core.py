@@ -18,7 +18,7 @@ from dotfiles.utils import realpath_expanduser, is_link_to
 from dotfiles.compat import symlink
 
 
-__version__ = '0.6.2'
+__version__ = '0.6.3'
 __author__ = 'Jon Bernard'
 __license__ = 'ISC'
 
@@ -103,11 +103,17 @@ class Dotfile(object):
         self._symlink()
 
     def remove(self):
+
         if self.status != '':
             print("Skipping \"%s\", file is %s" % (self.relpath, self.status))
             return
+
+        # remove the existing symlink
         self._remove(self.name)
-        self._move(self.target, self.name)
+
+        # return dotfile to its original location
+        if os.path.exists(self.target):
+            self._move(self.target, self.name)
 
     def __str__(self):
         user_home = os.environ['HOME']
@@ -283,6 +289,7 @@ class Dotfiles(object):
             else:
                 home = self.homedir
                 target = self._repo_fqpn(file, hostname=hostname)
+
             if sub_dir.startswith('.') or file_name.startswith('.'):
                 dotfile = Dotfile(file, target, home, dry_run=self.dry_run)
                 getattr(dotfile, action)()

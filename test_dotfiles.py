@@ -436,5 +436,53 @@ class DotfilesTestCase(unittest.TestCase):
         self.assertTrue(not os.path.islink(os.path.join(self.homedir, '.mozilla')))
 
 
+    def test_missing_remove(self):
+        """Test removing a dotfile that's been removed from the repository."""
+
+        repo_file = os.path.join(self.repository, 'testdotfile')
+
+        touch(repo_file)
+
+        dotfiles = core.Dotfiles(
+                homedir=self.homedir, repository=self.repository,
+                prefix='', ignore=[], externals={}, packages=[],
+                dry_run=False)
+
+        dotfiles.sync()
+
+        # remove the dotfile from the repository, homedir symlink is now broken
+        os.remove(repo_file)
+
+        # remove the broken symlink
+        dotfiles.remove(['.testdotfile'])
+
+        # verify symlink was removed
+        self.assertFalse(os.path.exists(
+            os.path.join(self.homedir, '.testdotfile')))
+
+
+    def test_add_package(self):
+        """
+        Test adding a package that isn't already in the repository
+
+        """
+
+        package_dir = os.path.join(self.homedir,
+            '.%s/%s' % ('config', 'gtk-3.0'))
+
+        os.makedirs(package_dir)
+        touch('%s/testfile' % package_dir)
+
+        dotfiles = core.Dotfiles(
+                homedir=self.homedir, repository=self.repository,
+                prefix='', ignore=[], externals={}, packages=['config'],
+                dry_run=False, quiet=True)
+
+        # This should fail, you should not be able to add dotfiles that are
+        # defined to be packages.
+        dotfiles.add(['.config'])
+        self.assertFalse(os.path.islink(os.path.join(self.homedir, '.config')))
+
+
 if __name__ == '__main__':
     unittest.main()

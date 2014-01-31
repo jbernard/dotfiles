@@ -1,11 +1,8 @@
 Dotfile management made easy
 ============================
 
-.. image:: https://badge.waffle.io/jbernard/dotfiles.png?label=ready
-  :target: http://waffle.io/jbernard/dotfiles
-
-.. image:: https://pypip.in/v/dotfiles/badge.png
-  :target: https://pypi.python.org/pypi/dotfiles
+.. image:: https://badge.fury.io/py/dotfiles.png
+  :target: http://badge.fury.io/py/dotfiles
 
 .. image:: https://secure.travis-ci.org/jbernard/dotfiles.png?branch=master
   :target: http://travis-ci.org/jbernard/dotfiles
@@ -205,6 +202,9 @@ supplied on the command line: ::
 
 Contribute
 ----------
+
+.. image:: https://badge.waffle.io/jbernard/dotfiles.png?label=ready
+  :target: http://waffle.io/jbernard/dotfiles
 
 If you'd like to contribute, simply fork `the repository`_, commit your changes,
 make sure tests pass, and send a pull request. Go ahead and add yourself to
