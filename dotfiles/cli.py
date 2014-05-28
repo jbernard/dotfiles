@@ -20,19 +20,21 @@ from dotfiles.utils import compare_path, realpath_expanduser
 
 
 defaults = {
-        'prefix': '',
-        'homedir': '~/',
-        'repository': '~/Dotfiles',
-        'config_file': '~/.dotfilesrc'}
+    'prefix': '',
+    'homedir': '~/',
+    'repository': '~/Dotfiles',
+    'config_file': '~/.dotfilesrc'
+}
 
 settings = {
-        'prefix': None,
-        'homedir': None,
-        'repository': None,
-        'config_file': None,
-        'ignore': set(['.dotfilesrc']),
-        'externals': dict(),
-        'packages': set()}
+    'prefix': None,
+    'homedir': None,
+    'repository': None,
+    'config_file': None,
+    'ignore': set(['.dotfilesrc']),
+    'externals': dict(),
+    'packages': set()
+}
 
 
 def missing_default_repo():
@@ -60,65 +62,125 @@ Type 'dotfiles -h' to see detailed usage information.""".format(
 
 
 def add_global_flags(parser):
-    parser.add_option("-v", "--version",
-            action="store_true", dest="show_version", default=False,
-            help="show version number and exit")
+    parser.add_option(
+        "-v",
+        "--version",
+        action="store_true",
+        dest="show_version",
+        default=False,
+        help="show version number and exit"
+    )
 
-    parser.add_option("-f", "--force",
-            action="store_true", dest="force", default=False,
-            help="overwrite colliding dotfiles (use with --sync)")
+    parser.add_option(
+        "-f",
+        "--force",
+        action="store_true",
+        dest="force",
+        default=False,
+        help="overwrite colliding dotfiles (use with --sync)"
+    )
 
-    parser.add_option("-R", "--repo",
-            type="string", dest="repository",
-            help="set repository location (default: %s)" % (
-                defaults['repository']))
+    parser.add_option(
+        "-R",
+        "--repo",
+        type="string",
+        dest="repository",
+        help="set repository location (default: %s)" %
+             (defaults['repository'])
+    )
 
-    parser.add_option("-p", "--prefix",
-            type="string", dest="prefix",
-            help="set prefix character (default: %s)" % (
-                "None" if not defaults['prefix'] else defaults['prefix']))
+    parser.add_option(
+        "-p",
+        "--prefix",
+        type="string",
+        dest="prefix",
+        help="set prefix character (default: %s)" %
+             ("None" if not defaults['prefix'] else defaults['prefix'])
+    )
 
-    parser.add_option("-C", "--config",
-            type="string", dest="config_file",
-            help="set configuration file location (default: %s)" % (
-                defaults['config_file']))
+    parser.add_option(
+        "-C",
+        "--config",
+        type="string",
+        dest="config_file",
+        help="set configuration file location (default: %s)" %
+             (defaults['config_file'])
+    )
 
-    parser.add_option("-H", "--home",
-            type="string", dest="homedir",
-            help="set home directory location (default: %s)" % (
-                defaults['homedir']))
+    parser.add_option(
+        "-H",
+        "--home",
+        type="string",
+        dest="homedir",
+        help="set home directory location (default: %s)" %
+        (defaults['homedir'])
+    )
 
-    parser.add_option("-d", "--dry-run",
-            action="store_true", default=False,
-            help="don't modify anything, just print commands")
+    parser.add_option(
+        "-d"
+        "--dry-run",
+        action="store_true",
+        default=False,
+        help="don't modify anything, just print commands"
+    )
 
 
 def add_action_group(parser):
     action_group = OptionGroup(parser, "Actions")
 
-    action_group.add_option("-a", "--add",
-            action="store_const", dest="action", const="add",
-            help="add dotfile(s) to the repository")
+    action_group.add_option(
+        "-a",
+        "--add",
+        action="store_const",
+        dest="action",
+        const="add",
+        help="add dotfile(s) to the repository"
+    )
 
-    action_group.add_option("-c", "--check",
-            action="store_const", dest="action", const="check",
-            help="check for broken and unsynced dotfiles")
+    action_group.add_option(
+        "-c",
+        "--check",
+        action="store_const",
+        dest="action",
+        const="check",
+        help="check for broken and unsynced dotfiles"
+    )
 
-    action_group.add_option("-l", "--list",
-            action="store_const", dest="action", const="list",
-            help="list currently managed dotfiles")
+    action_group.add_option(
+        "-l",
+        "--list",
+        action="store_const",
+        dest="action",
+        const="list",
+        help="list currently managed dotfiles"
+    )
 
-    action_group.add_option("-r", "--remove",
-            action="store_const", dest="action", const="remove",
-            help="remove dotfile(s) from the repository")
+    action_group.add_option(
+        "-r",
+        "--remove",
+        action="store_const",
+        dest="action",
+        const="remove",
+        help="remove dotfile(s) from the repository"
+    )
 
-    action_group.add_option("-s", "--sync",
-            action="store_const", dest="action", const="sync",
-            help="update dotfile symlinks")
+    action_group.add_option(
+        "-s",
+        "--sync",
+        action="store_const",
+        dest="action",
+        const="sync",
+        help="update dotfile symlinks"
+    )
 
-    action_group.add_option("-m", "--move",
-            action="store_const", dest="action", const="move",
-            help="move dotfiles repository to another location")
+    action_group.add_option(
+        "-m",
+        "--move",
+        action="store_const",
+        dest="action",
+        const="move",
+        help="move dotfiles repository to another location"
+    )
 
     parser.add_option_group(action_group)
 
@@ -137,11 +199,11 @@ def parse_args():
         exit(0)
 
     if not opts.action:
-        print("Error: An action is required. Type 'dotfiles -h' to see " \
+        print("Error: An action is required. Type 'dotfiles -h' to see "
               "detailed usage information.")
         exit(-1)
 
-    return (opts, args)
+    return opts, args
 
 
 def parse_config(config_file):
@@ -193,8 +255,8 @@ def dispatch(dotfiles, action, force, args):
 
 def check_repository_exists():
     if not os.path.exists(settings['repository']):
-        print('Error: Could not find dotfiles repository \"%s\"' % (
-                settings['repository']))
+        print('Error: Could not find dotfiles repository \"%s\"' %
+              (settings['repository']))
         if compare_path(settings['repository'], defaults['repository']):
             missing_default_repo()
         exit(-1)
@@ -212,15 +274,21 @@ def main():
 
     (cli_opts, args) = parse_args()
 
-    settings['homedir'] = realpath_expanduser(cli_opts.homedir or
-            defaults['homedir'])
-    settings['config_file'] = realpath_expanduser(cli_opts.config_file or
-            defaults['config_file'])
+    settings['homedir'] = realpath_expanduser(
+        cli_opts.homedir or defaults['homedir']
+    )
+
+    settings['config_file'] = realpath_expanduser(
+        cli_opts.config_file or defaults['config_file']
+    )
 
     config_opts = parse_config(settings['config_file'])
 
-    settings['repository'] = realpath_expanduser(cli_opts.repository or
-            config_opts['repository'] or defaults['repository'])
+    settings['repository'] = realpath_expanduser(
+        cli_opts.repository or
+        config_opts['repository'] or
+        defaults['repository']
+    )
 
     check_repository_exists()
 

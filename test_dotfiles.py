@@ -34,7 +34,7 @@ class DotfilesTestCase(unittest.TestCase):
 
         shutil.rmtree(self.homedir)
 
-    def assertPathEqual(self, path1, path2):
+    def assert_path_equal(self, path1, path2):
         self.assertEqual(
             os.path.realpath(path1),
             os.path.realpath(path2))
@@ -53,15 +53,16 @@ class DotfilesTestCase(unittest.TestCase):
         externals = {'.lastpass': '/tmp'}
 
         dotfiles = core.Dotfiles(
-                homedir=self.homedir, repository=self.repository,
-                prefix='', ignore=[], externals=externals, packages=[],
-                dry_run=False)
+            homedir=self.homedir, repository=self.repository,
+            prefix='', ignore=[], externals=externals, packages=[],
+            dry_run=False)
 
         dotfiles.sync(force=True)
 
-        self.assertPathEqual(
-                os.path.join(self.homedir, '.lastpass'),
-                '/tmp')
+        self.assert_path_equal(
+            os.path.join(self.homedir, '.lastpass'),
+            '/tmp'
+        )
 
     def test_dispatch(self):
         """Test that the force option is handed on to the sync method."""
@@ -77,25 +78,27 @@ class DotfilesTestCase(unittest.TestCase):
         touch(os.path.join(self.repository, 'bashrc'))
 
         dotfiles = core.Dotfiles(
-                homedir=self.homedir, repository=self.repository,
-                prefix='', ignore=[], force=True, externals={}, packages=[],
-                dry_run=False)
+            homedir=self.homedir, repository=self.repository,
+            prefix='', ignore=[], force=True, externals={}, packages=[],
+            dry_run=False)
 
         dotfiles.sync()
 
         # Make sure sync() did the right thing.
-        self.assertPathEqual(
-                os.path.join(self.homedir, '.bashrc'),
-                os.path.join(self.repository, 'bashrc'))
+        self.assert_path_equal(
+            os.path.join(self.homedir, '.bashrc'),
+            os.path.join(self.repository, 'bashrc')
+        )
 
         target = os.path.join(self.homedir, 'MyDotfiles')
 
         dotfiles.move(target)
 
         self.assertTrue(os.path.exists(os.path.join(target, 'bashrc')))
-        self.assertPathEqual(
-                os.path.join(self.homedir, '.bashrc'),
-                os.path.join(target, 'bashrc'))
+        self.assert_path_equal(
+            os.path.join(self.homedir, '.bashrc'),
+            os.path.join(target, 'bashrc')
+        )
 
     def test_force_sync_directory_symlink(self):
         """Test a forced sync on a directory symlink.
@@ -117,23 +120,26 @@ class DotfilesTestCase(unittest.TestCase):
         os.mkdir(os.path.join(self.repository, 'vim'))
 
         # Make sure the symlink points to the correct location.
-        self.assertPathEqual(
-                os.path.join(self.homedir, '.vim'),
-                os.path.join(self.homedir, 'vim'))
+        self.assert_path_equal(
+            os.path.join(self.homedir, '.vim'),
+            os.path.join(self.homedir, 'vim')
+        )
 
         dotfiles = core.Dotfiles(
-                homedir=self.homedir, repository=self.repository,
-                prefix='', ignore=[], externals={}, packages=[], dry_run=False)
+            homedir=self.homedir, repository=self.repository,
+            prefix='', ignore=[], externals={}, packages=[], dry_run=False)
 
         dotfiles.sync(force=True)
 
         # The symlink should now point to the directory in the repository.
-        self.assertPathEqual(
-                os.path.join(self.homedir, '.vim'),
-                os.path.join(self.repository, 'vim'))
+        self.assert_path_equal(
+            os.path.join(self.homedir, '.vim'),
+            os.path.join(self.repository, 'vim')
+        )
 
     def test_glob_ignore_pattern(self):
-        """ Test that the use of glob pattern matching works in the ignores list.
+        """
+        Test that the use of glob pattern matching works in the ignores list.
 
         The following repo dir exists:
 
@@ -146,7 +152,8 @@ class DotfilesTestCase(unittest.TestCase):
         vimrc.swp
         install.sh
 
-        Using the glob pattern dotfiles should have the following sync result in home:
+        Using the glob pattern dotfiles should have the following sync result
+        in home:
 
         .myscript.py -> Dotfiles/myscript.py
         .bashrc -> Dotfiles/bashrc
@@ -172,9 +179,10 @@ class DotfilesTestCase(unittest.TestCase):
             touch(os.path.join(self.repository, original))
 
         dotfiles = core.Dotfiles(
-                homedir=self.homedir, repository=self.repository,
-                prefix='', ignore=ignore, externals={}, packages=[],
-                dry_run=False)
+            homedir=self.homedir, repository=self.repository,
+            prefix='', ignore=ignore, externals={}, packages=[],
+            dry_run=False
+        )
 
         dotfiles.sync()
 
@@ -186,7 +194,7 @@ class DotfilesTestCase(unittest.TestCase):
             sorted([f[1] for f in all_dotfiles] + ['Dotfiles']))
 
         for original, symlink in all_dotfiles:
-            self.assertPathEqual(
+            self.assert_path_equal(
                 os.path.join(self.repository, original),
                 os.path.join(self.homedir, symlink))
 
@@ -208,9 +216,10 @@ class DotfilesTestCase(unittest.TestCase):
 
         # Create Dotfiles object
         dotfiles = core.Dotfiles(
-                homedir=self.homedir, repository=self.repository,
-                prefix='', ignore=[], externals={}, packages=['package'],
-                dry_run=False)
+            homedir=self.homedir, repository=self.repository,
+            prefix='', ignore=[], externals={}, packages=['package'],
+            dry_run=False
+        )
 
         # Create symlinks in homedir
         dotfiles.sync()
@@ -219,8 +228,12 @@ class DotfilesTestCase(unittest.TestCase):
         def check_all(files, symlinks):
             self.assertTrue(os.path.isdir(join(self.homedir, '.package')))
             for src, dst in zip(files, symlinks):
-                self.assertTrue(is_link_to(join(self.homedir, dst),
-                    join(self.repository, src)))
+                self.assertTrue(
+                    is_link_to(
+                        join(self.homedir, dst),
+                        join(self.repository, src)
+                    )
+                )
         check_all(files, symlinks)
 
         # Add files to the repository
@@ -250,9 +263,14 @@ class DotfilesTestCase(unittest.TestCase):
 
         # Create Dotfiles object
         dotfiles = core.Dotfiles(
-                homedir=self.homedir, repository=self.repository,
-                prefix='', ignore=[], externals={}, packages=['package'],
-                dry_run=False)
+            homedir=self.homedir,
+            repository=self.repository,
+            prefix='',
+            ignore=[],
+            externals={},
+            packages=['package'],
+            dry_run=False
+        )
 
         path = os.path.join(self.homedir, package_file)
         dirname = os.path.dirname(path)
@@ -261,7 +279,6 @@ class DotfilesTestCase(unittest.TestCase):
         touch(path)
 
         dotfiles.add([os.path.join(self.homedir, package_file)])
-
 
     def test_single_sync(self):
         """
@@ -290,9 +307,14 @@ class DotfilesTestCase(unittest.TestCase):
             touch(os.path.join(self.repository, dotfile))
 
         dotfiles = core.Dotfiles(
-                homedir=self.homedir, repository=self.repository,
-                prefix='', ignore=[], externals={}, packages=[],
-                dry_run=False)
+            homedir=self.homedir,
+            repository=self.repository,
+            prefix='',
+            ignore=[],
+            externals={},
+            packages=[],
+            dry_run=False
+        )
 
         # sync only certain dotfiles
         for dotfile, should_sync in repo_files:
@@ -302,13 +324,12 @@ class DotfilesTestCase(unittest.TestCase):
         # verify home directory contents
         for dotfile, should_sync in repo_files:
             if should_sync:
-                self.assertPathEqual(
+                self.assert_path_equal(
                     os.path.join(self.repository, dotfile),
                     os.path.join(self.homedir, '.%s' % dotfile))
             else:
                 self.assertFalse(os.path.exists(
                     os.path.join(self.homedir, dotfile)))
-
 
     def test_missing_remove(self):
         """Test removing a dotfile that's been removed from the repository."""
@@ -318,9 +339,14 @@ class DotfilesTestCase(unittest.TestCase):
         touch(repo_file)
 
         dotfiles = core.Dotfiles(
-                homedir=self.homedir, repository=self.repository,
-                prefix='', ignore=[], externals={}, packages=[],
-                dry_run=False)
+            homedir=self.homedir,
+            repository=self.repository,
+            prefix='',
+            ignore=[],
+            externals={},
+            packages=[],
+            dry_run=False
+        )
 
         dotfiles.sync()
 
@@ -334,29 +360,35 @@ class DotfilesTestCase(unittest.TestCase):
         self.assertFalse(os.path.exists(
             os.path.join(self.homedir, '.testdotfile')))
 
-
     def test_add_package(self):
         """
         Test adding a package that isn't already in the repository
 
         """
 
-        package_dir = os.path.join(self.homedir,
-            '.%s/%s' % ('config', 'gtk-3.0'))
+        package_dir = os.path.join(
+            self.homedir,
+            '.%s/%s' % ('config', 'gtk-3.0')
+        )
 
         os.makedirs(package_dir)
         touch('%s/testfile' % package_dir)
 
         dotfiles = core.Dotfiles(
-                homedir=self.homedir, repository=self.repository,
-                prefix='', ignore=[], externals={}, packages=['config'],
-                dry_run=False, quiet=True)
+            homedir=self.homedir,
+            repository=self.repository,
+            prefix='',
+            ignore=[],
+            externals={},
+            packages=['config'],
+            dry_run=False,
+            quiet=True
+        )
 
         # This should fail, you should not be able to add dotfiles that are
         # defined to be packages.
         dotfiles.add(['.config'])
         self.assertFalse(os.path.islink(os.path.join(self.homedir, '.config')))
-
 
     def test_package_and_prefix(self):
         """Test syncing a package when using a non-default prefix."""
@@ -376,14 +408,14 @@ class DotfilesTestCase(unittest.TestCase):
 
         dotfiles.sync()
 
-	expected = os.path.join(self.homedir, ".config")
-	self.assertTrue(os.path.islink(expected))
+        expected = os.path.join(self.homedir, ".config")
+        self.assertTrue(os.path.islink(expected))
 
-	expected = os.path.join(expected, "awesome")
-	self.assertTrue(os.path.isdir(expected))
+        expected = os.path.join(expected, "awesome")
+        self.assertTrue(os.path.isdir(expected))
 
-	expected = os.path.join(expected, "testfile")
-	self.assertTrue(os.path.isfile(expected))
+        expected = os.path.join(expected, "testfile")
+        self.assertTrue(os.path.isfile(expected))
 
 
 if __name__ == '__main__':

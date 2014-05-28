@@ -8,7 +8,7 @@ from dotfiles.compat import islink, realpath
 
 
 def compare_path(path1, path2):
-    return (realpath_expanduser(path1) == realpath_expanduser(path2))
+    return realpath_expanduser(path1) == realpath_expanduser(path2)
 
 
 def realpath_expanduser(path):
