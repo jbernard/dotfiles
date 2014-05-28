@@ -72,7 +72,8 @@ else:
         else:
             stat = CreateSymbolicLinkA(name, target, is_dir)
         if win32_verbose:
-            print("CreateSymbolicLink(name=%s, target=%s, is_dir=%d) = %#x" % (name, target, is_dir, stat))
+            print("CreateSymbolicLink(name=%s, target=%s, is_dir=%d) = %#x" %
+                  (name, target, is_dir, stat))
         if not stat:
             print("Can't create symlink %s -> %s" % (name, target))
             raise ctypes.WinError()
@@ -88,9 +89,11 @@ else:
 
     def islink(path):
         assert path
-        has_link_attr = get_file_attributes(path) & FILE_ATTRIBUTE_REPARSE_POINT
+        has_link_attr = get_file_attributes(path) &\
+            FILE_ATTRIBUTE_REPARSE_POINT
         if win32_verbose:
-            print("islink(%s): attrs=%#x: %s" % (path, get_file_attributes(path), has_link_attr != 0))
+            print("islink(%s): attrs=%#x: %s" %
+                  (path, get_file_attributes(path), has_link_attr != 0))
         return has_link_attr != 0
 
     def device_io_control(hdevice, iocontrolcode, input, output):
@@ -124,9 +127,13 @@ else:
 
     def create_file(path, access, sharemode, creation, flags):
         if type(path) == unicode:
-            return _CreateFileW(path, access, sharemode, None, creation, flags, None)
+            return _CreateFileW(
+                path, access, sharemode, None, creation, flags, None
+            )
         else:
-            return _CreateFileA(path, access, sharemode, None, creation, flags, None)
+            return _CreateFileA(
+                path, access, sharemode, None, creation, flags, None
+            )
 
     SymbolicLinkReparseFormat = "LHHHHHHL"
     SymbolicLinkReparseSize = struct.calcsize(SymbolicLinkReparseFormat)
@@ -140,13 +147,16 @@ else:
             return None
 
         # Open the file correctly depending on the string type.
-        hfile = create_file(path, GENERIC_READ, 0, OPEN_EXISTING, FILE_FLAG_OPEN_REPARSE_POINT)
+        hfile = create_file(
+            path, GENERIC_READ, 0, OPEN_EXISTING, FILE_FLAG_OPEN_REPARSE_POINT
+        )
 
         # MAXIMUM_REPARSE_DATA_BUFFER_SIZE = 16384 = (16*1024)
         buffer = device_io_control(hfile, FSCTL_GET_REPARSE_POINT, None, 16384)
         CloseHandle(hfile)
 
-        # Minimum possible length (assuming length of the target is bigger than 0)
+        # Minimum possible length
+        # (assuming length of the target is bigger than 0)
         if not buffer or len(buffer) < 9:
             if win32_verbose:
                 print("readlink(%s): no reparse buffer." % path)
@@ -180,13 +190,20 @@ else:
         # } REPARSE_DATA_BUFFER, *PREPARSE_DATA_BUFFER;
 
         # Only handle SymbolicLinkReparseBuffer
-        (tag, data_length, reserver, substitute_name_offset, substitute_name_length,
-         print_name_offset, print_name_length,
+        (tag,
+         data_length,
+         reserver,
+         substitute_name_offset,
+         substitute_name_length,
+         print_name_offset,
+         print_name_length,
          flags) = struct.unpack(SymbolicLinkReparseFormat,
                                 buffer[:SymbolicLinkReparseSize])
-        # print tag, dataLength, reserver, SubstituteNameOffset, SubstituteNameLength
+        # print tag, dataLength, reserver,
+        # SubstituteNameOffset, SubstituteNameLength
         start = substitute_name_offset + SymbolicLinkReparseSize
-        actual_path = buffer[start: start + substitute_name_length].decode("utf-16")
+        actual_path = \
+            buffer[start: start + substitute_name_length].decode("utf-16")
         # This utf-16 string is null terminated
         index = actual_path.find("\0")
         if index > 0:
@@ -206,6 +223,8 @@ else:
             if rpath is None:
                 return fpath
             if not os.path.isabs(rpath):
-                rpath = os.path.abspath(os.path.join(os.path.dirname(fpath), rpath))
+                rpath = os.path.abspath(
+                    os.path.join(os.path.dirname(fpath), rpath)
+                )
             fpath = rpath
         return fpath

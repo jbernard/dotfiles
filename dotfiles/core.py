@@ -250,7 +250,8 @@ class Dotfiles(object):
             else:
                 home = self.homedir
                 target = self._fqpn(file)
-                if action == 'add' and os.path.split(target)[1] in self.packages:
+                if action == 'add' \
+                        and os.path.split(target)[1] in self.packages:
                     print("Skipping \"%s\", packages not yet supported" % file)
                     return
             if sub_dir.startswith('.') or file_name.startswith('.'):

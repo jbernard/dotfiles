@@ -138,7 +138,8 @@ class DotfilesTestCase(unittest.TestCase):
         )
 
     def test_glob_ignore_pattern(self):
-        """ Test that the use of glob pattern matching works in the ignores list.
+        """
+        Test that the use of glob pattern matching works in the ignores list.
 
         The following repo dir exists:
 
@@ -151,7 +152,8 @@ class DotfilesTestCase(unittest.TestCase):
         vimrc.swp
         install.sh
 
-        Using the glob pattern dotfiles should have the following sync result in home:
+        Using the glob pattern dotfiles should have the following sync result
+        in home:
 
         .myscript.py -> Dotfiles/myscript.py
         .bashrc -> Dotfiles/bashrc
