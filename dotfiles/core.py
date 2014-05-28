@@ -72,8 +72,8 @@ class Dotfile(object):
             self._symlink(self.target, self.name)
         elif self.status == 'unsynced':
             if not force:
-                print("Skipping \"%s\", use --force to override"
-                        % self.basename)
+                print("Skipping \"%s\", use --force to override" %
+                      self.basename)
                 return
             if os.path.isdir(self.name) and not os.path.islink(self.name):
                 self._rmtree(self.name)

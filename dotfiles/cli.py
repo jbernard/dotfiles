@@ -136,7 +136,7 @@ def parse_args():
         exit(0)
 
     if not opts.action:
-        print("Error: An action is required. Type 'dotfiles -h' to see " \
+        print("Error: An action is required. Type 'dotfiles -h' to see "
               "detailed usage information.")
         exit(-1)
 
