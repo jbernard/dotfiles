@@ -118,7 +118,7 @@ class Dotfiles(object):
     """A Dotfiles Repository."""
 
     __attrs__ = ['homedir', 'repository', 'prefix', 'ignore', 'externals',
-            'packages', 'dry_run']
+                 'packages', 'dry_run']
 
     def __init__(self, **kwargs):
 
@@ -150,31 +150,49 @@ class Dotfiles(object):
 
         for pat in self.ignore:
             repofiles_to_symlink.difference_update(
-                    fnmatch.filter(all_repofiles, pat))
+                fnmatch.filter(all_repofiles, pat)
+            )
 
         for dotfile in repofiles_to_symlink:
             pkg_path = os.path.join(sub_dir, dotfile)
             if pkg_path in self.packages:
                 self._load_recursive(pkg_path)
             else:
-                self.dotfiles.append(Dotfile(dotfile[len(self.prefix):],
-                    os.path.join(src_dir, dotfile), dst_dir,
-                    add_dot=not bool(sub_dir), dry_run=self.dry_run))
+                self.dotfiles.append(
+                    Dotfile(
+                        dotfile[len(self.prefix):],
+                        os.path.join(src_dir, dotfile),
+                        dst_dir,
+                        add_dot=not bool(sub_dir),
+                        dry_run=self.dry_run
+                    )
+                )
 
         # Externals are top-level only
         if not sub_dir:
             for dotfile in self.externals.keys():
-                self.dotfiles.append(Dotfile(dotfile,
-                    os.path.expanduser(self.externals[dotfile]),
-                    dst_dir, add_dot=not bool(sub_dir), dry_run=self.dry_run))
+                self.dotfiles.append(
+                    Dotfile(
+                        dotfile,
+                        os.path.expanduser(self.externals[dotfile]),
+                        dst_dir,
+                        add_dot=not bool(sub_dir),
+                        dry_run=self.dry_run
+                    )
+                )
 
     def _fqpn(self, dotfile, pkg_name=None):
         """Return the fully qualified path to a dotfile."""
         if pkg_name is None:
-            return os.path.join(self.repository,
-                    self.prefix + os.path.basename(dotfile).strip('.'))
-        return os.path.join(self.repository, self.prefix + pkg_name,
-                os.path.basename(dotfile))
+            return os.path.join(
+                self.repository,
+                self.prefix + os.path.basename(dotfile).strip('.')
+            )
+        return os.path.join(
+            self.repository,
+            self.prefix + pkg_name,
+            os.path.basename(dotfile)
+        )
 
     def list(self, verbose=True):
         """List the contents of this repository."""

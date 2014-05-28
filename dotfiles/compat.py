@@ -55,18 +55,17 @@ else:
     _CreateFileA = windll.kernel32.CreateFileA
     _DevIoCtl = windll.kernel32.DeviceIoControl
     _DevIoCtl.argtypes = [
-        wintypes.HANDLE, #HANDLE hDevice
-        wintypes.DWORD, #DWORD dwIoControlCode
-        wintypes.LPVOID, #LPVOID lpInBuffer
-        wintypes.DWORD, #DWORD nInBufferSize
-        wintypes.LPVOID, #LPVOID lpOutBuffer
-        wintypes.DWORD, #DWORD nOutBufferSize
-        ctypes.POINTER(wintypes.DWORD), #LPDWORD lpBytesReturned
-        wintypes.LPVOID] #LPOVERLAPPED lpOverlapped
+        wintypes.HANDLE,  # HANDLE hDevice
+        wintypes.DWORD,  # DWORD dwIoControlCode
+        wintypes.LPVOID,  # LPVOID lpInBuffer
+        wintypes.DWORD,  # DWORD nInBufferSize
+        wintypes.LPVOID,  # LPVOID lpOutBuffer
+        wintypes.DWORD,  # DWORD nOutBufferSize
+        ctypes.POINTER(wintypes.DWORD),  # LPDWORD lpBytesReturned
+        wintypes.LPVOID]  # LPOVERLAPPED lpOverlapped
     _DevIoCtl.restype = wintypes.BOOL
 
-
-    def CreateSymbolicLink(name, target, is_dir):
+    def create_symbolic_link(name, target, is_dir):
         assert type(name) == type(target)
         if type(name) == unicode:
             stat = CreateSymbolicLinkW(name, target, is_dir)
@@ -79,9 +78,9 @@ else:
             raise ctypes.WinError()
 
     def symlink(target, name):
-        CreateSymbolicLink(name, target, 0)
+        create_symbolic_link(name, target, 0)
 
-    def GetFileAttributes(path):
+    def get_file_attributes(path):
         if type(path) == unicode:
             return GetFileAttributesW(path)
         else:
@@ -89,12 +88,12 @@ else:
 
     def islink(path):
         assert path
-        has_link_attr = GetFileAttributes(path) & FILE_ATTRIBUTE_REPARSE_POINT
+        has_link_attr = get_file_attributes(path) & FILE_ATTRIBUTE_REPARSE_POINT
         if win32_verbose:
-            print("islink(%s): attrs=%#x: %s"%(path, GetFileAttributes(path), has_link_attr != 0))
+            print("islink(%s): attrs=%#x: %s"%(path, get_file_attributes(path), has_link_attr != 0))
         return has_link_attr != 0
 
-    def DeviceIoControl(hDevice, ioControlCode, input, output):
+    def device_io_control(hdevice, iocontrolcode, input, output):
         # DeviceIoControl Function
         # http://msdn.microsoft.com/en-us/library/aa363216(v=vs.85).aspx
         if input:
@@ -106,7 +105,7 @@ else:
         output_size = len(output)
         assert isinstance(output, ctypes.Array)
         bytesReturned = wintypes.DWORD()
-        status = _DevIoCtl(hDevice, ioControlCode, input,
+        status = _DevIoCtl(hdevice, iocontrolcode, input,
                            input_size, output, output_size, bytesReturned, None)
         if win32_verbose:
             print("DeviceIOControl: status = %d" % status)
@@ -115,15 +114,14 @@ else:
         else:
             return None
 
-
-    def CreateFile(path, access, sharemode, creation, flags):
+    def create_file(path, access, sharemode, creation, flags):
         if type(path) == unicode:
             return _CreateFileW(path, access, sharemode, None, creation, flags, None)
         else:
             return _CreateFileA(path, access, sharemode, None, creation, flags, None)
 
     SymbolicLinkReparseFormat = "LHHHHHHL"
-    SymbolicLinkReparseSize = struct.calcsize(SymbolicLinkReparseFormat);
+    SymbolicLinkReparseSize = struct.calcsize(SymbolicLinkReparseFormat)
 
     def readlink(path):
         """ Windows readlink implementation. """
@@ -134,10 +132,10 @@ else:
             return None
 
         # Open the file correctly depending on the string type.
-        hfile = CreateFile(path, GENERIC_READ, 0, OPEN_EXISTING, FILE_FLAG_OPEN_REPARSE_POINT)
+        hfile = create_file(path, GENERIC_READ, 0, OPEN_EXISTING, FILE_FLAG_OPEN_REPARSE_POINT)
 
         # MAXIMUM_REPARSE_DATA_BUFFER_SIZE = 16384 = (16*1024)
-        buffer = DeviceIoControl(hfile, FSCTL_GET_REPARSE_POINT, None, 16384)
+        buffer = device_io_control(hfile, FSCTL_GET_REPARSE_POINT, None, 16384)
         CloseHandle(hfile)
 
         # Minimum possible length (assuming length of the target is bigger than 0)
