@@ -182,7 +182,7 @@ else:
         # Only handle SymbolicLinkReparseBuffer
         (tag, data_length, reserver, substitute_name_offset, substitute_name_length,
          print_name_offset, print_name_length,
-         Flags) = struct.unpack(SymbolicLinkReparseFormat,
+         flags) = struct.unpack(SymbolicLinkReparseFormat,
                                 buffer[:SymbolicLinkReparseSize])
         # print tag, dataLength, reserver, SubstituteNameOffset, SubstituteNameLength
         start = substitute_name_offset + SymbolicLinkReparseSize
