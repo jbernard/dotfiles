@@ -376,14 +376,14 @@ class DotfilesTestCase(unittest.TestCase):
 
         dotfiles.sync()
 
-	expected = os.path.join(self.homedir, ".config")
-	self.assertTrue(os.path.isdir(expected))
+        expected = os.path.join(self.homedir, ".config")
+        self.assertTrue(os.path.isdir(expected))
 
-	expected = os.path.join(expected, "awesome")
-	self.assertTrue(os.path.islink(expected))
+        expected = os.path.join(expected, "awesome")
+        self.assertTrue(os.path.islink(expected))
 
-	expected = os.path.join(expected, "testfile")
-	self.assertTrue(os.path.isfile(expected))
+        expected = os.path.join(expected, "testfile")
+        self.assertTrue(os.path.isfile(expected))
 
 
 if __name__ == '__main__':
