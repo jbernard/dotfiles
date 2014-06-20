@@ -185,6 +185,8 @@ class Dotfiles(object):
         dotfiles = list()
 
         all_repofiles = list()
+        pkg_dirs = list(map(lambda p: os.path.join(directory, p),
+                            self.packages))
         for root, dirs, files in os.walk(directory):
             for f in files:
                 f_rel_path = os.path.join(root, f)[len(directory)+1:]
@@ -195,9 +197,16 @@ class Dotfiles(object):
                     dirs.remove(d)
                     continue
 
-                # add symlinks to dot-directories
+                dotdir_or_package = False
+                # discover packages
+                if root in pkg_dirs:
+                    dotdir_or_package = True
+                # discover symlinks to dot-directories in home
                 dotdir = self._home_fqpn(os.path.join(root, d), hostname)
                 if os.path.islink(dotdir):
+                    dotdir_or_package = True
+
+                if dotdir_or_package:
                     dirs.remove(d)
                     d_rel_path = os.path.join(root, d)[len(directory)+1:]
                     all_repofiles.append(d_rel_path)
@@ -208,9 +217,9 @@ class Dotfiles(object):
                     fnmatch.filter(all_repofiles, pat))
 
         for dotfile in repofiles_to_symlink:
-            dotfiles.append(Dotfile(dotfile[len(self.prefix):],
-                os.path.join(directory, dotfile),
-                self.homedir, dry_run=self.dry_run))
+            dotfiles.append(Dotfile(dotfile,
+                                    os.path.join(directory, dotfile),
+                                    self.homedir, dry_run=self.dry_run))
 
         for dotfile in self.externals.keys():
             dotfiles.append(Dotfile(dotfile,

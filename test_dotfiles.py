@@ -487,7 +487,7 @@ class DotfilesTestCase(unittest.TestCase):
     def test_package_and_prefix(self):
         """Test syncing a package when using a non-default prefix."""
 
-        package_dir = os.path.join(self.repository, '.config/awesome')
+        package_dir = os.path.join(self.repository, 'config/awesome')
         os.makedirs(package_dir)
         touch('%s/testfile' % package_dir)
 
@@ -496,20 +496,20 @@ class DotfilesTestCase(unittest.TestCase):
                                  prefix='.',
                                  ignore=[],
                                  externals={},
-                                 packages=['.config'],
+                                 packages=['config'],
                                  dry_run=False,
                                  quiet=True)
 
         dotfiles.sync()
 
         expected = os.path.join(self.homedir, ".config")
-        self.assertTrue(os.path.isdir(expected))
+        self.assertTrue(os.path.isdir(expected), "%s is missing" % expected)
 
         expected = os.path.join(expected, "awesome")
-        self.assertTrue(os.path.islink(expected))
+        self.assertTrue(os.path.islink(expected), "%s is missing" % expected)
 
         expected = os.path.join(expected, "testfile")
-        self.assertTrue(os.path.isfile(expected))
+        self.assertTrue(os.path.isfile(expected), "%s is missing" % expected)
 
 
 if __name__ == '__main__':
