@@ -1,5 +1,4 @@
-Dotfiles was written by Jon Bernard and is developed and maintained by the
-following folks:
+Dotfiles is developed and maintained by the following folks:
 
 - Jon Bernard <jbernard@tuxion.com>
 - Anaël Beutot
@@ -12,3 +11,4 @@ following folks:
 - Luper Rouch <luper.rouch@gmail.com>
 - Jesús García Crespo <jesus@sevein.com>
 - Jay Sweeney <writetojay@gmail.com>
+- Alexandre Viau <alexandre@alexandreviau.net>
