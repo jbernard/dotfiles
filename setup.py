@@ -1,16 +1,14 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+import re
+import ast
+from setuptools import setup
 
-import os
-import sys
 
-try:
-    from setuptools import setup
-except ImportError:
-    from distutils.core import setup
+_version_re = re.compile(r'__version__\s+=\s+(.*)')
 
-from dotfiles.core import __version__
 
+with open('dotfiles/core.py', 'rb') as f:
+    version = str(ast.literal_eval(_version_re.search(
+        f.read().decode('utf-8')).group(1)))
 
 setup(name='dotfiles',
       version=__version__,
