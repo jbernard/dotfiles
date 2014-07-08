@@ -2,5 +2,6 @@
 *.pyo
 __pycache__/
 .venv/
+build/
 dist/
 dotfiles.egg-info/
