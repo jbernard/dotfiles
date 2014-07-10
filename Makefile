@@ -1,5 +1,5 @@
 test:
-	@cd tests && PYTHONPATH=../ py.test
+	@PYTHONPATH=$$PWD py.test
 
 publish-test:
 	@python setup.py sdist upload -r test
