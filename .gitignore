@@ -2,6 +2,7 @@
 *.pyo
 __pycache__/
 .venv/
+.tox/
 build/
 dist/
 dotfiles.egg-info/
