@@ -1,12 +1,8 @@
 test:
 	@PYTHONPATH=$$PWD py.test
 
-publish-test:
-	@python setup.py sdist upload -r test
-	@python setup.py bdist_wheel upload -r test
-
-publish-pypi:
+publish:
 	@python setup.py sdist upload -r pypi
 	@python setup.py bdist_wheel upload -r pypi
 
-.PHONY: test publish-test publish-pypi
+.PHONY: test publish
