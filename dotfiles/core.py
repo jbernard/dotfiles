@@ -12,13 +12,8 @@ import os.path
 import shutil
 import fnmatch
 
-from dotfiles.utils import realpath_expanduser, is_link_to
-from dotfiles.compat import symlink
-
-
-__version__ = '0.6.3'
-__author__ = 'Jon Bernard'
-__license__ = 'ISC'
+from .utils import realpath_expanduser, is_link_to
+from .compat import symlink
 
 
 class Dotfile(object):

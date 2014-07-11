@@ -4,7 +4,7 @@ Misc utility functions.
 
 import os.path
 
-from dotfiles.compat import islink, realpath
+from .compat import islink, realpath
 
 
 def compare_path(path1, path2):

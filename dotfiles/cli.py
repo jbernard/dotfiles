@@ -9,14 +9,15 @@ This module provides the CLI interface to dotfiles.
 from __future__ import absolute_import
 
 import os
-from . import core
 try:
     import ConfigParser as configparser
 except ImportError:
     import configparser
 from optparse import OptionParser, OptionGroup
 
-from dotfiles.utils import compare_path, realpath_expanduser
+from .utils import compare_path, realpath_expanduser
+from .core import Dotfiles
+from . import __version__
 
 
 defaults = {
@@ -133,7 +134,7 @@ def parse_args():
     (opts, args) = parser.parse_args()
 
     if opts.show_version:
-        print('dotfiles v%s' % core.__version__)
+        print('dotfiles v%s' % __version__)
         exit(0)
 
     if not opts.action:
@@ -242,6 +243,6 @@ def main():
     update_settings(repo_config_opts, 'externals')
     update_settings(repo_config_opts, 'packages')
 
-    dotfiles = core.Dotfiles(**settings)
+    dotfiles = Dotfiles(**settings)
 
     dispatch(dotfiles, cli_opts.action, cli_opts.force, args)

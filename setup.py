@@ -1,21 +1,13 @@
-import re
-import ast
+# -*- coding: utf-8 -*-
 from setuptools import setup
-
-
-_version_re = re.compile(r'__version__\s+=\s+(.*)')
-
-
-with open('dotfiles/core.py', 'rb') as f:
-    version = str(ast.literal_eval(_version_re.search(
-        f.read().decode('utf-8')).group(1)))
+from dotfiles import __version__
 
 
 setup(
     name='dotfiles',
+    version=__version__,
     author='Jon Bernard',
     author_email='jbernard@tuxion.com',
-    version=version,
     url='https://github.com/jbernard/dotfiles',
     packages=['dotfiles'],
     description='Easily manage your dotfiles',
