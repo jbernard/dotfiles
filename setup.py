@@ -8,12 +8,13 @@ setup(
     version=__version__,
     author='Jon Bernard',
     author_email='jbernard@tuxion.com',
-    url='https://github.com/jbernard/dotfiles',
-    packages=['dotfiles'],
     description='Easily manage your dotfiles',
+    url='https://github.com/jbernard/dotfiles',
     long_description=open('README.rst').read() + '\n\n' +
                      open('LICENSE.rst').read() + '\n\n' +
                      open('HISTORY.rst').read(),
+    license='ISC',
+    packages=['dotfiles'],
     entry_points = '''
         [console_scripts]
         dotfiles=dotfiles.cli:main
