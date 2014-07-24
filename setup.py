@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from setuptools import setup
 from dotfiles import __version__
 
@@ -10,9 +9,9 @@ setup(
     author_email='jbernard@tuxion.com',
     description='Easily manage your dotfiles',
     url='https://github.com/jbernard/dotfiles',
-    long_description=open('README.rst').read() + '\n\n' +
-                     open('LICENSE.rst').read() + '\n\n' +
-                     open('HISTORY.rst').read(),
+    long_description=(open('README.rst').read() + '\n\n' +
+                      open('LICENSE.rst').read() + '\n\n' +
+                      open('HISTORY.rst').read()),
     license='ISC',
     packages=['dotfiles'],
     entry_points = '''
