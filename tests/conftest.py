@@ -1,4 +1,5 @@
 import os
+import pytest
 from dotfiles.utils import compare_path as samefile
 
 
@@ -9,13 +10,14 @@ def _touch(fname, times=None):
 
 class HomeDirectory(object):
 
+    DEFAULT_REPOSITORY = 'dotfiles'
 
-    def __init__(self, path, repo, contents):
+    def __init__(self, path, repo=None, contents=None):
         self.path = path
-        self.repo = repo
+        if not repo:
+            self.repo = os.path.join(path, self.DEFAULT_REPOSITORY)
         if contents:
             self.setup(contents)
-
 
     def setup(self, contents):
         repo = os.path.join(self.path, self.repo)
@@ -30,7 +32,6 @@ class HomeDirectory(object):
                 os.symlink(target, os.path.join(self.path, link))
 
         self.verify(contents)
-
 
     def verify(self, contents):
         __tracebackhide__ = True
@@ -49,7 +50,13 @@ class HomeDirectory(object):
                 if not link_exists:
                     pytest.fail("missing expected symlink \"%s\"" % link)
                 if not samefile(link, target):
-                    pytest.fail("\"%s\" does not link to \"%s\"" % (link, target))
+                    pytest.fail("\"%s\" does not link to \"%s\"" %
+                                (link, target))
 
             elif link_exists:
                 pytest.fail("found unexpected symlink \"%s\"" % link)
+
+
+@pytest.fixture
+def homedir(tmpdir):
+    return HomeDirectory(str(tmpdir))
