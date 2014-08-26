@@ -132,7 +132,8 @@ class Dotfiles(object):
         for package in copy.deepcopy(self.packages):
             while package:
                 package, filename = os.path.split(package)
-                self.packages.add(package)
+                if package:
+                    self.packages.add(package)
 
         self._load()
 
