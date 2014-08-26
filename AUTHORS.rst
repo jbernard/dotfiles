@@ -12,3 +12,4 @@ Dotfiles is developed and maintained by the following folks:
 - Jesús García Crespo <jesus@sevein.com>
 - Jay Sweeney <writetojay@gmail.com>
 - Alexandre Viau <alexandre@alexandreviau.net>
+- Jeffrey Zhang <zhang.lei.fly@gmail.com>
