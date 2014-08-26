@@ -1,3 +1,4 @@
+import copy
 import os
 import os.path
 import shutil
@@ -125,6 +126,13 @@ class Dotfiles(object):
         # FIXME: compatibility shims, remove these
         self.dry_run = False
         self.repository = self.path
+
+        # NOTE(jeffrey4l): add the parent dir of package to the self.packages
+        # to support the nested package
+        for package in copy.deepcopy(self.packages):
+            while package:
+                package, filename = os.path.split(package)
+                self.packages.add(package)
 
         self._load()
 
