@@ -198,8 +198,8 @@ class DotfilesTestCase(unittest.TestCase):
         """
         Test packages.
         """
-        files = ['foo', 'package/bar']
-        symlinks = ['.foo', '.package/bar']
+        files = ['foo', 'package/bar', 'package2/foo/bar']
+        symlinks = ['.foo', '.package/bar', '.package2/foo/bar']
         join = os.path.join
 
         # Create files
@@ -213,26 +213,28 @@ class DotfilesTestCase(unittest.TestCase):
         # Create Dotfiles object
         dotfiles = Dotfiles(
                 homedir=self.homedir, path=self.repository,
-                prefix='', ignore=[], externals={}, packages=set(['package']),
-                dry_run=False)
+                prefix='', ignore=[], externals={},
+                packages=set(['package', 'package2/foo']), dry_run=False)
 
         # Create symlinks in homedir
         dotfiles.sync()
 
         # Verify it created what we expect
+        for folder in ['.package', '.package2', '.package2/foo']:
+            self.assertTrue(os.path.isdir(join(self.homedir, folder)))
         def check_all(files, symlinks):
-            self.assertTrue(os.path.isdir(join(self.homedir, '.package')))
             for src, dst in zip(files, symlinks):
                 self.assertTrue(is_link_to(join(self.homedir, dst),
                     join(self.repository, src)))
         check_all(files, symlinks)
 
         # Add files to the repository
-        new_files = [join(self.homedir, f) for f in ['.bar', '.package/foo']]
+        new_files = [join(self.homedir, f) for f in 
+                ['.bar', '.package/foo', '.package2/foo/bar2']]
         for filename in new_files:
             path = join(self.homedir, filename)
             touch(path)
-        new_repo_files = ['bar', 'package/foo']
+        new_repo_files = ['bar', 'package/foo', 'package2/foo/bar2']
         dotfiles.add(new_files)
         check_all(files + new_repo_files, symlinks + new_files)
 
