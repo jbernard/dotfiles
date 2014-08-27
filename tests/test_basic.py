@@ -198,8 +198,8 @@ class DotfilesTestCase(unittest.TestCase):
         """
         Test packages.
         """
-        files = ['foo', 'package/bar']
-        symlinks = ['.foo', '.package/bar']
+        files = ['foo', 'package/bar', 'package2/foo/bar']
+        symlinks = ['.foo', '.package/bar', '.package2/foo/bar']
         join = os.path.join
 
         # Create files
@@ -213,26 +213,28 @@ class DotfilesTestCase(unittest.TestCase):
         # Create Dotfiles object
         dotfiles = Dotfiles(
                 homedir=self.homedir, path=self.repository,
-                prefix='', ignore=[], externals={}, packages=['package'],
-                dry_run=False)
+                prefix='', ignore=[], externals={},
+                packages=set(['package', 'package2/foo']), dry_run=False)
 
         # Create symlinks in homedir
         dotfiles.sync()
 
         # Verify it created what we expect
+        for folder in ['.package', '.package2', '.package2/foo']:
+            self.assertTrue(os.path.isdir(join(self.homedir, folder)))
         def check_all(files, symlinks):
-            self.assertTrue(os.path.isdir(join(self.homedir, '.package')))
             for src, dst in zip(files, symlinks):
                 self.assertTrue(is_link_to(join(self.homedir, dst),
                     join(self.repository, src)))
         check_all(files, symlinks)
 
         # Add files to the repository
-        new_files = [join(self.homedir, f) for f in ['.bar', '.package/foo']]
+        new_files = [join(self.homedir, f) for f in 
+                ['.bar', '.package/foo', '.package2/foo/bar2']]
         for filename in new_files:
             path = join(self.homedir, filename)
             touch(path)
-        new_repo_files = ['bar', 'package/foo']
+        new_repo_files = ['bar', 'package/foo', 'package2/foo/bar2']
         dotfiles.add(new_files)
         check_all(files + new_repo_files, symlinks + new_files)
 
@@ -255,7 +257,7 @@ class DotfilesTestCase(unittest.TestCase):
         # Create Dotfiles object
         dotfiles = Dotfiles(
                 homedir=self.homedir, path=self.repository,
-                prefix='', ignore=[], externals={}, packages=['package'],
+                prefix='', ignore=[], externals={}, packages=set(['package']),
                 dry_run=False)
 
         path = os.path.join(self.homedir, package_file)
@@ -295,7 +297,7 @@ class DotfilesTestCase(unittest.TestCase):
 
         dotfiles = Dotfiles(
                 homedir=self.homedir, path=self.repository,
-                prefix='', ignore=[], externals={}, packages=[],
+                prefix='', ignore=[], externals={}, packages=set(),
                 dry_run=False)
 
         # sync only certain dotfiles
@@ -323,7 +325,7 @@ class DotfilesTestCase(unittest.TestCase):
 
         dotfiles = Dotfiles(
                 homedir=self.homedir, path=self.repository,
-                prefix='', ignore=[], externals={}, packages=[],
+                prefix='', ignore=[], externals={}, packages=set(),
                 dry_run=False)
 
         dotfiles.sync()
@@ -353,7 +355,7 @@ class DotfilesTestCase(unittest.TestCase):
 
         dotfiles = Dotfiles(
                 homedir=self.homedir, path=self.repository,
-                prefix='', ignore=[], externals={}, packages=['config'],
+                prefix='', ignore=[], externals={}, packages=set(['config']),
                 dry_run=False, quiet=True)
 
         # This should fail, you should not be able to add dotfiles that are
