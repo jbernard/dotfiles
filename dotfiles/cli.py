@@ -1,44 +1,39 @@
-# -*- coding: utf-8 -*-
-
-"""
-dotfiles.cli
-
-This module provides the CLI interface to dotfiles.
-"""
-
-from __future__ import absolute_import
-
 import os
-from . import core
 try:
     import ConfigParser as configparser
 except ImportError:
     import configparser
 from optparse import OptionParser, OptionGroup
 
-from dotfiles.utils import compare_path, realpath_expanduser
+from .utils import compare_path, realpath_expanduser
+from .core import Dotfiles as Repository
+from . import __version__
 
 
-defaults = {
-        'prefix': '',
-        'homedir': '~/',
-        'repository': '~/Dotfiles',
-        'config_file': '~/.dotfilesrc',
-        'hostname': 'all',
+CONFIG_FILE = '.dotfilesrc'
+
+
+# Users can define configuration at several different levels to overlay
+# specific configuration for a particular repository.  These settings are
+# accumulated and passed to the Repository constructor once parsing has
+# completed.
+repo_settings = {
+    'path': Repository.defaults['path'],
+    'prefix': Repository.defaults['prefix'],
+    'ignore': Repository.defaults['ignore'],
+    'homedir': Repository.defaults['homedir'],
+    'packages': Repository.defaults['packages'],
+    'externals': Repository.defaults['externals'],
+    'hostname': Repository.defaults['hostname'],
 }
-
-settings = {
-        'prefix': None,
-        'homedir': None,
-        'repository': None,
-        'config_file': None,
-        'ignore': set(['.dotfilesrc']),
-        'externals': dict(),
-        'packages': set()}
 
 
 def missing_default_repo():
-    """Print a helpful message when the default repository is missing."""
+    """Print a helpful message when the default repository is missing.
+
+    For a first-time user, this is the first message they're likely to see, so
+    it should be as helpful as possible.
+    """
 
     print("""
 If this is your first time running dotfiles, you must first create
@@ -51,48 +46,49 @@ is all you need to do.  If you don't like the default, you can put your
 repository wherever you like.  You have two choices once you've created your
 repository.  You can specify the path to the repository on the command line
 using the '-R' flag.  Alternatively, you can create a configuration file at
-'~/.dotfilesrc' and place the path to your repository in there.  The contents
-would look like:
+'~/{1}' and place the path to your repository in there.  The contents would
+look like:
 
     [dotfiles]
     repository = {0}
 
-Type 'dotfiles -h' to see detailed usage information.""".format(
-        defaults['repository']))
+Type 'dotfiles -h' to see detailed usage information.""".format
+          (repo_settings['path']), CONFIG_FILE)
 
 
 def add_global_flags(parser):
     parser.add_option("-v", "--version",
-            action="store_true", dest="show_version", default=False,
-            help="show version number and exit")
+                      action="store_true", dest="show_version", default=False,
+                      help="show version number and exit")
 
     parser.add_option("-f", "--force",
-            action="store_true", dest="force", default=False,
-            help="overwrite colliding dotfiles (use with --sync)")
+                      action="store_true", dest="force", default=False,
+                      help="overwrite colliding dotfiles (use with --sync)")
 
     parser.add_option("-R", "--repo",
-            type="string", dest="repository",
-            help="set repository location (default: %s)" % (
-                defaults['repository']))
+                      type="string", dest="repository",
+                      help="set repository location (default: %s)" % (
+                          repo_settings['path']))
 
     parser.add_option("-p", "--prefix",
-            type="string", dest="prefix",
-            help="set prefix character (default: %s)" % (
-                "None" if not defaults['prefix'] else defaults['prefix']))
+                      type="string", dest="prefix",
+                      help="set prefix character (default: %s)" % (
+                          None if not repo_settings['prefix'] else
+                          repo_settings['prefix']))
 
     parser.add_option("-C", "--config",
-            type="string", dest="config_file",
-            help="set configuration file location (default: %s)" % (
-                defaults['config_file']))
+                      type="string", dest="config_file",
+                      help="set configuration file (default: ~/%s)" % (
+                          CONFIG_FILE))
 
     parser.add_option("-H", "--home",
-            type="string", dest="homedir",
-            help="set home directory location (default: %s)" % (
-                defaults['homedir']))
+                      type="string", dest="homedir",
+                      help="set home directory location (default: %s)" % (
+                          repo_settings['homedir']))
 
     parser.add_option("-d", "--dry-run",
-            action="store_true", default=False,
-            help="don't modify anything, just print commands")
+                      action="store_true", default=False,
+                      help="don't modify anything, just print commands")
 
     parser.add_option("-n", "--hostname",
             type="string", dest="hostname",
@@ -103,28 +99,29 @@ def add_action_group(parser):
     action_group = OptionGroup(parser, "Actions")
 
     action_group.add_option("-a", "--add",
-            action="store_const", dest="action", const="add",
-            help="add dotfile(s) to the repository")
+                            action="store_const", dest="action", const="add",
+                            help="add dotfile(s) to the repository")
 
     action_group.add_option("-c", "--check",
-            action="store_const", dest="action", const="check",
-            help="check for broken and unsynced dotfiles")
+                            action="store_const", dest="action", const="check",
+                            help="check for broken and unsynced dotfiles")
 
     action_group.add_option("-l", "--list",
-            action="store_const", dest="action", const="list",
-            help="list currently managed dotfiles")
+                            action="store_const", dest="action", const="list",
+                            help="list currently managed dotfiles")
 
     action_group.add_option("-r", "--remove",
-            action="store_const", dest="action", const="remove",
-            help="remove dotfile(s) from the repository")
+                            action="store_const", dest="action",
+                            const="remove",
+                            help="remove dotfile(s) from the repository")
 
     action_group.add_option("-s", "--sync",
-            action="store_const", dest="action", const="sync",
-            help="update dotfile symlinks")
+                            action="store_const", dest="action", const="sync",
+                            help="update dotfile symlinks")
 
     action_group.add_option("-m", "--move",
-            action="store_const", dest="action", const="move",
-            help="move dotfiles repository to another location")
+                            action="store_const", dest="action", const="move",
+                            help="move (rename) dotfiles repository")
 
     parser.add_option_group(action_group)
 
@@ -139,11 +136,11 @@ def parse_args():
     (opts, args) = parser.parse_args()
 
     if opts.show_version:
-        print('dotfiles v%s' % core.__version__)
+        print('dotfiles v%s' % __version__)
         exit(0)
 
     if not opts.action:
-        print("Error: An action is required. Type 'dotfiles -h' to see " \
+        print("Error: An action is required. Type 'dotfiles -h' to see "
               "detailed usage information.")
         exit(-1)
 
@@ -155,11 +152,7 @@ def parse_config(config_file):
     parser = configparser.SafeConfigParser()
     parser.read(config_file)
 
-    opts = {'repository': None,
-            'prefix': None,
-            'ignore': set(),
-            'externals': dict(),
-            'packages': set()}
+    opts = dict()
 
     for entry in ('repository', 'prefix'):
         try:
@@ -180,53 +173,63 @@ def parse_config(config_file):
     return opts
 
 
-def dispatch(dotfiles, action, force, hostname, args):
-    if action in ['list', 'check']:
-        getattr(dotfiles, action)()
-    elif action in ['add', 'remove']:
-        getattr(dotfiles, action)(args, hostname)
-    elif action == 'sync':
-        getattr(dotfiles, action)(files=args, force=force, hostname=hostname)
-    elif action == 'move':
+def dispatch(repo, opts, args):
+
+    # TODO: handle/pass dry_run
+
+    if opts.action in ['list', 'check']:
+        getattr(repo, opts.action)()
+
+    elif opts.action in ['add', 'remove']:
+        getattr(repo, opts.action)(args)
+
+    elif opts.action == 'sync':
+        getattr(repo, opts.action)(files=args, force=opts.force,
+                                   hostname=opts.hostname)
+
+    elif opts.action == 'move':
         if len(args) > 1:
             print("Error: Move cannot handle multiple targets.")
             exit(-1)
-        dotfiles.move(args[0])
+        repo.move(args[0])
+
     else:
         print("Error: Something truly terrible has happened.")
         exit(-1)
 
 
 def check_repository_exists():
-    if not os.path.exists(settings['repository']):
+    if not os.path.exists(repo_settings['path']):
         print('Error: Could not find dotfiles repository \"%s\"' % (
-                settings['repository']))
-        if compare_path(settings['repository'], defaults['repository']):
+            repo_settings['path']))
+        if compare_path(repo_settings['path'], Repository.defaults['path']):
             missing_default_repo()
         exit(-1)
 
 
 def update_settings(opts, key):
-    global settings
+    global repo_settings
 
-    settings[key].update(opts[key])
+    value = opts.get(key)
+    if value:
+        repo_settings[key].update(value)
 
 
 def main():
 
-    global settings
+    global repo_settings
 
     (cli_opts, args) = parse_args()
 
-    settings['homedir'] = realpath_expanduser(cli_opts.homedir or
-            defaults['homedir'])
-    settings['config_file'] = realpath_expanduser(cli_opts.config_file or
-            defaults['config_file'])
+    repo_settings['homedir'] = realpath_expanduser(
+        cli_opts.homedir or repo_settings['homedir'])
 
-    config_opts = parse_config(settings['config_file'])
+    config_opts = parse_config(cli_opts.config_file or '~/%s' % CONFIG_FILE)
 
-    settings['repository'] = realpath_expanduser(cli_opts.repository or
-            config_opts['repository'] or defaults['repository'])
+    repo_settings['path'] = realpath_expanduser(
+        cli_opts.repository or
+        config_opts.get('repository') or
+        repo_settings['path'])
 
     check_repository_exists()
 
@@ -234,20 +237,18 @@ def main():
     update_settings(config_opts, 'externals')
     update_settings(config_opts, 'packages')
 
-    repo_config_file = os.path.join(settings['repository'], '.dotfilesrc')
+    repo_config_file = os.path.join(repo_settings['path'], CONFIG_FILE)
     repo_config_opts = parse_config(repo_config_file)
 
-    settings['prefix'] = (cli_opts.prefix or
-                          repo_config_opts['prefix'] or
-                          config_opts['prefix'] or
-                          defaults['prefix'])
-
-    settings['dry_run'] = cli_opts.dry_run
+    repo_settings['prefix'] = (cli_opts.prefix or
+                               repo_config_opts.get('prefix') or
+                               config_opts.get('prefix') or
+                               repo_settings['prefix'])
 
     update_settings(repo_config_opts, 'ignore')
     update_settings(repo_config_opts, 'externals')
     update_settings(repo_config_opts, 'packages')
 
-    dotfiles = core.Dotfiles(**settings)
+    repo = Repository(**repo_settings)
 
-    dispatch(dotfiles, cli_opts.action, cli_opts.force, cli_opts.hostname, args)
+    dispatch(repo, cli_opts, args)

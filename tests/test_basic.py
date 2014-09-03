@@ -1,15 +1,13 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
 from __future__ import with_statement
 
 import os
+import pytest
 import shutil
 import tempfile
 import unittest
 
-from dotfiles import core
-from dotfiles import cli
+from dotfiles.cli import dispatch
+from dotfiles.core import Dotfiles
 from dotfiles.utils import is_link_to
 
 
@@ -67,8 +65,8 @@ class DotfilesTestCase(unittest.TestCase):
         os.mkdir(os.path.join(self.homedir, '.lastpass'))
         externals = {'.lastpass': '/tmp'}
 
-        dotfiles = core.Dotfiles(
-                homedir=self.homedir, repository=self.repository,
+        dotfiles = Dotfiles(
+                homedir=self.homedir, path=self.repository,
                 prefix='', ignore=[], externals=externals, packages=[],
                 dry_run=False)
 
@@ -80,19 +78,26 @@ class DotfilesTestCase(unittest.TestCase):
 
     def test_dispatch(self):
         """Test that the force option is handed on to the sync method."""
+
         class MockDotfiles(object):
             def sync(self, files=None, force=False, hostname=None):
-                assert bool(force)
-        dotfiles = MockDotfiles()
-        cli.dispatch(dotfiles, 'sync', True, [], None)
+                assert force
+
+        class MockNamespace(object):
+            def __init__(self):
+                self.action = 'sync'
+                self.force = True
+                self.hostname = None
+
+        dispatch(MockDotfiles(), MockNamespace(), [])
 
     def test_move_repository(self):
         """Test the move() method for a Dotfiles repository."""
 
         touch(os.path.join(self.repository, 'bashrc'))
 
-        dotfiles = core.Dotfiles(
-                homedir=self.homedir, repository=self.repository,
+        dotfiles = Dotfiles(
+                homedir=self.homedir, path=self.repository,
                 prefix='', ignore=[], force=True, externals={}, packages=[],
                 dry_run=False)
 
@@ -136,8 +141,8 @@ class DotfilesTestCase(unittest.TestCase):
                 os.path.join(self.homedir, '.vim'),
                 os.path.join(self.homedir, 'vim'))
 
-        dotfiles = core.Dotfiles(
-                homedir=self.homedir, repository=self.repository,
+        dotfiles = Dotfiles(
+                homedir=self.homedir, path=self.repository,
                 prefix='', ignore=[], externals={}, packages=[], dry_run=False)
 
         dotfiles.sync(force=True)
@@ -186,8 +191,8 @@ class DotfilesTestCase(unittest.TestCase):
         for original, symlink in all_repo_files:
             touch(os.path.join(self.repository, original))
 
-        dotfiles = core.Dotfiles(
-                homedir=self.homedir, repository=self.repository,
+        dotfiles = Dotfiles(
+                homedir=self.homedir, path=self.repository,
                 prefix='', ignore=ignore, externals={}, packages=[],
                 dry_run=False)
 
@@ -222,8 +227,8 @@ class DotfilesTestCase(unittest.TestCase):
             touch(path)
 
         # Create Dotfiles object
-        dotfiles = core.Dotfiles(
-                homedir=self.homedir, repository=self.repository,
+        dotfiles = Dotfiles(
+                homedir=self.homedir, path=self.repository,
                 prefix='', ignore=[], externals={}, packages=['package'],
                 dry_run=False)
 
@@ -264,8 +269,8 @@ class DotfilesTestCase(unittest.TestCase):
         package_file = '.package/bar'
 
         # Create Dotfiles object
-        dotfiles = core.Dotfiles(
-                homedir=self.homedir, repository=self.repository,
+        dotfiles = Dotfiles(
+                homedir=self.homedir, path=self.repository,
                 prefix='', ignore=[], externals={}, packages=['package'],
                 dry_run=False)
 
@@ -304,8 +309,8 @@ class DotfilesTestCase(unittest.TestCase):
         for dotfile, _ in repo_files:
             touch(os.path.join(self.repository, dotfile))
 
-        dotfiles = core.Dotfiles(
-                homedir=self.homedir, repository=self.repository,
+        dotfiles = Dotfiles(
+                homedir=self.homedir, path=self.repository,
                 prefix='', ignore=[], externals={}, packages=[],
                 dry_run=False)
 
@@ -350,10 +355,10 @@ class DotfilesTestCase(unittest.TestCase):
             touch(os.path.join(self.homedir, homefile))
         os.mkdir(os.path.join(self.homedir, repo_dir))
 
-        dotfiles = core.Dotfiles(homedir=self.homedir,
-                                 repository=self.repository,
-                                 prefix='', ignore=[],
-                                 externals={}, packages=[], dry_run=False)
+        dotfiles = Dotfiles(homedir=self.homedir,
+                            path=self.repository,
+                            prefix='', ignore=[],
+                            externals={}, packages=[], dry_run=False)
 
         dotfiles.add([os.path.join(self.homedir, homefile)
                       for homefile, in_repo in all_repo_files
@@ -402,12 +407,12 @@ class DotfilesTestCase(unittest.TestCase):
         for homefile, host in all_repo_files:
             touch(os.path.join(self.homedir, homefile))
 
-        os.makedirs(os.path.join(self.homedir, self.repository, 'all.host'))
+        os.makedirs(os.path.join(self.repository, 'all.host'))
 
-        dotfiles = core.Dotfiles(homedir=self.homedir,
-                                 repository=self.repository,
-                                 prefix='', ignore=[],
-                                 externals={}, packages=[], dry_run=False)
+        dotfiles = Dotfiles(homedir=self.homedir,
+                            path=self.repository,
+                            prefix='', ignore=[],
+                            externals={}, packages=[], dry_run=False)
         self.assertTrue(dotfiles.hosts_mode())
 
         for homefile, host in all_repo_files:
@@ -443,8 +448,8 @@ class DotfilesTestCase(unittest.TestCase):
 
         touch(repo_file)
 
-        dotfiles = core.Dotfiles(
-                homedir=self.homedir, repository=self.repository,
+        dotfiles = Dotfiles(
+                homedir=self.homedir, path=self.repository,
                 prefix='', ignore=[], externals={}, packages=[],
                 dry_run=False)
 
@@ -473,8 +478,8 @@ class DotfilesTestCase(unittest.TestCase):
         os.makedirs(package_dir)
         touch('%s/testfile' % package_dir)
 
-        dotfiles = core.Dotfiles(
-                homedir=self.homedir, repository=self.repository,
+        dotfiles = Dotfiles(
+                homedir=self.homedir, path=self.repository,
                 prefix='', ignore=[], externals={}, packages=['config'],
                 dry_run=False, quiet=True)
 
@@ -496,8 +501,8 @@ class DotfilesTestCase(unittest.TestCase):
         os.makedirs(package_dir)
         touch('%s/testfile' % package_dir)
 
-        dotfiles = core.Dotfiles(
-                homedir=self.homedir, repository=self.repository,
+        dotfiles = Dotfiles(
+                homedir=self.homedir, path=self.repository,
                 prefix='', ignore=[], externals={}, packages=['config'],
                 dry_run=False)
 
@@ -515,8 +520,8 @@ class DotfilesTestCase(unittest.TestCase):
         os.makedirs(package_dir)
         touch('%s/testfile' % package_dir)
 
-        dotfiles = core.Dotfiles(homedir=self.homedir,
-                                 repository=self.repository,
+        dotfiles = Dotfiles(homedir=self.homedir,
+                                 path=self.repository,
                                  prefix='.',
                                  ignore=[],
                                  externals={},

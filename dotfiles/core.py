@@ -1,12 +1,3 @@
-# -*- coding: utf-8 -*-
-
-"""
-dotfiles.core
-~~~~~~~~~~~~~
-
-This module provides the basic functionality of dotfiles.
-"""
-
 import os
 import glob
 import os.path
@@ -14,13 +5,8 @@ import shutil
 import fnmatch
 import socket
 
-from dotfiles.utils import realpath_expanduser, is_link_to
-from dotfiles.compat import symlink
-
-
-__version__ = '0.6.3'
-__author__ = 'Jon Bernard'
-__license__ = 'ISC'
+from .utils import realpath_expanduser, is_link_to
+from .compat import symlink
 
 
 class Dotfile(object):
@@ -128,15 +114,29 @@ class Dotfile(object):
 class Dotfiles(object):
     """A Dotfiles Repository."""
 
-    __attrs__ = ['homedir', 'repository', 'prefix', 'ignore', 'externals',
-            'packages', 'dry_run']
+    defaults = {
+        'prefix': '',
+        'packages': set(),
+        'externals': dict(),
+        'ignore': set(['.dotfilesrc']),
+        'homedir': os.path.expanduser('~/'),
+        'path': os.path.expanduser('~/Dotfiles'),
+        'hostname': 'all',
+    }
 
     def __init__(self, **kwargs):
 
-        # Map args from kwargs to instance-local variables
-        for k, v in kwargs.items():
-            if k in self.__attrs__:
-                setattr(self, k, v)
+        # merge provided arguments with defaults into configuration
+        configuration = {key: kwargs.get(key, self.defaults[key])
+                         for key in self.defaults}
+
+        # map configuration items to instance-local variables
+        for k, v in configuration.items():
+            setattr(self, k, v)
+
+        # FIXME: compatibility shims, remove these
+        self.dry_run = False
+        self.repository = self.path
 
         self._load()
 
