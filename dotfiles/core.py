@@ -298,8 +298,9 @@ class Dotfiles(object):
             else:
                 home = self.homedir
                 target = self._repo_fqpn(file, hostname=hostname)
+                pkg_name = False
 
-            if sub_dir.startswith('.') or file_name.startswith('.'):
+            if sub_dir.startswith('.') or file_name.startswith('.') or pkg_name:
                 dotfile = Dotfile(file, target, home, dry_run=self.dry_run)
                 getattr(dotfile, action)()
             else:

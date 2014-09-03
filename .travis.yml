@@ -4,11 +4,11 @@ python:
     - "2.7"
     - "3.2"
     - "3.3"
+    - "3.4"
+    - "pypy"
 
-# command to install dependencies
 install:
-    - "pip install . --use-mirrors"
+    - "pip install --editable ."
 
-# command to run tests
 script:
-    - "python test_dotfiles.py"
+    - "make test"
