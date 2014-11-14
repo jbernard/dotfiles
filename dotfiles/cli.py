@@ -64,6 +64,10 @@ def add_global_flags(parser):
                       action="store_true", dest="force", default=False,
                       help="overwrite colliding dotfiles (use with --sync)")
 
+    parser.add_option("-M", "--merge",
+                      action="store_true", dest="merge", default=False,
+                      help="recursively merge dotfiles (use with --sync)")
+
     parser.add_option("-R", "--repo",
                       type="string", dest="repository",
                       help="set repository location (default: %s)" % (
@@ -179,7 +183,8 @@ def dispatch(repo, opts, args):
         getattr(repo, opts.action)(args)
 
     elif opts.action == 'sync':
-        getattr(repo, opts.action)(files=args, force=opts.force)
+        getattr(repo, opts.action)(
+            files=args, force=opts.force, merge=opts.merge)
 
     elif opts.action == 'move':
         if len(args) > 1:
