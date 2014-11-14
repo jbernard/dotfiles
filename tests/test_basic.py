@@ -62,16 +62,20 @@ class DotfilesTestCase(unittest.TestCase):
                 '/tmp')
 
     def test_dispatch(self):
-        """Test that the force option is handed on to the sync method."""
+        """
+        Test that the force and merge option is handed on to the sync method.
+        """
 
         class MockDotfiles(object):
-            def sync(self, files=None, force=False):
+            def sync(self, files=None, force=False, merge=False):
                 assert force
+                assert merge
 
         class MockNamespace(object):
             def __init__(self):
                 self.action = 'sync'
                 self.force = True
+                self.merge = True
 
         dispatch(MockDotfiles(), MockNamespace(), [])
 

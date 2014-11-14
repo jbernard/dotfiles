@@ -26,14 +26,14 @@ class Dotfile(object):
         elif not is_link_to(self.name, self.target):
             self.status = 'unsynced'
 
-    def _symlink(self, target, name):
+    def _symlink(self, source, name):
         if not self.dry_run:
             dirname = os.path.dirname(name)
             if not os.path.isdir(dirname):
                 os.makedirs(dirname)
-            symlink(target, name)
+            symlink(source, name)
         else:
-            print("Creating symlink %s => %s" % (target, name))
+            print("Creating symlink %s => %s" % (source, name))
 
     def _rmtree(self, path):
         if not self.dry_run:
@@ -53,19 +53,43 @@ class Dotfile(object):
         else:
             print("Moving %s => %s" % (src, dst))
 
-    def sync(self, force):
+    def _merge(self, src, dst, force=False):
+        for root, subdirs, files in os.walk(src):
+            for filename in set(files).intersection(os.listdir(dst)):
+                if force:
+                    self._remove(os.path.join(dst, filename))
+                else:
+                    print("Skipping \"%s\", use --force to override"
+                            % os.path.join(src, filename))
+
+            for filename in set(files).difference(os.listdir(dst)):
+                self._symlink(os.path.join(src, filename),
+                              os.path.join(dst, filename))
+
+            for subdir in subdirs:
+                if subdir not in os.listdir(dst):
+                    self._symlink(os.path.join(src, subdir),
+                                  os.path.join(dst, subdir))
+                else:
+                    self._merge(os.path.join(src, subdir),
+                                os.path.join(dst, subdir),
+                                force=force)
+
+    def sync(self, force, merge):
         if self.status == 'missing':
             self._symlink(self.target, self.name)
         elif self.status == 'unsynced':
-            if not force:
+            if merge:
+                self._merge(self.target, self.name, force=force)
+            elif force:
+                if os.path.isdir(self.name) and not os.path.islink(self.name):
+                    self._rmtree(self.name)
+                else:
+                    self._remove(self.name)
+                self._symlink(self.target, self.name)
+            else:
                 print("Skipping \"%s\", use --force to override"
                         % self.basename)
-                return
-            if os.path.isdir(self.name) and not os.path.islink(self.name):
-                self._rmtree(self.name)
-            else:
-                self._remove(self.name)
-            self._symlink(self.target, self.name)
 
     def add(self):
         if self.status == 'missing':
@@ -187,7 +211,7 @@ class Dotfiles(object):
 
         self.list(verbose=False)
 
-    def sync(self, files=None, force=False):
+    def sync(self, files=None, force=False, merge=False):
 
         """Synchronize this repository, creating and updating the necessary
         symbolic links."""
@@ -202,7 +226,7 @@ class Dotfiles(object):
                 raise Exception("file not found")
 
         for dotfile in dotfiles:
-            dotfile.sync(force)
+            dotfile.sync(force, merge)
 
     def add(self, files):
         """Add dotfile(s) to the repository."""
