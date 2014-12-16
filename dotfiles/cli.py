@@ -52,7 +52,7 @@ look like:
     repository = {0}
 
 Type 'dotfiles -h' to see detailed usage information.""".format
-          (repo_settings['path']), CONFIG_FILE)
+          (repo_settings['path'], CONFIG_FILE))
 
 
 def add_global_flags(parser):
