@@ -53,7 +53,7 @@ look like:
     repository = {0}
 
 Type 'dotfiles -h' to see detailed usage information.""".format
-          (repo_settings['path']), CONFIG_FILE)
+          (repo_settings['path'], CONFIG_FILE))
 
 
 def add_global_flags(parser):
@@ -148,9 +148,8 @@ def parse_args():
 
 
 def parse_config(config_file):
-
     parser = configparser.SafeConfigParser()
-    parser.read(config_file)
+    parser.read(os.path.expanduser(config_file))
 
     opts = dict()
 

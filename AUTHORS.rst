@@ -1,14 +1,15 @@
 Dotfiles is developed and maintained by the following folks:
 
-- Jon Bernard <jbernard@tuxion.com>
+- Jon Bernard
 - Anaël Beutot
-- Remco Wendt <remco@maykinmedia.nl>
+- Remco Wendt
 - Sebastian Rahlf
-- Reinout van Rees <reinout@vanrees.org>
+- Reinout van Rees
 - Daniel Harding
 - Gary Oberbrunner
-- Alexandre Rossi <alexandre.rossi@gmail.com>
-- Luper Rouch <luper.rouch@gmail.com>
-- Jesús García Crespo <jesus@sevein.com>
-- Jay Sweeney <writetojay@gmail.com>
-- Alexandre Viau <alexandre@alexandreviau.net>
+- Alexandre Rossi
+- Luper Rouch
+- Jesús García Crespo
+- Jay Sweeney
+- Alexandre Viau
+- Michael Barrett
