@@ -110,6 +110,7 @@ class Dotfiles(object):
         'ignore': set(['.dotfilesrc']),
         'homedir': os.path.expanduser('~/'),
         'path': os.path.expanduser('~/Dotfiles'),
+        'no_dot_prefix': False
     }
 
     def __init__(self, **kwargs):
@@ -156,9 +157,10 @@ class Dotfiles(object):
             if pkg_path in self.packages:
                 self._load_recursive(pkg_path)
             else:
+                add_dot = False if self.no_dot_prefix else not bool(sub_dir)
                 self.dotfiles.append(Dotfile(dotfile[len(self.prefix):],
                     os.path.join(src_dir, dotfile), dst_dir,
-                    add_dot=not bool(sub_dir), dry_run=self.dry_run))
+                    add_dot=add_dot, dry_run=self.dry_run))
 
         # Externals are top-level only
         if not sub_dir:
