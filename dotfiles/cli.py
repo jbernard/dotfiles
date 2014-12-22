@@ -89,6 +89,10 @@ def add_global_flags(parser):
                       action="store_true", default=False,
                       help="don't modify anything, just print commands")
 
+    parser.add_option("-n", "--no-dot-prefix",
+                      action="store_true", default=False,
+                      help="don't prefix symlinks in target directory with a '.'")
+
 
 def add_action_group(parser):
     action_group = OptionGroup(parser, "Actions")
@@ -237,6 +241,7 @@ def main():
                                repo_config_opts.get('prefix') or
                                config_opts.get('prefix') or
                                repo_settings['prefix'])
+    repo_settings['no_dot_prefix'] = cli_opts.no_dot_prefix
 
     update_settings(repo_config_opts, 'ignore')
     update_settings(repo_config_opts, 'externals')
