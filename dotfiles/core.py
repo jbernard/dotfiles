@@ -3,7 +3,7 @@ import glob
 import os.path
 import shutil
 import fnmatch
-import socket
+import platform
 
 from .utils import realpath_expanduser, is_link_to
 from .compat import symlink
@@ -156,7 +156,7 @@ class Dotfiles(object):
 
         if self.hosts_mode():
             if hostname is None:
-                hostname = socket.gethostname()
+                hostname = platform.node()
             try:
                 dotfiles.extend(self.dotfiles[hostname])
             except KeyError:
