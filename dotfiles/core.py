@@ -121,6 +121,7 @@ class Dotfiles(object):
         'ignore': set(['.dotfilesrc']),
         'homedir': os.path.expanduser('~/'),
         'path': os.path.expanduser('~/Dotfiles'),
+        'no_dot_prefix': False,
         'hostname': 'all',
     }
 
@@ -217,9 +218,11 @@ class Dotfiles(object):
                     fnmatch.filter(all_repofiles, pat))
 
         for dotfile in repofiles_to_symlink:
+            add_dot = not self.no_dot_prefix
             dotfiles.append(Dotfile(dotfile,
                                     os.path.join(directory, dotfile),
-                                    self.homedir, dry_run=self.dry_run))
+                                    self.homedir,
+                                    add_dot=add_dot, dry_run=self.dry_run))
 
         for dotfile in self.externals.keys():
             dotfiles.append(Dotfile(dotfile,

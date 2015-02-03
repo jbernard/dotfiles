@@ -282,7 +282,6 @@ class DotfilesTestCase(unittest.TestCase):
 
         dotfiles.add([os.path.join(self.homedir, package_file)])
 
-
     def test_single_sync(self):
         """
         Test syncing a single file in the repo
@@ -488,6 +487,26 @@ class DotfilesTestCase(unittest.TestCase):
         dotfiles.add(['.config'])
         self.assertFalse(os.path.islink(os.path.join(self.homedir, '.config')))
 
+    def test_no_dot_prefix(self):
+        # define the repository contents
+        repo_files = ('bashrc', 'netrc', 'vimrc')
+
+        # populate the repository
+        for dotfile in repo_files:
+            touch(os.path.join(self.repository, dotfile))
+
+        dotfiles = Dotfiles(
+                homedir=self.homedir, path=self.repository,
+                prefix='', ignore=[], externals={}, packages=[],
+                dry_run=False, no_dot_prefix=True)
+
+        dotfiles.sync()
+
+        # verify home directory contents
+        for dotfile in repo_files:
+            self.assertPathEqual(
+                os.path.join(self.repository, dotfile),
+                os.path.join(self.homedir, dotfile))
 
     def test_add_package_file(self):
         """
