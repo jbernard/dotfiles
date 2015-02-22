@@ -1,11 +1,11 @@
 Dotfile management made easy
 ============================
 
-.. image:: https://badge.fury.io/py/dotfiles.png
+.. image:: https://badge.fury.io/py/dotfiles.svg
   :target: http://badge.fury.io/py/dotfiles
 
-.. image:: https://secure.travis-ci.org/jbernard/dotfiles.png?branch=master
-  :target: http://travis-ci.org/jbernard/dotfiles
+.. image:: https://travis-ci.org/jbernard/dotfiles.svg?branch=master
+  :target: https://travis-ci.org/jbernard/dotfiles
 
 ``dotfiles`` is a tool to make managing your dotfile symlinks in ``$HOME``
 easy, allowing you to keep all your dotfiles in a single directory.
