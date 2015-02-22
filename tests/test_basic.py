@@ -58,8 +58,8 @@ class DotfilesTestCase(unittest.TestCase):
         dotfiles.sync(force=True)
 
         self.assertPathEqual(
-                os.path.join(self.homedir, '.lastpass'),
-                '/tmp')
+            os.path.join(self.homedir, '.lastpass'),
+            '/tmp')
 
     def test_dispatch(self):
         """Test that the force option is handed on to the sync method."""
@@ -137,7 +137,8 @@ class DotfilesTestCase(unittest.TestCase):
                 os.path.join(self.repository, 'vim'))
 
     def test_glob_ignore_pattern(self):
-        """ Test that the use of glob pattern matching works in the ignores list.
+        """ Test that the use of glob pattern matching works in the ignores
+        list.
 
         The following repo dir exists:
 
@@ -150,7 +151,8 @@ class DotfilesTestCase(unittest.TestCase):
         vimrc.swp
         install.sh
 
-        Using the glob pattern dotfiles should have the following sync result in home:
+        Using the glob pattern dotfiles should have the following sync result
+        in home:
 
         .myscript.py -> Dotfiles/myscript.py
         .bashrc -> Dotfiles/bashrc
@@ -224,7 +226,7 @@ class DotfilesTestCase(unittest.TestCase):
             self.assertTrue(os.path.isdir(join(self.homedir, '.package')))
             for src, dst in zip(files, symlinks):
                 self.assertTrue(is_link_to(join(self.homedir, dst),
-                    join(self.repository, src)))
+                                           join(self.repository, src)))
         check_all(files, symlinks)
 
         # Add files to the repository
@@ -312,7 +314,6 @@ class DotfilesTestCase(unittest.TestCase):
                 self.assertFalse(os.path.exists(
                     os.path.join(self.homedir, dotfile)))
 
-
     def test_missing_remove(self):
         """Test removing a dotfile that's been removed from the repository."""
 
@@ -337,7 +338,6 @@ class DotfilesTestCase(unittest.TestCase):
         self.assertFalse(os.path.exists(
             os.path.join(self.homedir, '.testdotfile')))
 
-
     def test_add_package(self):
         """
         Test adding a package that isn't already in the repository
@@ -345,7 +345,7 @@ class DotfilesTestCase(unittest.TestCase):
         """
 
         package_dir = os.path.join(self.homedir,
-            '.%s/%s' % ('config', 'gtk-3.0'))
+                                   '.%s/%s' % ('config', 'gtk-3.0'))
 
         os.makedirs(package_dir)
         touch('%s/testfile' % package_dir)
@@ -389,7 +389,7 @@ class DotfilesTestCase(unittest.TestCase):
         """
 
         package_dir = os.path.join(self.homedir,
-            '.%s/%s' % ('config', 'gtk-3.0'))
+                                   '.%s/%s' % ('config', 'gtk-3.0'))
 
         os.makedirs(package_dir)
         touch('%s/testfile' % package_dir)
@@ -405,7 +405,6 @@ class DotfilesTestCase(unittest.TestCase):
         self.assertTrue(os.path.islink(
             os.path.join(self.homedir, '.config/gtk-3.0')))
 
-
     @pytest.mark.xfail()
     def test_package_and_prefix(self):
         """Test syncing a package when using a non-default prefix."""
@@ -415,13 +414,13 @@ class DotfilesTestCase(unittest.TestCase):
         touch('%s/testfile' % package_dir)
 
         dotfiles = Dotfiles(homedir=self.homedir,
-                                 path=self.repository,
-                                 prefix='.',
-                                 ignore=[],
-                                 externals={},
-                                 packages=['.config'],
-                                 dry_run=False,
-                                 quiet=True)
+                            path=self.repository,
+                            prefix='.',
+                            ignore=[],
+                            externals={},
+                            packages=['.config'],
+                            dry_run=False,
+                            quiet=True)
 
         dotfiles.sync()
 

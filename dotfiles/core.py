@@ -59,7 +59,7 @@ class Dotfile(object):
         elif self.status == 'unsynced':
             if not force:
                 print("Skipping \"%s\", use --force to override"
-                        % self.basename)
+                      % self.basename)
                 return
             if os.path.isdir(self.name) and not os.path.islink(self.name):
                 self._rmtree(self.name)
@@ -159,23 +159,27 @@ class Dotfiles(object):
             else:
                 add_dot = False if self.no_dot_prefix else not bool(sub_dir)
                 self.dotfiles.append(Dotfile(dotfile[len(self.prefix):],
-                    os.path.join(src_dir, dotfile), dst_dir,
-                    add_dot=add_dot, dry_run=self.dry_run))
+                                             os.path.join(src_dir, dotfile),
+                                             dst_dir, add_dot=add_dot,
+                                             dry_run=self.dry_run))
 
         # Externals are top-level only
         if not sub_dir:
             for dotfile in self.externals.keys():
-                self.dotfiles.append(Dotfile(dotfile,
-                    os.path.expanduser(self.externals[dotfile]),
-                    dst_dir, add_dot=not bool(sub_dir), dry_run=self.dry_run))
+                self.dotfiles.append(
+                    Dotfile(dotfile,
+                            os.path.expanduser(self.externals[dotfile]),
+                            dst_dir, add_dot=not bool(sub_dir),
+                            dry_run=self.dry_run))
 
     def _fqpn(self, dotfile, pkg_name=None):
         """Return the fully qualified path to a dotfile."""
         if pkg_name is None:
             return os.path.join(self.repository,
-                    self.prefix + os.path.basename(dotfile).strip('.'))
+                                self.prefix +
+                                os.path.basename(dotfile).strip('.'))
         return os.path.join(self.repository, self.prefix + pkg_name,
-                os.path.basename(dotfile))
+                            os.path.basename(dotfile))
 
     def list(self, verbose=True):
         """List the contents of this repository."""
@@ -233,7 +237,8 @@ class Dotfiles(object):
             else:
                 home = self.homedir
                 target = self._fqpn(file)
-                if action == 'add' and os.path.split(target)[1] in self.packages:
+                if (action == 'add' and
+                        os.path.split(target)[1] in self.packages):
                     print("Skipping \"%s\", packages not yet supported" % file)
                     return
             if sub_dir.startswith('.') or file_name.startswith('.'):
