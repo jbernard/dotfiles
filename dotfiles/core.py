@@ -239,8 +239,8 @@ class Dotfiles(object):
     def _home_fqpn(self, repopath, hostname=None):
         """Return the fully qualified path to a dotfile in the home dir."""
 
-        dotfile_rel_path = repopath[len(self.host_dirname(hostname)) + 1
-                                    + len(self.prefix):]
+        dotfile_rel_path = repopath[len(self.host_dirname(hostname)) + 1 +
+                                    len(self.prefix):]
         return os.path.join(self.homedir, '.%s' % dotfile_rel_path)
 
     def list(self, verbose=True):
