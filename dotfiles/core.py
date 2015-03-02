@@ -34,11 +34,7 @@ class Dotfile(object):
             dirname = os.path.dirname(self.name)
             if not os.path.isdir(dirname):
                 os.makedirs(dirname)
-            if 'relpath' in dir(os.path): # os.path.relpath() needs Python >=2.6
-                symlink(os.path.relpath(self.target, dirname),
-                        self.name)
-            else:
-                symlink(self.target, self.name)
+            symlink(os.path.relpath(self.target, dirname), self.name)
         else:
             print("Creating symlink %s => %s" % (self.target, self.name))
 
@@ -66,7 +62,7 @@ class Dotfile(object):
         elif self.status == 'unsynced':
             if not force:
                 print("Skipping \"%s\", use --force to override"
-                        % self.relpath)
+                      % self.relpath)
                 return
             if os.path.isdir(self.name) and not os.path.islink(self.name):
                 self._rmtree(self.name)
@@ -153,7 +149,7 @@ class Dotfiles(object):
             return os.path.join(self.repository, '%s.host' % hostname)
 
     def this_host_dotfiles(self, hostname=None):
-        dotfiles = list(self.dotfiles['all']) # make a copy
+        dotfiles = list(self.dotfiles['all'])  # make a copy
 
         if self.hosts_mode():
             if hostname is None:
@@ -176,7 +172,7 @@ class Dotfiles(object):
                     hostname = os.path.basename(hostdir).split('.')[0]
                     self.dotfiles[hostname] = self._load_host(hostname)
         else:
-             self.dotfiles['all'] = self._load_host()
+            self.dotfiles['all'] = self._load_host()
 
     def _load_host(self, hostname=None):
         """Load each dotfile for the supplied host."""
@@ -215,7 +211,7 @@ class Dotfiles(object):
 
         for pat in self.ignore:
             repofiles_to_symlink.difference_update(
-                    fnmatch.filter(all_repofiles, pat))
+                fnmatch.filter(all_repofiles, pat))
 
         for dotfile in repofiles_to_symlink:
             add_dot = not self.no_dot_prefix
@@ -225,9 +221,10 @@ class Dotfiles(object):
                                     add_dot=add_dot, dry_run=self.dry_run))
 
         for dotfile in self.externals.keys():
-            dotfiles.append(Dotfile(dotfile,
-                os.path.expanduser(self.externals[dotfile]),
-                self.homedir, dry_run=self.dry_run))
+            dotfiles.append(
+                Dotfile(dotfile,
+                        os.path.expanduser(self.externals[dotfile]),
+                        self.homedir, dry_run=self.dry_run))
 
         return dotfiles
 
@@ -236,13 +233,14 @@ class Dotfiles(object):
 
         dotfile_rel_path = homepath[len(self.homedir)+1:]
         dotfile_rel_repopath = self.prefix\
-                               + dotfile_rel_path[1:] # remove leading '.'
+            + dotfile_rel_path[1:]  # remove leading '.'
         return os.path.join(self.host_dirname(hostname), dotfile_rel_repopath)
 
     def _home_fqpn(self, repopath, hostname=None):
         """Return the fully qualified path to a dotfile in the home dir."""
 
-        dotfile_rel_path = repopath[len(self.host_dirname(hostname))+1+len(self.prefix):]
+        dotfile_rel_path = repopath[len(self.host_dirname(hostname)) + 1
+                                    + len(self.prefix):]
         return os.path.join(self.homedir, '.%s' % dotfile_rel_path)
 
     def list(self, verbose=True):
@@ -267,7 +265,7 @@ class Dotfiles(object):
             dotfiles = self.this_host_dotfiles(hostname)
         else:
             files = set(map(lambda x: os.path.join(self.homedir, x), files))
-            dotfiles = [x for x in self.this_host_dotfiles(hostname)\
+            dotfiles = [x for x in self.this_host_dotfiles(hostname)
                         if x.name in files]
             if not dotfiles:
                 raise Exception("file not found")
@@ -303,7 +301,8 @@ class Dotfiles(object):
                 target = self._repo_fqpn(file, hostname=hostname)
                 pkg_name = False
 
-            if sub_dir.startswith('.') or file_name.startswith('.') or pkg_name:
+            if sub_dir.startswith('.') or file_name.startswith('.') or\
+               pkg_name:
                 dotfile = Dotfile(file, target, home, dry_run=self.dry_run)
                 getattr(dotfile, action)()
             else:

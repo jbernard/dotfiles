@@ -14,10 +14,11 @@ setup(
                       open('HISTORY.rst').read()),
     license='ISC',
     packages=['dotfiles'],
-    entry_points = '''
-        [console_scripts]
-        dotfiles=dotfiles.cli:main
-    ''',
+    entry_points={
+        'console_scripts': [
+            'dotfiles=dotfiles.cli:main',
+        ],
+    },
     classifiers=[
         'Programming Language :: Python',
         'Programming Language :: Python :: 3',

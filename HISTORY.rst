@@ -1,6 +1,13 @@
 History
 -------
 
+0.6.4
++++++
+
+* Add no_dot_prefix option
+* Fix error in syntax for missing repo message
+* Expands ~'s in config file path
+
 0.6.3
 +++++
 

@@ -92,10 +92,11 @@ def add_global_flags(parser):
 
     parser.add_option("-n", "--no-dot-prefix",
                       action="store_true", default=False,
-                      help="don't prefix symlinks in target directory with a '.'")
+                      help="don't prefix symlinks in target directory " +
+                      "with a '.'")
     parser.add_option("-n", "--hostname",
-            type="string", dest="hostname",
-            help="Host to apply command to (default: 'all')")
+                      type="string", dest="hostname",
+                      help="Host to apply command to (default: 'all')")
 
 
 def add_action_group(parser):
