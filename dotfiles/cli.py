@@ -24,6 +24,7 @@ repo_settings = {
     'homedir': Repository.defaults['homedir'],
     'packages': Repository.defaults['packages'],
     'externals': Repository.defaults['externals'],
+    'hostname': Repository.defaults['hostname'],
 }
 
 
@@ -93,6 +94,9 @@ def add_global_flags(parser):
                       action="store_true", default=False,
                       help="don't prefix symlinks in target directory " +
                       "with a '.'")
+    parser.add_option("-n", "--hostname",
+                      type="string", dest="hostname",
+                      help="Host to apply command to (default: 'all')")
 
 
 def add_action_group(parser):
@@ -183,7 +187,8 @@ def dispatch(repo, opts, args):
         getattr(repo, opts.action)(args)
 
     elif opts.action == 'sync':
-        getattr(repo, opts.action)(files=args, force=opts.force)
+        getattr(repo, opts.action)(files=args, force=opts.force,
+                                   hostname=opts.hostname)
 
     elif opts.action == 'move':
         if len(args) > 1:
