@@ -150,7 +150,7 @@ class Dotfiles(object):
 
         for pat in self.ignore:
             repofiles_to_symlink.difference_update(
-                    fnmatch.filter(all_repofiles, pat))
+                fnmatch.filter(all_repofiles, pat))
 
         for dotfile in repofiles_to_symlink:
             pkg_path = os.path.join(sub_dir, dotfile)

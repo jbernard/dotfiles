@@ -51,9 +51,9 @@ class DotfilesTestCase(unittest.TestCase):
         externals = {'.lastpass': '/tmp'}
 
         dotfiles = Dotfiles(
-                homedir=self.homedir, path=self.repository,
-                prefix='', ignore=[], externals=externals, packages=[],
-                dry_run=False)
+            homedir=self.homedir, path=self.repository,
+            prefix='', ignore=[], externals=externals, packages=[],
+            dry_run=False)
 
         dotfiles.sync(force=True)
 
@@ -81,16 +81,16 @@ class DotfilesTestCase(unittest.TestCase):
         touch(os.path.join(self.repository, 'bashrc'))
 
         dotfiles = Dotfiles(
-                homedir=self.homedir, path=self.repository,
-                prefix='', ignore=[], force=True, externals={}, packages=[],
-                dry_run=False)
+            homedir=self.homedir, path=self.repository,
+            prefix='', ignore=[], force=True, externals={}, packages=[],
+            dry_run=False)
 
         dotfiles.sync()
 
         # Make sure sync() did the right thing.
         self.assertPathEqual(
-                os.path.join(self.homedir, '.bashrc'),
-                os.path.join(self.repository, 'bashrc'))
+            os.path.join(self.homedir, '.bashrc'),
+            os.path.join(self.repository, 'bashrc'))
 
         target = os.path.join(self.homedir, 'MyDotfiles')
 
@@ -98,8 +98,8 @@ class DotfilesTestCase(unittest.TestCase):
 
         self.assertTrue(os.path.exists(os.path.join(target, 'bashrc')))
         self.assertPathEqual(
-                os.path.join(self.homedir, '.bashrc'),
-                os.path.join(target, 'bashrc'))
+            os.path.join(self.homedir, '.bashrc'),
+            os.path.join(target, 'bashrc'))
 
     def test_force_sync_directory_symlink(self):
         """Test a forced sync on a directory symlink.
@@ -122,19 +122,19 @@ class DotfilesTestCase(unittest.TestCase):
 
         # Make sure the symlink points to the correct location.
         self.assertPathEqual(
-                os.path.join(self.homedir, '.vim'),
-                os.path.join(self.homedir, 'vim'))
+            os.path.join(self.homedir, '.vim'),
+            os.path.join(self.homedir, 'vim'))
 
         dotfiles = Dotfiles(
-                homedir=self.homedir, path=self.repository,
-                prefix='', ignore=[], externals={}, packages=[], dry_run=False)
+            homedir=self.homedir, path=self.repository,
+            prefix='', ignore=[], externals={}, packages=[], dry_run=False)
 
         dotfiles.sync(force=True)
 
         # The symlink should now point to the directory in the repository.
         self.assertPathEqual(
-                os.path.join(self.homedir, '.vim'),
-                os.path.join(self.repository, 'vim'))
+            os.path.join(self.homedir, '.vim'),
+            os.path.join(self.repository, 'vim'))
 
     def test_glob_ignore_pattern(self):
         """ Test that the use of glob pattern matching works in the ignores
@@ -178,9 +178,9 @@ class DotfilesTestCase(unittest.TestCase):
             touch(os.path.join(self.repository, original))
 
         dotfiles = Dotfiles(
-                homedir=self.homedir, path=self.repository,
-                prefix='', ignore=ignore, externals={}, packages=[],
-                dry_run=False)
+            homedir=self.homedir, path=self.repository,
+            prefix='', ignore=ignore, externals={}, packages=[],
+            dry_run=False)
 
         dotfiles.sync()
 
@@ -214,9 +214,9 @@ class DotfilesTestCase(unittest.TestCase):
 
         # Create Dotfiles object
         dotfiles = Dotfiles(
-                homedir=self.homedir, path=self.repository,
-                prefix='', ignore=[], externals={}, packages=['package'],
-                dry_run=False)
+            homedir=self.homedir, path=self.repository,
+            prefix='', ignore=[], externals={}, packages=['package'],
+            dry_run=False)
 
         # Create symlinks in homedir
         dotfiles.sync()
@@ -256,9 +256,9 @@ class DotfilesTestCase(unittest.TestCase):
 
         # Create Dotfiles object
         dotfiles = Dotfiles(
-                homedir=self.homedir, path=self.repository,
-                prefix='', ignore=[], externals={}, packages=['package'],
-                dry_run=False)
+            homedir=self.homedir, path=self.repository,
+            prefix='', ignore=[], externals={}, packages=['package'],
+            dry_run=False)
 
         path = os.path.join(self.homedir, package_file)
         dirname = os.path.dirname(path)
@@ -295,9 +295,9 @@ class DotfilesTestCase(unittest.TestCase):
             touch(os.path.join(self.repository, dotfile))
 
         dotfiles = Dotfiles(
-                homedir=self.homedir, path=self.repository,
-                prefix='', ignore=[], externals={}, packages=[],
-                dry_run=False)
+            homedir=self.homedir, path=self.repository,
+            prefix='', ignore=[], externals={}, packages=[],
+            dry_run=False)
 
         # sync only certain dotfiles
         for dotfile, should_sync in repo_files:
@@ -322,9 +322,9 @@ class DotfilesTestCase(unittest.TestCase):
         touch(repo_file)
 
         dotfiles = Dotfiles(
-                homedir=self.homedir, path=self.repository,
-                prefix='', ignore=[], externals={}, packages=[],
-                dry_run=False)
+            homedir=self.homedir, path=self.repository,
+            prefix='', ignore=[], externals={}, packages=[],
+            dry_run=False)
 
         dotfiles.sync()
 
@@ -351,9 +351,9 @@ class DotfilesTestCase(unittest.TestCase):
         touch('%s/testfile' % package_dir)
 
         dotfiles = Dotfiles(
-                homedir=self.homedir, path=self.repository,
-                prefix='', ignore=[], externals={}, packages=['config'],
-                dry_run=False, quiet=True)
+            homedir=self.homedir, path=self.repository,
+            prefix='', ignore=[], externals={}, packages=['config'],
+            dry_run=False, quiet=True)
 
         # This should fail, you should not be able to add dotfiles that are
         # defined to be packages.
@@ -369,9 +369,9 @@ class DotfilesTestCase(unittest.TestCase):
             touch(os.path.join(self.repository, dotfile))
 
         dotfiles = Dotfiles(
-                homedir=self.homedir, path=self.repository,
-                prefix='', ignore=[], externals={}, packages=[],
-                dry_run=False, no_dot_prefix=True)
+            homedir=self.homedir, path=self.repository,
+            prefix='', ignore=[], externals={}, packages=[],
+            dry_run=False, no_dot_prefix=True)
 
         dotfiles.sync()
 
@@ -395,9 +395,9 @@ class DotfilesTestCase(unittest.TestCase):
         touch('%s/testfile' % package_dir)
 
         dotfiles = Dotfiles(
-                homedir=self.homedir, path=self.repository,
-                prefix='', ignore=[], externals={}, packages=['config'],
-                dry_run=False)
+            homedir=self.homedir, path=self.repository,
+            prefix='', ignore=[], externals={}, packages=['config'],
+            dry_run=False)
 
         # This should succeed and the directory structure in the repository
         # should be created since it didn't already exist.

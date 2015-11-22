@@ -7,6 +7,9 @@ import os
 import os.path
 
 
+def is_unicode(s):
+    return type(s) == unicode  # noqa
+
 if hasattr(os, 'symlink'):
     symlink = os.symlink
     islink = os.path.islink
@@ -67,7 +70,7 @@ else:
 
     def CreateSymbolicLink(name, target, is_dir):
         assert type(name) == type(target)
-        if type(name) == unicode:
+        if is_unicode(name):
             stat = CreateSymbolicLinkW(name, target, is_dir)
         else:
             stat = CreateSymbolicLinkA(name, target, is_dir)
@@ -82,7 +85,7 @@ else:
         CreateSymbolicLink(name, target, 0)
 
     def GetFileAttributes(path):
-        if type(path) == unicode:
+        if is_unicode(path):
             return GetFileAttributesW(path)
         else:
             return GetFileAttributesA(path)
@@ -117,7 +120,7 @@ else:
             return None
 
     def CreateFile(path, access, sharemode, creation, flags):
-        if type(path) == unicode:
+        if is_unicode(path):
             return _CreateFileW(path, access, sharemode, None, creation,
                                 flags, None)
         else:
