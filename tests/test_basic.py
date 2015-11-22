@@ -405,7 +405,6 @@ class DotfilesTestCase(unittest.TestCase):
         self.assertTrue(os.path.islink(
             os.path.join(self.homedir, '.config/gtk-3.0')))
 
-    @pytest.mark.xfail()
     def test_package_and_prefix(self):
         """Test syncing a package when using a non-default prefix."""
 

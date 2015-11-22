@@ -139,7 +139,7 @@ class Dotfiles(object):
         """Recursive helper for :meth:`_load`."""
 
         src_dir = os.path.join(self.repository, sub_dir)
-        if sub_dir:
+        if sub_dir and not self.prefix:
             # Add a dot to first level of packages
             dst_dir = os.path.join(self.homedir, '.%s' % sub_dir)
         else:
@@ -158,7 +158,7 @@ class Dotfiles(object):
                 self._load_recursive(pkg_path)
             else:
                 add_dot = False if self.no_dot_prefix else not bool(sub_dir)
-                self.dotfiles.append(Dotfile(dotfile[len(self.prefix):],
+                self.dotfiles.append(Dotfile(dotfile,
                                              os.path.join(src_dir, dotfile),
                                              dst_dir, add_dot=add_dot,
                                              dry_run=self.dry_run))
