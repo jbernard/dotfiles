@@ -7,7 +7,7 @@ bin/*
 __pycache__/
 
 .venv/
-.tox/
+.tox
 .bundle/
 
 build/
