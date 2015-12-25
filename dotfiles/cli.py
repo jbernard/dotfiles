@@ -149,7 +149,7 @@ def parse_args():
 
 def parse_config(config_file):
     parser = configparser.SafeConfigParser()
-    parser.read(os.path.expanduser(config_file))
+    parser.read(config_file)
 
     opts = dict()
 
@@ -222,7 +222,8 @@ def main():
     repo_settings['homedir'] = realpath_expanduser(
         cli_opts.homedir or repo_settings['homedir'])
 
-    config_opts = parse_config(cli_opts.config_file or '~/%s' % CONFIG_FILE)
+    config_opts = parse_config(cli_opts.config_file or
+                               realpath_expanduser('~/%s' % CONFIG_FILE))
 
     repo_settings['path'] = realpath_expanduser(
         cli_opts.repository or
