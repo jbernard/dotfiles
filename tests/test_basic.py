@@ -37,6 +37,25 @@ class DotfilesTestCase(unittest.TestCase):
             os.path.realpath(path1),
             os.path.realpath(path2))
 
+    def test_sync(self):
+        """Basic sync operation."""
+
+        touch(os.path.join(self.repository, 'foo'))
+
+        dotfiles = Dotfiles(homedir=self.homedir,
+                            path=self.repository,
+                            prefix='',
+                            ignore=[],
+                            externals={},
+                            packages=[],
+                            dry_run=False)
+
+        dotfiles.sync()
+
+        self.assertPathEqual(
+            os.path.join(self.homedir, '.foo'),
+            os.path.join(self.repository, 'foo'))
+
     def test_force_sync_directory(self):
         """Test forced sync when the dotfile is a directory.
 
