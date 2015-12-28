@@ -424,33 +424,6 @@ class DotfilesTestCase(unittest.TestCase):
         self.assertTrue(os.path.islink(
             os.path.join(self.homedir, '.config/gtk-3.0')))
 
-    def test_package_and_prefix(self):
-        """Test syncing a package when using a non-default prefix."""
-
-        package_dir = os.path.join(self.repository, '.config/awesome')
-        os.makedirs(package_dir)
-        touch('%s/testfile' % package_dir)
-
-        dotfiles = Dotfiles(homedir=self.homedir,
-                            path=self.repository,
-                            prefix='.',
-                            ignore=[],
-                            externals={},
-                            packages=['.config'],
-                            dry_run=False,
-                            quiet=True)
-
-        dotfiles.sync()
-
-        expected = os.path.join(self.homedir, ".config")
-        self.assertTrue(os.path.isdir(expected))
-
-        expected = os.path.join(expected, "awesome")
-        self.assertTrue(os.path.islink(expected))
-
-        expected = os.path.join(expected, "testfile")
-        self.assertTrue(os.path.isfile(expected))
-
 
 if __name__ == '__main__':
     unittest.main()
