@@ -194,9 +194,10 @@ class Dotfiles(object):
         self.list(verbose=False)
 
     def sync(self, files=None, force=False):
-
-        """Synchronize this repository, creating and updating the necessary
-        symbolic links."""
+        """
+        Synchronize this repository, creating and updating the necessary
+        symbolic links.
+        """
 
         # unless a set of files is specified, operate on all files
         if not files:
