@@ -27,6 +27,23 @@ class Dotfile:
         self.name = name
         self.target = target
 
+    def __repr__(self):
+        return repr((str(self.name), str(self.target), self.state()))
+
+    def __str__(self):
+        short_name, short_target = self._truncate_paths()
+        return '{} -> {} {}'.format(short_name, short_target, self.state())
+
+    def _truncate_paths(self):
+        discard = len(str(self.name.common(self.target))) + 1
+        return (str(self.name)[discard:], str(self.target)[discard:])
+
+    def state(self):
+        return '(unknown)'
+
+    def invalid(self):
+        return self.state != '(ok)'
+
     def add(self):
         if self.target.check(exists=1):
             raise OSError(errno.EEXIST, self.target)
