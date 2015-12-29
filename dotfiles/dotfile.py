@@ -19,7 +19,7 @@ class Dotfile:
     remove -- the opposite of add
     sync -- ensure that each repository file has a corresponding symlink
 
-    This is where most filesystem operaitons (link, delete, etc) should be
+    This is where most filesystem operations (link, delete, etc) should be
     called, and not in the layers above.
     """
 
