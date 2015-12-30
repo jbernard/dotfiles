@@ -3,34 +3,21 @@ import py.error
 from dotfiles.dotfile import Dotfile
 
 
-class TestAdd:
+@pytest.mark.parametrize("times", range(1, 4))
+def test_add(tmpdir, times):
 
-    def test_add(self, tmpdir):
+    repo = tmpdir.ensure("Dotfiles", dir=1)
+    name = tmpdir.ensure(".vimrc")
+    target = repo.join("vimrc")
 
-        repo = tmpdir.ensure("Dotfiles", dir=1)
-        name = tmpdir.ensure(".vimrc")
-        target = repo.join("vimrc")
+    dotfile = Dotfile(name, target)
+    dotfile.add()
 
-        dotfile = Dotfile(name, target)
-        dotfile.add()
+    assert target.check(file=1, link=0)
+    assert name.check(file=1, link=1)
+    assert name.samefile(target)
 
-        assert target.check(file=1, link=0)
-        assert name.check(file=1, link=1)
-        assert name.samefile(target)
-
-    def test_add_twice(self, tmpdir):
-
-        repo = tmpdir.ensure("Dotfiles", dir=1)
-        name = tmpdir.ensure(".vimrc")
-        target = repo.join("vimrc")
-
-        dotfile = Dotfile(name, target)
-        dotfile.add()
-
-        assert target.check(file=1, link=0)
-        assert name.check(file=1, link=1)
-        assert name.samefile(target)
-
+    for x in range(2, times):
         with pytest.raises(OSError):
             dotfile.add()
 
@@ -39,36 +26,22 @@ class TestAdd:
         assert name.samefile(target)
 
 
-class TestRemove:
+@pytest.mark.parametrize("times", range(1, 4))
+def test_remove(tmpdir, times):
 
-    def test_remove(self, tmpdir):
+    repo = tmpdir.ensure("Dotfiles", dir=1)
+    name = tmpdir.join(".vimrc")
+    target = repo.ensure("vimrc")
 
-        repo = tmpdir.ensure("Dotfiles", dir=1)
-        name = tmpdir.join(".vimrc")
-        target = repo.ensure("vimrc")
+    name.mksymlinkto(target)
 
-        name.mksymlinkto(target)
+    dotfile = Dotfile(name, target)
+    dotfile.remove()
 
-        dotfile = Dotfile(name, target)
-        dotfile.remove()
+    assert False == target.check()
+    assert name.check(file=1, link=0)
 
-        assert False == target.check()
-        assert name.check(file=1, link=0)
-
-    def test_remove_twice(self, tmpdir):
-
-        repo = tmpdir.ensure("Dotfiles", dir=1)
-        name = tmpdir.join(".vimrc")
-        target = repo.ensure("vimrc")
-
-        name.mksymlinkto(target)
-
-        dotfile = Dotfile(name, target)
-        dotfile.remove()
-
-        assert False == target.check()
-        assert name.check(file=1, link=0)
-
+    for x in range(2, times):
         with pytest.raises(OSError):
             dotfile.remove()
 
@@ -76,34 +49,21 @@ class TestRemove:
         assert name.check(file=1, link=0)
 
 
-class TestSync:
+@pytest.mark.parametrize("times", range(1, 4))
+def test_sync(tmpdir, times):
 
-    def test_sync(self, tmpdir):
+    repo = tmpdir.ensure("Dotfiles", dir=1)
+    name = tmpdir.join(".vimrc")
+    target = repo.ensure("vimrc")
 
-        repo = tmpdir.ensure("Dotfiles", dir=1)
-        name = tmpdir.join(".vimrc")
-        target = repo.ensure("vimrc")
+    dotfile = Dotfile(name, target)
+    dotfile.sync()
 
-        dotfile = Dotfile(name, target)
-        dotfile.sync()
+    assert target.check(file=1, link=0)
+    assert name.check(file=1, link=1)
+    assert name.samefile(target)
 
-        assert target.check(file=1, link=0)
-        assert name.check(file=1, link=1)
-        assert name.samefile(target)
-
-    def test_sync_twice(self, tmpdir):
-
-        repo = tmpdir.ensure("Dotfiles", dir=1)
-        name = tmpdir.join(".vimrc")
-        target = repo.ensure("vimrc")
-
-        dotfile = Dotfile(name, target)
-        dotfile.sync()
-
-        assert target.check(file=1, link=0)
-        assert name.check(file=1, link=1)
-        assert name.samefile(target)
-
+    for x in range(2, times):
         with pytest.raises(py.error.EEXIST):
             dotfile.sync()
 
