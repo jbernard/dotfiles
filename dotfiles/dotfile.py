@@ -42,7 +42,7 @@ class Dotfile:
         return '(unknown)'
 
     def invalid(self):
-        return self.state != '(ok)'
+        return self.state() != '(ok)'
 
     def add(self):
         if self.target.check(exists=1):
