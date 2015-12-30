@@ -14,8 +14,7 @@ def test_list(tmpdir):
     # manual discovery
     repository.dotfiles = [dotfile, dotfile, dotfile]
 
-    expected_list = ("\n"
-                     ".vimrc -> Dotfiles/vimrc (unknown)\n"
+    expected_list = (".vimrc -> Dotfiles/vimrc (unknown)\n"
                      ".vimrc -> Dotfiles/vimrc (unknown)\n"
                      ".vimrc -> Dotfiles/vimrc (unknown)")
 
@@ -27,12 +26,13 @@ def test_discovery(tmpdir):
     repo = tmpdir.ensure("Dotfiles", dir=1)
 
     tmpdir.join('.bashrc').mksymlinkto(repo.ensure('bashrc'))
+    tmpdir.join('.inputrc').mksymlinkto(repo.ensure('inputrc'))
     tmpdir.join('.vimrc').mksymlinkto(repo.ensure('vimrc'))
 
     repository = Repository(repo, tmpdir)
 
-    expected_list = ("\n"
-                     ".bashrc -> Dotfiles/bashrc (unknown)\n"
+    expected_list = (".bashrc -> Dotfiles/bashrc (unknown)\n"
+                     ".inputrc -> Dotfiles/inputrc (unknown)\n"
                      ".vimrc -> Dotfiles/vimrc (unknown)")
 
     assert expected_list == str(repository)

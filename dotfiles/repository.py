@@ -34,7 +34,7 @@ class Repository:
         for dotfile in self.dotfiles:
             if all or dotfile.invalid():
                 listing += '\n{}'.format(dotfile)
-        return listing
+        return listing.lstrip()
 
     def __str__(self):
         """Returns a string list the all dotfiles in this repository."""
