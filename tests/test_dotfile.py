@@ -1,5 +1,6 @@
 import pytest
 import py.error
+
 from dotfiles.dotfile import Dotfile
 
 
@@ -70,3 +71,19 @@ def test_sync(tmpdir, times):
         assert target.check(file=1, link=0)
         assert name.check(file=1, link=1)
         assert name.samefile(target)
+
+
+def test_valid(tmpdir):
+
+    repo = tmpdir.join("Dotfiles", dir=1)
+    name = tmpdir.join(".vimrc")
+    target = repo.ensure("vimrc")
+    name.mksymlinkto(target)
+
+    dotfile = Dotfile(name, target)
+
+    assert '(unknown)' == dotfile.state
+    assert True == dotfile.invalid()
+
+    dotfile.state = '(ok)'
+    assert False == dotfile.invalid()
