@@ -14,6 +14,10 @@ setup(
                       open('HISTORY.rst').read()),
     license='ISC',
     packages=['dotfiles'],
+    install_requires=[
+        'click',
+        'py',
+    ],
     entry_points={
         'console_scripts': [
             'dotfiles=dotfiles.cli_orig:main',
