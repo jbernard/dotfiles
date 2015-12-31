@@ -2,7 +2,6 @@ language: python
 
 env:
     - TOXENV=py27
-    - TOXENV=py32
     - TOXENV=py33
     - TOXENV=py34
     - TOXENV=py35
