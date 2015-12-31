@@ -3,7 +3,7 @@ from .dotfile import Dotfile
 from operator import attrgetter
 
 
-class Repository:
+class Repository(object):
     """
     This class implements the 'repository' abstraction.
 

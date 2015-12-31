@@ -1,7 +1,7 @@
 import errno
 
 
-class Dotfile:
+class Dotfile(object):
     """
     This class implements the 'dotfile' abstraction.
 
