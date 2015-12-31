@@ -26,23 +26,18 @@ class Dotfile(object):
     def __init__(self, name, target):
         self.name = name
         self.target = target
-
-    def __repr__(self):
-        return repr((str(self.name), str(self.target), self.state()))
+        self.state = '(unknown)'
 
     def __str__(self):
         short_name, short_target = self._truncate_paths()
-        return '{} -> {} {}'.format(short_name, short_target, self.state())
+        return '%s -> %s %s' % (short_name, short_target, self.state)
+
+    def __repr__(self):
+        return '<Dotfile %r>' % self.name
 
     def _truncate_paths(self):
         discard = len(str(self.name.common(self.target))) + 1
         return (str(self.name)[discard:], str(self.target)[discard:])
-
-    def state(self):
-        return '(unknown)'
-
-    def invalid(self):
-        return self.state() != '(ok)'
 
     def add(self):
         if self.target.check(exists=1):
@@ -58,3 +53,6 @@ class Dotfile(object):
 
     def sync(self):
         self.name.mksymlinkto(self.target)
+
+    def invalid(self):
+        return self.state != '(ok)'
