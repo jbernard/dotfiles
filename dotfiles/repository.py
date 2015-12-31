@@ -1,48 +1,89 @@
 import py
-from .dotfile import Dotfile
 from operator import attrgetter
+
+from .dotfile import Dotfile
 
 
 class Repository(object):
     """
     This class implements the 'repository' abstraction.
 
-    A repository is a directory that contains dotfiles.
+    A repository is a directory that contains dotfiles.  It has two primary
+    attributes:
 
-    TODO
+    repodir -- the location of the repository directory
+    homedir -- the location of the home directory (primarily for testing)
+
+    Both of the above attributes are received as string objects and converted
+    to py.path.local objects for internal use.
+
+    The repository implements these fundamental operations:
+
+    status -- list the dotfiles (and their state) contained herein
+    check  -- list any dotfiles unsynced or unmanaged that require attention
+    sync   -- create some or all missing dotfile symlinks
+    unsync -- remove some or all dotfile symlinks
+    add    -- add a dotfile to this repository and create its symlink
+    remove -- the opposited of add
+    move   -- change the name of this repository and update dependent symlinks
     """
 
-    def __init__(self, path, homedir):
-        self.path = path
+    def __init__(self, repodir, homedir='~'):
+        self.repodir = repodir
         self.homedir = homedir
-        self.dotfiles = self._discover()
+
+    def __str__(self):
+        return self._contents() or '[no dotfiles found]'
+
+    def __repr__(self):
+        return '<Repository %r>' % self.repodir
+
+    @property
+    def repodir(self):
+        return str(self._repodir)
+
+    @repodir.setter
+    def repodir(self, path):
+        self._repodir = py.path.local(path, expanduser=True)
+
+    @property
+    def homedir(self):
+        return str(self._homedir)
+
+    @homedir.setter
+    def homedir(self, path):
+        self._homedir = py.path.local(path, expanduser=True)
 
     def _target_to_name(self, target):
-        return py.path.local("{}/.{}".format(self.homedir, target.basename))
+        return py.path.local("%s/.%s" % (self.homedir, target.basename))
 
-    def _discover(self):
+    def _load(self):
         """Given a repository path, discover all existing dotfiles."""
         dotfiles = []
-        for target in self.path.listdir():
+        self._repodir.ensure(dir=1)
+        targets = self._repodir.listdir()
+        for target in targets:
             target = py.path.local(target)
             name = self._target_to_name(target)
             dotfiles.append(Dotfile(name, target))
         return sorted(dotfiles, key=attrgetter('name'))
 
-    def _list(self, all=True):
-        listing = ''
-        for dotfile in self.dotfiles:
+    def _contents(self, all=True):
+        """Convert loaded contents to human readable form."""
+        contents = ''
+        dotfiles = self._load()
+        for dotfile in dotfiles:
             if all or dotfile.invalid():
-                listing += '\n{}'.format(dotfile)
-        return listing.lstrip()
+                contents += '\n%s' % dotfile
+        return contents.lstrip()
 
-    def __str__(self):
-        """Returns a string list the all dotfiles in this repository."""
-        return self._list()
+    def status(self):
+        """Returns a string list of all dotfiles."""
+        return str(self)
 
     def check(self):
-        """Returns a string of only unsynced or missing dotfiles."""
-        return self._list(all=False)
+        """Returns a string list of only unsynced or missing dotfiles."""
+        return self._contents(all=False)
 
     def sync(self):
         raise NotImplementedError
