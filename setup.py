@@ -16,7 +16,7 @@ setup(
     packages=['dotfiles'],
     entry_points={
         'console_scripts': [
-            'dotfiles=dotfiles.cli:main',
+            'dotfiles=dotfiles.cli_orig:main',
         ],
     },
     classifiers=[
