@@ -1,12 +1,6 @@
 Dotfile management made easy
 ============================
 
-.. image:: https://badge.fury.io/py/dotfiles.svg
-   :target: http://badge.fury.io/py/dotfiles
-
-.. image:: https://travis-ci.org/jbernard/dotfiles.svg?branch=master
-   :target: https://travis-ci.org/jbernard/dotfiles
-
 ``dotfiles`` is a tool to make managing your dotfile symlinks in ``$HOME``
 easy, allowing you to keep all your dotfiles in a single directory.
 
@@ -181,10 +175,6 @@ Support for ``add`` and ``remove`` is a current TODO item.
 
 Contribute
 ----------
-
-.. image:: https://badge.waffle.io/jbernard/dotfiles.svg?label=ready&title=Ready
-   :target: https://waffle.io/jbernard/dotfiles
-   :alt: 'Stories in Ready'
 
 If you'd like to contribute, simply fork `the repository`_, commit your changes,
 make sure tests pass, and send a pull request. Go ahead and add yourself to
