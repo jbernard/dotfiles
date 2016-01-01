@@ -65,8 +65,8 @@ def test_empty_status(tmpdir):
 def test_status_manual(tmpdir, monkeypatch):
 
     repodir = tmpdir.join("Dotfiles", dir=1)
-    name = tmpdir.join(".vimrc")
     target = repodir.ensure("vimrc")
+    name = tmpdir.ensure(".vimrc")
 
     dotfile = Dotfile(name, target)
 
@@ -74,9 +74,10 @@ def test_status_manual(tmpdir, monkeypatch):
     monkeypatch.setattr(Repository, "_load",
                         lambda self: [dotfile, dotfile, dotfile])
 
-    expected_status = (".vimrc -> Dotfiles/vimrc (unknown)\n"
-                       ".vimrc -> Dotfiles/vimrc (unknown)\n"
-                       ".vimrc -> Dotfiles/vimrc (unknown)")
+    dotfile_state = Dotfile.states['conflict']['text']
+    expected_status = ("{0:<18} {1}\n"
+                       "{0:<18} {1}\n"
+                       "{0:<18} {1}".format(name.basename, dotfile_state))
 
     assert expected_status == repo.status()
 
@@ -91,9 +92,12 @@ def test_status_discover(tmpdir):
 
     repo = Repository(repodir, tmpdir)
 
-    expected_status = (".bashrc -> Dotfiles/bashrc (unknown)\n"
-                       ".inputrc -> Dotfiles/inputrc (unknown)\n"
-                       ".vimrc -> Dotfiles/vimrc (unknown)")
+    expected_status = ("{1:<18} {0}\n"
+                       "{2:<18} {0}\n"
+                       "{3:<18} {0}".format(Dotfile.states['ok']['text'],
+                                            '.bashrc',
+                                            '.inputrc',
+                                            '.vimrc'))
 
     assert expected_status == repo.status()
 
@@ -106,14 +110,18 @@ def test_check(tmpdir, monkeypatch):
     dotfile_b = Dotfile(tmpdir.join('.bbb'), repodir.join('bbb'))
     dotfile_c = Dotfile(tmpdir.join('.ccc'), repodir.join('ccc'))
 
-    dotfile_b.state = '(ok)'
+    dotfile_b.state = Dotfile.states['ok']
 
     repo = Repository(tmpdir)
     monkeypatch.setattr(Repository, "_load",
                         lambda self: [dotfile_a, dotfile_b, dotfile_c])
 
-    assert ('.aaa -> repo/aaa (unknown)\n'
-            '.ccc -> repo/ccc (unknown)') == repo.check()
+    expected_status = ("{1:<18} {0}\n"
+                       "{2:<18} {0}".format(Dotfile.states['error']['text'],
+                                            dotfile_a.name.basename,
+                                            dotfile_c.name.basename))
+
+    assert expected_status == repo.check()
 
 
 def test_sync():

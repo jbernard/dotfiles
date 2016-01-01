@@ -73,7 +73,53 @@ def test_sync(tmpdir, times):
         assert name.samefile(target)
 
 
-def test_valid(tmpdir):
+def test_state_error(tmpdir):
+
+    repo = tmpdir.ensure("Dotfiles", dir=1)
+    name = tmpdir.join(".vimrc")
+    target = repo.join("vimrc")
+
+    dotfile = Dotfile(name, target)
+
+    assert Dotfile.states['error'] == dotfile.state
+
+
+def test_state_missing(tmpdir):
+
+    repo = tmpdir.ensure("Dotfiles", dir=1)
+    name = tmpdir.join(".vimrc")
+    target = repo.ensure("vimrc")
+
+    dotfile = Dotfile(name, target)
+
+    assert Dotfile.states['missing'] == dotfile.state
+
+
+def test_state_conflict(tmpdir):
+
+    repo = tmpdir.ensure("Dotfiles", dir=1)
+    name = tmpdir.ensure(".vimrc")
+    target = repo.ensure("vimrc")
+
+    dotfile = Dotfile(name, target)
+
+    assert Dotfile.states['conflict'] == dotfile.state
+
+
+def test_state_ok(tmpdir):
+
+    repo = tmpdir.join("Dotfiles", dir=1)
+    name = tmpdir.join(".vimrc")
+    target = repo.ensure("vimrc")
+
+    name.mksymlinkto(target)
+
+    dotfile = Dotfile(name, target)
+
+    assert Dotfile.states['ok'] == dotfile.state
+
+
+def test_is_ok(tmpdir):
 
     repo = tmpdir.join("Dotfiles", dir=1)
     name = tmpdir.join(".vimrc")
@@ -82,8 +128,8 @@ def test_valid(tmpdir):
 
     dotfile = Dotfile(name, target)
 
-    assert '(unknown)' == dotfile.state
-    assert True == dotfile.invalid()
+    assert Dotfile.states['ok'] == dotfile.state
+    assert True == dotfile.is_ok()
 
-    dotfile.state = '(ok)'
-    assert False == dotfile.invalid()
+    dotfile.state = Dotfile.states['conflict']
+    assert False == dotfile.is_ok()

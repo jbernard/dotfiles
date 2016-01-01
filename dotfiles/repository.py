@@ -68,12 +68,14 @@ class Repository(object):
             dotfiles.append(Dotfile(name, target))
         return sorted(dotfiles, key=attrgetter('name'))
 
+    # TODO: pass dotfile objects to CLI instead of string
+
     def _contents(self, all=True):
         """Convert loaded contents to human readable form."""
         contents = ''
         dotfiles = self._load()
         for dotfile in dotfiles:
-            if all or dotfile.invalid():
+            if all or not dotfile.is_ok():
                 contents += '\n%s' % dotfile
         return contents.lstrip()
 

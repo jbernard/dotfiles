@@ -29,8 +29,9 @@ def main(ctx, repository):
 
 
 @main.command()
+@click.option('--color', is_flag=True, help='Enables colored output.')
 @pass_repo
-def check(repo):
+def check(repo, color):
     """Shows any broken or unsyned dotfiles."""
     list = repo.check()
     if list:
@@ -39,8 +40,9 @@ def check(repo):
 
 
 @main.command()
+@click.option('--color', is_flag=True, help='Enables colored output.')
 @pass_repo
-def status(repo):
+def status(repo, color):
     """Shows the status of each dotfile."""
     click.echo_via_pager(repo.status())
 
