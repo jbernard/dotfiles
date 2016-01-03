@@ -7,8 +7,8 @@ from operator import attrgetter
 
 __version__ = '0.7-dev'
 
-default_home = os.path.expanduser('~/')
-default_repo = os.path.expanduser('~/Dotfiles')
+DEFAULT_HOME = os.path.expanduser('~/')
+DEFAULT_REPO = os.path.expanduser('~/Dotfiles')
 
 
 def unique_suffix(path_a, path_b):
@@ -127,9 +127,9 @@ pass_repo = click.make_pass_decorator(Repository)
 
 
 @click.group()
-@click.option('--home-directory', type=click.Path(), default=str(default_home),
+@click.option('--home-directory', type=click.Path(), default=DEFAULT_HOME,
               show_default=True)
-@click.option('--repository', type=click.Path(), default=str(default_repo),
+@click.option('--repository', type=click.Path(), default=DEFAULT_REPO,
               show_default=True)
 @click.pass_context
 def cli(ctx, home_directory, repository):
@@ -155,6 +155,8 @@ def add(repo, files):
 def list(repo, verbose):
     """Show the contents of a repository."""
     dotfiles = repo.contents()
+    if not dotfiles:
+        click.echo('[no dotfiles found]')
     for dotfile in dotfiles:
         if (verbose):
             click.echo('%-18s (%s)' % (dotfile, dotfile.state))
