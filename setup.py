@@ -13,19 +13,21 @@ setup(
                       open('LICENSE.rst').read() + '\n\n' +
                       open('HISTORY.rst').read()),
     license='ISC',
-    packages=['dotfiles'],
+    py_modules=['dotifles'],
     install_requires=[
         'click',
         'py',
     ],
     entry_points={
         'console_scripts': [
-            'dotfiles=dotfiles.cli_orig:main',
+            'dotfiles=dotfiles:cli',
         ],
     },
     classifiers=[
-        'Programming Language :: Python',
-        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3.3',
+        'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: 3.5',
         'License :: OSI Approved :: ISC License (ISCL)'
     ],
 )
