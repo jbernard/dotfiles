@@ -15,14 +15,10 @@ def unique_suffix(path_a, path_b):
 
 
 class Repository(object):
-    """
-    This class implements the 'repository' abstraction.
+    """A repository is a directory that contains dotfiles.
 
-    A repository is a directory that contains dotfiles.  It has two primary
-    attributes:
-
-    repodir -- the location of the repository directory
-    homedir -- the location of the home directory (primarily for testing)
+    :param repodir: the location of the repository directory
+    :param homedir: the location of the home directory (primarily for testing)
     """
 
     def __init__(self, repodir, homedir):
@@ -51,26 +47,10 @@ class Repository(object):
 
 
 class Dotfile(object):
-    """
-    This class implements the 'dotfile' abstraction.
+    """An configuration file managed within a repository.
 
-    A dotfile has two primary attributes:
-
-    name -- name of symlink in the home directory (~/.vimrc)
-    target -- where the symlink should point to (~/Dotfiles/vimrc)
-
-    The above attributes are both py.path.local objects.
-
-    The goal is for there to be no special logic or stored global state.  Only
-    the implementation of three operations made available to the caller:
-
-    add    -- move a dotfile into the repository and replace it with a symlink
-    remove -- the opposite of add
-    sync   -- ensure that each repository file has a corresponding symlink
-    unsync -- remove the symlink leaving only the repository file
-
-    This is where most filesystem operations (link, delete, etc) should be
-    called, and not in the layers above.
+    :param name: name of the symlink in the home directory (~/.vimrc)
+    :param target: where the symlink should point to (~/Dotfiles/vimrc)
     """
 
     def __init__(self, name, target):
@@ -143,7 +123,7 @@ def cli(ctx, home_directory, repository):
 @click.argument('files', nargs=-1, type=click.Path(exists=True))
 @pass_repo
 def add(repo, files):
-    """Move dotifles into a repository."""
+    """Add dotfiles to a repository."""
     for filename in files:
         Dotfile(filename, repo.target(filename)).add()
 
@@ -177,7 +157,7 @@ def remove(repo, files):
 @click.option('-s', '--short', is_flag=True, help='Show terse output.')
 @pass_repo
 def status(repo, color, short):
-    """Show all dotifles in a non-ok state."""
+    """Show all dotifles in a non-OK state."""
 
     states = {
         'error':    {'char': 'E', 'color': 'red'},
@@ -205,7 +185,7 @@ def status(repo, color, short):
 @click.argument('files', nargs=-1, type=click.Path())
 @pass_repo
 def sync(repo, files):
-    """TODO"""
+    """Create any missing symlinks."""
     for filename in files:
         repo.sync(filename)
 
@@ -216,6 +196,6 @@ def sync(repo, files):
 @click.argument('files', nargs=-1, type=click.Path(exists=True))
 @pass_repo
 def unsync(repo, files):
-    """TODO"""
+    """Remove existing symlinks."""
     for filename in files:
         repo.unsync(filename)
