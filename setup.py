@@ -1,10 +1,9 @@
 from setuptools import setup
-from dotfiles import __version__
 
 
 setup(
     name='dotfiles',
-    version=__version__,
+    version='0.7-dev',
     author='Jon Bernard',
     author_email='jbernard@tuxion.com',
     description='Easily manage your dotfiles',

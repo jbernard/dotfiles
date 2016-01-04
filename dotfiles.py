@@ -5,8 +5,6 @@ import errno
 from operator import attrgetter
 
 
-__version__ = '0.7-dev'
-
 DEFAULT_HOME = os.path.expanduser('~/')
 DEFAULT_REPO = os.path.expanduser('~/Dotfiles')
 
@@ -131,6 +129,7 @@ pass_repo = click.make_pass_decorator(Repository)
               show_default=True)
 @click.option('--repository', type=click.Path(), default=DEFAULT_REPO,
               show_default=True)
+@click.version_option()
 @click.pass_context
 def cli(ctx, home_directory, repository):
     """Dotfiles is a tool to make managing your dotfile symlinks in $HOME easy,
@@ -220,9 +219,3 @@ def unsync(repo, files):
     """TODO"""
     for filename in files:
         repo.unsync(filename)
-
-
-@cli.command()
-def version():
-    """Show the version number."""
-    click.echo("dotfiles version %s" % __version__)

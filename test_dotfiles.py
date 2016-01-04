@@ -1,7 +1,6 @@
 import py
 import pytest
 
-from dotfiles import __version__
 from dotfiles import cli, unique_suffix
 from dotfiles import Repository, Dotfile
 
@@ -59,11 +58,6 @@ class TestCli(object):
 
     def test_staus(self):
         pass
-
-    def test_version(self, runner):
-        result = runner.invoke(cli, ['version'])
-        assert not result.exception
-        assert result.output == 'dotfiles version %s\n' % __version__
 
 
 class TestRepository(object):
