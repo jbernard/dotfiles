@@ -65,9 +65,10 @@ class TestRepository(object):
         assert contents[1].target == target_b
         assert contents[2].target == target_c
 
-    @pytest.mark.xfail(reason='not implemented yet')
-    def test_expected_name(self):
-        assert False
+    def test_expected_name(self, repo, home):
+        actual = Repository(repo, home).expected_name(repo.join('foo'))
+        expected = home.join('.foo')
+        assert actual == expected
 
 
 class TestDotfile(object):
