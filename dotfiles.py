@@ -119,7 +119,7 @@ def add(repo, files):
 
 
 @cli.command()
-@click.option('-v', '--verbose', is_flag=True, help='Show dotfile state.')
+@click.option('-v', '--verbose', is_flag=True, help='Enable verbose output.')
 @pass_repo
 def list(repo, verbose):
     """Show the contents of a repository."""
@@ -142,33 +142,61 @@ def remove(repo, files):
         Dotfile(filename, repo.target(filename)).remove()
 
 
-@cli.command()
-@click.option('-c', '--color', is_flag=True, help='Enable color.')
-@click.option('-s', '--short', is_flag=True, help='Show terse output.')
-@pass_repo
-def status(repo, color, short):
-    """Show all dotifles in a non-OK state."""
+def show_status(dotfiles, state_info, color):
+    for dotfile in dotfiles:
+        try:
+            msg = '%s %s' % (state_info[dotfile.state]['char'], dotfile)
+            fg = state_info[dotfile.state]['color'] if color else None
+            click.secho(msg, fg=fg)
+        except KeyError:
+            continue
 
-    states = {
+
+def show_verbose_status(dotfiles, state_info, color):
+    errors = [d for d in dotfiles if d.state == 'error']
+    conflicts = [d for d in dotfiles if d.state == 'conflict']
+    missing = [d for d in dotfiles if d.state == 'missing']
+
+    def _show(dotfiles, state):
+        for dotfile in dotfiles:
+            click.secho('  %s:  %s' % (state, dotfile),
+                        fg=state_info[state]['color'] if color else None)
+
+    if errors:
+        click.echo('Dotfiles with no target:\n')
+        _show(errors, 'error')
+        click.echo()
+
+    if conflicts:
+        click.echo('Repository and home directory files are different:\n')
+        _show(conflicts, 'conflict')
+        click.echo()
+
+    if missing:
+        click.echo('Missing symlink in home directory:\n')
+        _show(missing, 'missing')
+        click.echo()
+
+
+@cli.command()
+@click.option('-c', '--color',   is_flag=True, help='Enable color.')
+@click.option('-v', '--verbose', is_flag=True, help='Enable verbose output.')
+@pass_repo
+def status(repo, color, verbose):
+    """Show all dotfiles in a non-OK state."""
+
+    state_info = {
         'error':    {'char': 'E', 'color': 'red'},
         'conflict': {'char': '!', 'color': 'magenta'},
         'missing':  {'char': '?', 'color': 'yellow'},
     }
 
-    if not short:
-        click.echo('long output not yet implemeted, using --short for now')
-
     dotfiles = repo.contents()
-    for dotfile in dotfiles:
-        try:
-            state_str = states[dotfile.state]['char']
-            color_str = states[dotfile.state]['color']
-            if color:
-                click.secho('%s %s' % (state_str, dotfile), fg=color_str)
-            else:
-                click.echo('%s %s' % (state_str, dotfile))
-        except KeyError:
-            continue
+
+    if verbose:
+        show_verbose_status(dotfiles, state_info, color)
+    else:
+        show_status(dotfiles, state_info, color)
 
 
 @cli.command()

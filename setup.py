@@ -12,7 +12,7 @@ setup(
                       open('LICENSE.rst').read() + '\n\n' +
                       open('HISTORY.rst').read()),
     license='ISC',
-    py_modules=['dotifles'],
+    py_modules=['dotfiles'],
     install_requires=[
         'click',
         'py',
