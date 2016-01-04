@@ -124,7 +124,7 @@ class Dotfile(object):
 pass_repo = click.make_pass_decorator(Repository)
 
 
-@click.group()
+@click.group(context_settings=dict(help_option_names=['-h', '--help']))
 @click.option('--home-directory', type=click.Path(), default=DEFAULT_HOME,
               show_default=True)
 @click.option('--repository', type=click.Path(), default=DEFAULT_REPO,
