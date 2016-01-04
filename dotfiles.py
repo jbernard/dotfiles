@@ -154,28 +154,34 @@ def show_status(dotfiles, state_info, color):
 
 def show_verbose_status(dotfiles, state_info, color):
     errors = [d for d in dotfiles if d.state == 'error']
-    conflicts = [d for d in dotfiles if d.state == 'conflict']
     missing = [d for d in dotfiles if d.state == 'missing']
+    conflicts = [d for d in dotfiles if d.state == 'conflict']
 
-    def _show(dotfiles, state):
+    def _show(dotfiles, state, color):
         for dotfile in dotfiles:
-            click.secho('  %s:  %s' % (state, dotfile),
-                        fg=state_info[state]['color'] if color else None)
+            click.secho('  %s:  %s' % (state, dotfile), fg=color)
 
     if errors:
         click.echo('Dotfiles with no target:\n')
-        _show(errors, 'error')
+        _show(errors, 'error',
+              state_info['error']['color'] if color else None)
         click.echo()
 
     if conflicts:
         click.echo('Repository and home directory files are different:\n')
-        _show(conflicts, 'conflict')
+        _show(conflicts, 'conflict',
+              state_info['conflict']['color'] if color else None)
         click.echo()
 
     if missing:
         click.echo('Missing symlink in home directory:\n')
-        _show(missing, 'missing')
+        _show(missing, 'missing',
+              state_info['missing']['color'] if color else None)
         click.echo()
+
+    total = len(errors) + len(conflicts) + len(missing)
+    click.echo("%s dotfile%s need%s attention" %
+               (total, 's' if total > 1 else '', '' if total > 1 else 's'))
 
 
 @cli.command()
@@ -192,6 +198,8 @@ def status(repo, color, verbose):
     }
 
     dotfiles = repo.contents()
+    if not dotfiles:
+        return
 
     if verbose:
         show_verbose_status(dotfiles, state_info, color)
