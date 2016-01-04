@@ -60,21 +60,17 @@ class Dotfile(object):
 
     @property
     def state(self):
-
-        # lets be optimistic
-        state = 'ok'
-
         if self.target.check(exists=0):
             # only for testing, cli should never reach this state
-            state = 'error'
+            return 'error'
         elif self.name.check(exists=0):
             # no $HOME symlink
-            state = 'missing'
+            return 'missing'
         elif self.name.check(link=0) or not self.name.samefile(self.target):
             # if name exists but isn't a link to the target
-            state = 'conflict'
+            return 'conflict'
 
-        return state
+        return 'ok'
 
     def add(self):
         if self.target.check(exists=1):
