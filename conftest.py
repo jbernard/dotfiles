@@ -2,9 +2,9 @@ import pytest
 from click.testing import CliRunner
 
 
-@pytest.fixture(scope='function', params=[''])
+@pytest.fixture(scope='function', params=['', 'home'])
 def home(request, tmpdir):
-    return tmpdir.join(request.param)
+    return tmpdir.ensure(request.param, dir=1)
 
 
 @pytest.fixture(scope='function')
