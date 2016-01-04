@@ -1,23 +1,7 @@
 import py
 import pytest
 
-from dotfiles import cli, unique_suffix
-from dotfiles import Repository, Dotfile
-
-
-def test_unique_suffix_overlap():
-    (name, target) = unique_suffix(py.path.local('/foo/baz'),
-                                   py.path.local('/foo/bar/bat'))
-    assert name == 'baz'
-    assert target == 'bar/bat'
-
-
-@pytest.mark.xfail(reason='this is a bug')
-def test_unique_suffix_no_overlap():
-    (name, target) = unique_suffix(py.path.local('/a/b/c'),
-                                   py.path.local('/d/e/f'))
-    assert name == '/a/b/c'
-    assert target == '/d/e/f'
+from dotfiles import Repository, Dotfile, cli
 
 
 class TestCli(object):

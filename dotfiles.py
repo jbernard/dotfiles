@@ -9,11 +9,6 @@ DEFAULT_HOME = os.path.expanduser('~/')
 DEFAULT_REPO = os.path.expanduser('~/Dotfiles')
 
 
-def unique_suffix(path_a, path_b):
-    discard = len(str(path_a.common(path_b))) + 1
-    return (str(path_a)[discard:], str(path_b)[discard:])
-
-
 class Repository(object):
     """A repository is a directory that contains dotfiles.
 
@@ -58,8 +53,7 @@ class Dotfile(object):
         self.target = target
 
     def __str__(self):
-        short_name, _ = unique_suffix(self.name, self.target)
-        return '%s' % short_name
+        return self.name.basename
 
     def __repr__(self):
         return '<Dotfile %r>' % self.name
