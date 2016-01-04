@@ -175,7 +175,7 @@ def remove(repo, files):
 
 @cli.command()
 @click.option('-c', '--color', is_flag=True, help='Enable color.')
-@click.option('-s', '--short', is_flag=True, help='Terse output.')
+@click.option('-s', '--short', is_flag=True, help='Show terse output.')
 @pass_repo
 def status(repo, color, short):
     """Show all dotifles in a non-ok state."""
@@ -187,7 +187,7 @@ def status(repo, color, short):
     }
 
     if not short:
-        raise NotImplementedError('long output, use --short for now')
+        click.echo('long output not yet implemeted, using --short for now')
 
     dotfiles = repo.contents()
     for dotfile in dotfiles:
