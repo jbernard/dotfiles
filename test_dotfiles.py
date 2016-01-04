@@ -6,42 +6,12 @@ from dotfiles import Repository, Dotfile, cli
 
 class TestCli(object):
 
-    def test_list_empty(self, runner, repo, home):
+    def test_status(self, runner, repo, home):
         result = runner.invoke(cli, ['--home-directory', str(home),
                                      '--repository', str(repo),
-                                     'list'])
+                                     'status'])
         assert not result.exception
-        assert result.output == '[no dotfiles found]\n'
-
-    def test_list(self, runner, repo, home):
-        repo.ensure('foo')
-        repo.ensure('bar')
-        repo.ensure('baz')
-        result = runner.invoke(cli, ['--home-directory', str(home),
-                                     '--repository', str(repo),
-                                     'list'])
-        assert not result.exception
-        assert result.output == ('.bar\n'
-                                 '.baz\n'
-                                 '.foo\n')
-
-    def test_list_verbose(self, runner, repo, home):
-        repo.ensure('baz')
-        repo.ensure('foo')
-        home.ensure('.foo')
-        home.join('.bar').mksymlinkto(repo.ensure('bar'))
-
-        result = runner.invoke(cli, ['--home-directory', str(home),
-                                     '--repository', str(repo),
-                                     'list', '--verbose'])
-        assert not result.exception
-        assert result.output == (
-            '.bar               (ok)\n'
-            '.baz               (missing)\n'
-            '.foo               (conflict)\n')
-
-    def test_staus(self):
-        pass
+        assert result.output == ''
 
 
 class TestRepository(object):

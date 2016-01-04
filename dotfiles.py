@@ -115,22 +115,9 @@ def cli(ctx, home_directory, repository):
 def add(repo, files):
     """Add dotfiles to a repository."""
     for filename in files:
-        Dotfile(filename, repo.target(filename)).add()
-
-
-@cli.command()
-@click.option('-v', '--verbose', is_flag=True, help='Enable verbose output.')
-@pass_repo
-def list(repo, verbose):
-    """Show the contents of a repository."""
-    dotfiles = repo.contents()
-    if not dotfiles:
-        click.echo('[no dotfiles found]')
-    for dotfile in dotfiles:
-        if (verbose):
-            click.echo('%-18s (%s)' % (dotfile, dotfile.state))
-        else:
-            click.echo('%s' % dotfile)
+        filename = py.path.local(filename)
+        click.echo('Dotfile(%s, %s).add()' % (
+            filename, repo.expected_name(filename)))
 
 
 @cli.command()
@@ -139,72 +126,39 @@ def list(repo, verbose):
 def remove(repo, files):
     """Remove dotfiles from a repository."""
     for filename in files:
-        Dotfile(filename, repo.target(filename)).remove()
-
-
-def show_status(dotfiles, state_info, color):
-    for dotfile in dotfiles:
-        try:
-            msg = '%s %s' % (state_info[dotfile.state]['char'], dotfile)
-            fg = state_info[dotfile.state]['color'] if color else None
-            click.secho(msg, fg=fg)
-        except KeyError:
-            continue
-
-
-def show_verbose_status(dotfiles, state_info, color):
-    errors = [d for d in dotfiles if d.state == 'error']
-    missing = [d for d in dotfiles if d.state == 'missing']
-    conflicts = [d for d in dotfiles if d.state == 'conflict']
-
-    def _show(dotfiles, state, color):
-        for dotfile in dotfiles:
-            click.secho('  %s:  %s' % (state, dotfile), fg=color)
-
-    if errors:
-        click.echo('Dotfiles with no target:\n')
-        _show(errors, 'error',
-              state_info['error']['color'] if color else None)
-        click.echo()
-
-    if conflicts:
-        click.echo('Repository and home directory files are different:\n')
-        _show(conflicts, 'conflict',
-              state_info['conflict']['color'] if color else None)
-        click.echo()
-
-    if missing:
-        click.echo('Missing symlink in home directory:\n')
-        _show(missing, 'missing',
-              state_info['missing']['color'] if color else None)
-        click.echo()
-
-    total = len(errors) + len(conflicts) + len(missing)
-    click.echo("%s dotfile%s need%s attention" %
-               (total, 's' if total > 1 else '', '' if total > 1 else 's'))
+        filename = py.path.local(filename)
+        click.echo('Dotfile(%s, %s).remove()' % (
+            filename, repo.expected_name(filename)))
 
 
 @cli.command()
-@click.option('-c', '--color',   is_flag=True, help='Enable color.')
-@click.option('-v', '--verbose', is_flag=True, help='Enable verbose output.')
+@click.option('-a', '--all',   is_flag=True, help='Show all dotfiles.')
+@click.option('-c', '--color', is_flag=True, help='Enable color output.')
 @pass_repo
-def status(repo, color, verbose):
+def status(repo, all, color):
     """Show all dotfiles in a non-OK state."""
 
     state_info = {
-        'error':    {'char': 'E', 'color': 'red'},
-        'conflict': {'char': '!', 'color': 'magenta'},
-        'missing':  {'char': '?', 'color': 'yellow'},
+        'error':    {'char': 'E', 'color': None},
+        'conflict': {'char': '!', 'color': None},
+        'missing':  {'char': '?', 'color': None},
     }
 
-    dotfiles = repo.contents()
-    if not dotfiles:
-        return
+    if all:
+        state_info['ok'] = {'char': ' ', 'color': None}
 
-    if verbose:
-        show_verbose_status(dotfiles, state_info, color)
-    else:
-        show_status(dotfiles, state_info, color)
+    if color:
+        state_info['error']['color'] = 'red'
+        state_info['conflict']['color'] = 'magenta'
+        state_info['missing']['color'] = 'yellow'
+
+    for dotfile in repo.contents():
+        try:
+            char = state_info[dotfile.state]['char']
+            fg = state_info[dotfile.state]['color']
+            click.secho('%c %s' % (char, dotfile), fg=fg)
+        except KeyError:
+            continue
 
 
 @cli.command()
@@ -213,9 +167,7 @@ def status(repo, color, verbose):
 def sync(repo, files):
     """Create any missing symlinks."""
     for filename in files:
-        repo.sync(filename)
-
-    # TODO: path need not exist...
+        click.echo('Dotfile(%s).sync()' % filename)
 
 
 @cli.command()
@@ -224,4 +176,4 @@ def sync(repo, files):
 def unsync(repo, files):
     """Remove existing symlinks."""
     for filename in files:
-        repo.unsync(filename)
+        click.echo('Dotfile(%s).unsync()' % filename)
