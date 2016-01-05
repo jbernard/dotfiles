@@ -102,11 +102,11 @@ class TestDotfile(object):
             assert name.check(file=1, link=0)
 
     @pytest.mark.parametrize('times', range(1, 4))
-    def test_sync(self, repo, home, times):
+    def test_link(self, repo, home, times):
         name = home.join('.vimrc')
         target = repo.ensure('vimrc')
 
-        Dotfile(name, target).sync()
+        Dotfile(name, target).link()
 
         assert target.check(file=1, link=0)
         assert name.check(file=1, link=1)
@@ -114,11 +114,11 @@ class TestDotfile(object):
 
         for x in range(2, times):
             with pytest.raises(py.error.EEXIST):
-                Dotfile(name, target).sync()
+                Dotfile(name, target).link()
             assert target.check(file=1, link=0)
             assert name.check(file=1, link=1)
             assert name.samefile(target)
 
     @pytest.mark.xfail(reason='not implemented yet')
-    def test_unsync(self):
+    def test_unlink(self):
         assert False

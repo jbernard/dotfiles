@@ -76,7 +76,7 @@ class Dotfile(object):
         if self.target.check(exists=1):
             raise OSError(errno.EEXIST, self.target)
         self.name.move(self.target)
-        self.sync()
+        self.link()
 
     def remove(self):
         if self.target.check(exists=0):
@@ -84,10 +84,10 @@ class Dotfile(object):
         self.name.remove()
         self.target.move(self.name)
 
-    def sync(self):
+    def link(self):
         self.name.mksymlinkto(self.target)
 
-    def unsync(self):
+    def unlink(self):
         self.name.remove()
 
 
@@ -164,16 +164,16 @@ def status(repo, all, color):
 @cli.command()
 @click.argument('files', nargs=-1, type=click.Path())
 @pass_repo
-def sync(repo, files):
+def link(repo, files):
     """Create any missing symlinks."""
     for filename in files:
-        click.echo('Dotfile(%s).sync()' % filename)
+        click.echo('Dotfile(%s).link()' % filename)
 
 
 @cli.command()
 @click.argument('files', nargs=-1, type=click.Path(exists=True))
 @pass_repo
-def unsync(repo, files):
+def unlink(repo, files):
     """Remove existing symlinks."""
     for filename in files:
-        click.echo('Dotfile(%s).unsync()' % filename)
+        click.echo('Dotfile(%s).unlink()' % filename)
