@@ -21,23 +21,58 @@ class Repository(object):
         self.homedir = homedir
 
     def __str__(self):
-        """Convert repository contents to human readable form."""
+        """Return human-readable repository contents."""
         return ''.join('%s\n' % item for item in self.contents()).rstrip()
 
     def __repr__(self):
         return '<Repository %r>' % self.repodir
 
-    def expected_name(self, target):
-        """Given a repository target, return the expected symlink name."""
-        return py.path.local("%s/.%s" % (self.homedir, target.basename))
+    def _target_to_name(self, target):
+        """Return the expected symlink for the given repository target."""
+        return self.homedir.join('.%s' % target.basename)
+
+    def _name_to_target(self, name):
+        """Return the expected repository target for the given symlink."""
+        return self.repodir.join(name.basename[1:])
+
+    def dotfile(self, name):
+        """Return a valid dotfile for the given path.
+
+        Sanity checks occur here to ensure validity.  Specifically, the file
+        must exist and not reside within the repository.  Further validation
+        will occur during dotfile operation.
+        """
+
+        if name.check(dir=1):
+            raise Exception('%s is a directory' % name.basename)
+
+        for path in name.parts():
+            try:
+                if self.repodir.samefile(path):
+                    raise Exception('%s is within the repository' %
+                                    name.basename)
+            except py.error.ENOENT:
+                continue
+
+        if not self.homedir.samefile(name.dirname):
+            raise Exception('%s is not rooted in the home directory' %
+                            name.basename)
+
+        if name.dirname != self.homedir:
+            raise Exception('%s is nested' % name.basename)
+
+        if name.basename[0] != '.':
+            raise Exception('%s is not a dotfile' % name.basename)
+
+        return Dotfile(name, self._name_to_target(name))
 
     def contents(self):
-        """Given a repository path, discover all existing dotfiles."""
+        """Return a list of all dotfiles in the repository path."""
         contents = []
         self.repodir.ensure(dir=1)
         for target in self.repodir.listdir():
             target = py.path.local(target)
-            contents.append(Dotfile(self.expected_name(target), target))
+            contents.append(Dotfile(self._target_to_name(target), target))
         return sorted(contents, key=attrgetter('name'))
 
 
@@ -72,22 +107,49 @@ class Dotfile(object):
 
         return 'ok'
 
-    def add(self):
+    def add(self, verbose=False):
+        if self.name.check(file=0):
+            raise Exception('%s is not a file' % self.name.basename)
         if self.target.check(exists=1):
             raise OSError(errno.EEXIST, self.target)
-        self.name.move(self.target)
-        self.link()
 
-    def remove(self):
+        if verbose:
+            click.echo('MOVE   %s -> %s' % (self.name, self.target))
+        self.name.move(self.target)
+
+        self.link(verbose)
+
+    def remove(self, verbose=False):
+        if not self.name.check(link=1):
+            raise Exception('%s is not a symlink' % self.name.basename)
         if self.target.check(exists=0):
             raise OSError(errno.ENOENT, self.target)
-        self.name.remove()
+
+        self.unlink(verbose)
+
+        if verbose:
+            click.echo('MOVE   %s -> %s' % (self.target, self.name))
         self.target.move(self.name)
 
-    def link(self):
+    def link(self, verbose=False):
+        if self.name.check(exists=1):
+            raise OSError(errno.EEXIST, self.name)
+        if self.target.check(exists=0):
+            raise OSError(errno.ENOENT, self.target)
+
+        if verbose:
+            click.echo('LINK   %s -> %s' % (self.name, self.target))
         self.name.mksymlinkto(self.target)
 
-    def unlink(self):
+    def unlink(self, verbose=False):
+        if self.name.check(link=0):
+            raise Exception('%s is not a symlink' % self.name.basename)
+        if self.target.check(exists=0):
+            raise Exception('%s does not exist' % self.target)
+        if not self.name.samefile(self.target):
+            raise Exception('good lord')
+        if verbose:
+            click.echo('REMOVE %s' % self.name)
         self.name.remove()
 
 
@@ -110,32 +172,30 @@ def cli(ctx, home_directory, repository):
 
 
 @cli.command()
+@click.option('-v', '--verbose', is_flag=True, help='Show executed commands.')
 @click.argument('files', nargs=-1, type=click.Path(exists=True))
 @pass_repo
-def add(repo, files):
+def add(repo, verbose, files):
     """Add dotfiles to a repository."""
     for filename in files:
-        filename = py.path.local(filename)
-        click.echo('Dotfile(%s, %s).add()' % (
-            filename, repo.expected_name(filename)))
+        repo.dotfile(py.path.local(filename)).add(verbose)
 
 
 @cli.command()
+@click.option('-v', '--verbose', is_flag=True, help='Show executed commands.')
 @click.argument('files', nargs=-1, type=click.Path(exists=True))
 @pass_repo
-def remove(repo, files):
+def remove(repo, verbose, files):
     """Remove dotfiles from a repository."""
     for filename in files:
-        filename = py.path.local(filename)
-        click.echo('Dotfile(%s, %s).remove()' % (
-            filename, repo.expected_name(filename)))
+        repo.dotfile(py.path.local(filename)).remove(verbose)
 
 
 @cli.command()
-@click.option('-a', '--all',   is_flag=True, help='Show all dotfiles.')
-@click.option('-c', '--color', is_flag=True, help='Enable color output.')
+@click.option('-v', '--verbose', is_flag=True, help='Show all dotfiles.')
+@click.option('-c', '--color',   is_flag=True, help='Enable color output.')
 @pass_repo
-def status(repo, all, color):
+def status(repo, verbose, color):
     """Show all dotfiles in a non-OK state."""
 
     state_info = {
@@ -144,7 +204,7 @@ def status(repo, all, color):
         'missing':  {'char': '?', 'color': None},
     }
 
-    if all:
+    if verbose:
         state_info['ok'] = {'char': ' ', 'color': None}
 
     if color:
@@ -162,18 +222,20 @@ def status(repo, all, color):
 
 
 @cli.command()
+@click.option('-v', '--verbose', is_flag=True, help='Show executed commands.')
 @click.argument('files', nargs=-1, type=click.Path())
 @pass_repo
-def link(repo, files):
+def link(repo, verbose, files):
     """Create any missing symlinks."""
     for filename in files:
-        click.echo('Dotfile(%s).link()' % filename)
+        repo.dotfile(py.path.local(filename)).link(verbose)
 
 
 @cli.command()
+@click.option('-v', '--verbose', is_flag=True, help='Show executed commands.')
 @click.argument('files', nargs=-1, type=click.Path(exists=True))
 @pass_repo
-def unlink(repo, files):
+def unlink(repo, verbose, files):
     """Remove existing symlinks."""
     for filename in files:
-        click.echo('Dotfile(%s).unlink()' % filename)
+        repo.dotfile(py.path.local(filename)).unlink(verbose)
