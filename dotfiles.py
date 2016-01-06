@@ -138,7 +138,7 @@ class Dotfile(object):
 
         if verbose:
             click.echo('LINK   %s -> %s' % (self.name, self.target))
-        self.name.mksymlinkto(self.target)
+        self.name.mksymlinkto(self.target, absolute=0)
 
     def unlink(self, verbose=False):
         if self.name.check(link=0):
