@@ -17,7 +17,7 @@ class Repository(object):
     """
 
     def __init__(self, repodir, homedir):
-        self.repodir = repodir
+        self.repodir = repodir.ensure(dir=1)
         self.homedir = homedir
 
     def __str__(self):
@@ -69,7 +69,6 @@ class Repository(object):
     def contents(self):
         """Return a list of all dotfiles in the repository path."""
         contents = []
-        self.repodir.ensure(dir=1)
         for target in self.repodir.listdir():
             target = py.path.local(target)
             contents.append(Dotfile(self._target_to_name(target), target))
