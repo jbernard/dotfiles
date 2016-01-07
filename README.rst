@@ -1,3 +1,25 @@
+*Update:*  I've managed to find some free time recently and have been making
+some changes and improvements that hopefully people will appreciate.  At the
+moment the ``master`` branch is in a state of flux until I get all of the
+pieces included.
+
+Feel free to use the latest stable version ``0.6.4`` on pypi if that's what
+you're looking for.
+
+Over time several features and improvements were merged and I feel now is a
+good time to step back and rethink the structure a bit.  I think I can support
+the ``packages`` feature in a much more general way that doesn't require
+configuration file changes and support the other features without having
+combinations that break in subtle ways.
+
+I've reworked the CLI to use click, which means a more git-like interface as
+well as shell completion for bash and colored output.
+
+Thanks for baring with me, I hope to have this new version in good shape and
+released soon.  There are some changes in interface and behaviour from the
+previous version and I hope it doesn't frustrate folks too much.  Feel free to
+submit an issue if you find something intolerable.
+
 Dotfile management made easy
 ============================
 
