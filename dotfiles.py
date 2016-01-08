@@ -57,6 +57,7 @@ class Repository(object):
                     raise Exception('%s is within the repository' %
                                     name.basename)
             except py.error.ENOENT:
+                # this occurs when the symlink does not yet exist
                 continue
 
         if not self.homedir.samefile(name.dirname):
@@ -87,7 +88,7 @@ class Repository(object):
 class Dotfile(object):
     """An configuration file managed within a repository.
 
-    :param name: name of the symlink in the home directory (~/.vimrc)
+    :param name:   name of the symlink in the home directory (~/.vimrc)
     :param target: where the symlink should point to (~/Dotfiles/vimrc)
     """
 
@@ -112,7 +113,6 @@ class Dotfile(object):
         elif self.name.check(link=0) or not self.name.samefile(self.target):
             # if name exists but isn't a link to the target
             return 'conflict'
-
         return 'ok'
 
     def add(self, verbose=False):
@@ -120,11 +120,9 @@ class Dotfile(object):
             raise Exception('%s is not a file' % self.name.basename)
         if self.target.check(exists=1):
             raise OSError(errno.EEXIST, self.target)
-
         if verbose:
             click.echo('MOVE   %s -> %s' % (self.name, self.target))
         self.name.move(self.target)
-
         self.link(verbose)
 
     def remove(self, verbose=False):
@@ -132,9 +130,7 @@ class Dotfile(object):
             raise Exception('%s is not a symlink' % self.name.basename)
         if self.target.check(exists=0):
             raise OSError(errno.ENOENT, self.target)
-
         self.unlink(verbose)
-
         if verbose:
             click.echo('MOVE   %s -> %s' % (self.target, self.name))
         self.target.move(self.name)
@@ -144,7 +140,6 @@ class Dotfile(object):
             raise OSError(errno.EEXIST, self.name)
         if self.target.check(exists=0):
             raise OSError(errno.ENOENT, self.target)
-
         if verbose:
             click.echo('LINK   %s -> %s' % (self.name, self.target))
         self.name.mksymlinkto(self.target, absolute=0)
@@ -183,7 +178,7 @@ def cli(ctx, repository):
 @click.argument('files', nargs=-1, type=click.Path(exists=True))
 @pass_repo
 def add(repo, verbose, files):
-    """Add dotfiles to a repository."""
+    """Replace file with symlink."""
     for filename in files:
         repo.dotfile(py.path.local(filename)).add(verbose)
 
@@ -193,7 +188,7 @@ def add(repo, verbose, files):
 @click.argument('files', nargs=-1, type=click.Path(exists=True))
 @pass_repo
 def remove(repo, verbose, files):
-    """Remove dotfiles from a repository."""
+    """Replace symlink with file."""
     for filename in files:
         repo.dotfile(py.path.local(filename)).remove(verbose)
 
@@ -233,7 +228,7 @@ def status(repo, verbose, color):
 @click.argument('files', nargs=-1, type=click.Path())
 @pass_repo
 def link(repo, verbose, files):
-    """Create any missing symlinks."""
+    """Create missing symlinks."""
     for filename in files:
         repo.dotfile(py.path.local(filename)).link(verbose)
 
