@@ -5,8 +5,9 @@ import errno
 from operator import attrgetter
 
 
-DEFAULT_HOME = os.path.expanduser('~/')
-DEFAULT_REPO = os.path.expanduser('~/Dotfiles')
+DEFAULT_HOMEDIR = os.path.expanduser('~/')
+DEFAULT_REPO_PATH = os.path.expanduser('~/Dotfiles')
+DEFAULT_REPO_IGNORE = ['.git', '.gitignore']
 
 
 class Repository(object):
@@ -14,11 +15,15 @@ class Repository(object):
 
     :param repodir: the location of the repository directory
     :param homedir: the location of the home directory (primarily for testing)
+    :param ignore:  a list of targets to ignore
     """
 
-    def __init__(self, repodir, homedir):
-        self.repodir = repodir.ensure(dir=1)
+    def __init__(self, repodir, homedir, ignore=[]):
+        self.ignore = ignore
         self.homedir = homedir
+
+        # create repository if needed
+        self.repodir = repodir.ensure(dir=1)
 
     def __str__(self):
         """Return human-readable repository contents."""
@@ -64,6 +69,9 @@ class Repository(object):
         if name.basename[0] != '.':
             raise Exception('%s is not a dotfile' % name.basename)
 
+        if self._name_to_target(name).basename in self.ignore:
+            raise Exception('%s targets an ignored file' % name.basename)
+
         return Dotfile(name, self._name_to_target(name))
 
     def contents(self):
@@ -71,7 +79,8 @@ class Repository(object):
         contents = []
         for target in self.repodir.listdir():
             target = py.path.local(target)
-            contents.append(Dotfile(self._target_to_name(target), target))
+            if target.basename not in self.ignore:
+                contents.append(Dotfile(self._target_to_name(target), target))
         return sorted(contents, key=attrgetter('name'))
 
 
@@ -168,6 +177,7 @@ def cli(ctx, home_directory, repository):
     """
     ctx.obj = Repository(py.path.local(repository),
                          py.path.local(home_directory))
+                         DEFAULT_REPO_IGNORE)
 
 
 @cli.command()
