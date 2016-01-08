@@ -13,10 +13,11 @@ class TestCli(object):
     def test_remove(self):
         assert False
 
-    def test_status(self, runner, repo, home):
-        result = runner.invoke(cli, ['--home-directory', str(home),
-                                     '--repository', str(repo),
-                                     'status'])
+    def test_status(self, runner, repo, home, monkeypatch):
+        monkeypatch.setattr('dotfiles.DEFAULT_HOMEDIR', str(home))
+        monkeypatch.setattr('dotfiles.DEFAULT_REPO_PATH', str(repo))
+
+        result = runner.invoke(cli, ['status'])
         assert not result.exception
         assert result.output == ''
 
