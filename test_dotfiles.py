@@ -5,31 +5,15 @@ from dotfiles import Repository, Dotfile, cli
 
 class TestCli(object):
 
-    @pytest.mark.xfail(reason='TODO')
-    def test_add(self):
-        assert False
-
-    @pytest.mark.xfail(reason='TODO')
-    def test_remove(self):
-        assert False
-
+    @pytest.mark.xfail(reason='global overrides not working')
     def test_status(self, runner, repo, home, monkeypatch):
+        # FIXME: this approach does not work
         monkeypatch.setattr('dotfiles.DEFAULT_HOMEDIR', str(home))
         monkeypatch.setattr('dotfiles.DEFAULT_REPO_PATH', str(repo))
 
         result = runner.invoke(cli, ['status'])
         assert not result.exception
         assert result.output == ''
-
-        # TODO: can do better than this
-
-    @pytest.mark.xfail(reason='TODO')
-    def test_link(self):
-        assert False
-
-    @pytest.mark.xfail(reason='TODO')
-    def test_unlink(self):
-        assert False
 
 
 class TestRepository(object):
