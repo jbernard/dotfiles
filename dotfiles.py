@@ -10,6 +10,24 @@ DEFAULT_REPO_PATH = os.path.expanduser('~/Dotfiles')
 DEFAULT_REPO_IGNORE = ['.git', '.gitignore']
 
 
+class DotfileException(Exception):
+    """An exception the CLI can handle and show to the user."""
+
+    def __init__(self, message):
+        Exception.__init__(self, message)
+        self.message = message
+
+    def __str__(self):
+        return 'Error: %s' % self.message
+
+
+class TargetIgnored(DotfileException):
+
+    def __init__(self, path):
+        message = '%s targets an ignored file' % path.basename
+        DotfileException.__init__(self, message)
+
+
 class Repository(object):
     """A repository is a directory that contains dotfiles.
 
@@ -41,12 +59,11 @@ class Repository(object):
         return self.repodir.join(name.basename[1:])
 
     def dotfile(self, name):
-        """Return a valid dotfile for the given path.
+        """Return a valid dotfile for the given path."""
 
-        Sanity checks occur here to ensure validity.  Specifically, the file
-        must exist and not reside within the repository.  Further validation
-        will occur during dotfile operation.
-        """
+        target = self._name_to_target(name)
+        if target.basename in self.ignore:
+            raise TargetIgnored(name)
 
         if name.check(dir=1):
             raise Exception('%s is a directory' % name.basename)
@@ -70,10 +87,7 @@ class Repository(object):
         if name.basename[0] != '.':
             raise Exception('%s is not a dotfile' % name.basename)
 
-        if self._name_to_target(name).basename in self.ignore:
-            raise Exception('%s targets an ignored file' % name.basename)
-
-        return Dotfile(name, self._name_to_target(name))
+        return Dotfile(name, target)
 
     def contents(self):
         """Return a list of all dotfiles in the repository path."""
@@ -180,7 +194,10 @@ def cli(ctx, repository):
 def add(repo, verbose, files):
     """Replace file with symlink."""
     for filename in files:
-        repo.dotfile(py.path.local(filename)).add(verbose)
+        try:
+            repo.dotfile(py.path.local(filename)).add(verbose)
+        except DotfileException as err:
+            click.echo(err)
 
 
 @cli.command()
