@@ -28,6 +28,41 @@ class TargetIgnored(DotfileException):
         DotfileException.__init__(self, message)
 
 
+class IsDirectory(DotfileException):
+
+    def __init__(self, path):
+        message = '%s is a directory' % path.basename
+        DotfileException.__init__(self, message)
+
+
+class InRepository(DotfileException):
+
+    def __init__(self, path):
+        message = '%s is within the repository' % path.basename
+        DotfileException.__init__(self, message)
+
+
+class NotRootedInHome(DotfileException):
+
+    def __init__(self, path):
+        message = '%s is not rooted in the home directory' % path.basename
+        DotfileException.__init__(self, message)
+
+
+class IsNested(DotfileException):
+
+    def __init__(self, path):
+        message = '%s is nested' % path.basename
+        DotfileException.__init__(self, message)
+
+
+class NotADotfile(DotfileException):
+
+    def __init__(self, path):
+        message = '%s is not a dotfile' % path.basename
+        DotfileException.__init__(self, message)
+
+
 class Repository(object):
     """A repository is a directory that contains dotfiles.
 
@@ -66,26 +101,24 @@ class Repository(object):
             raise TargetIgnored(name)
 
         if name.check(dir=1):
-            raise Exception('%s is a directory' % name.basename)
+            raise IsDirectory(name)
 
         for path in name.parts():
             try:
                 if self.repodir.samefile(path):
-                    raise Exception('%s is within the repository' %
-                                    name.basename)
+                    raise InRepository(name)
             except py.error.ENOENT:
                 # this occurs when the symlink does not yet exist
                 continue
 
         if not self.homedir.samefile(name.dirname):
-            raise Exception('%s is not rooted in the home directory' %
-                            name.basename)
+            raise NotRootedInHome(name)
 
         if name.dirname != self.homedir:
-            raise Exception('%s is nested' % name.basename)
+            raise IsNested(name)
 
         if name.basename[0] != '.':
-            raise Exception('%s is not a dotfile' % name.basename)
+            raise NotADotfile(name)
 
         return Dotfile(name, target)
 
