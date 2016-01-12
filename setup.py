@@ -3,7 +3,7 @@ from setuptools import setup
 
 setup(
     name='dotfiles',
-    version='0.7-dev',
+    version='0.7.dev0',
     author='Jon Bernard',
     author_email='jbernard@tuxion.com',
     description='Easily manage your dotfiles',
