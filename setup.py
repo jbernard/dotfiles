@@ -12,10 +12,19 @@ setup(
                       open('LICENSE.rst').read() + '\n\n' +
                       open('HISTORY.rst').read()),
     license='ISC',
-    py_modules=['dotfiles'],
+    py_modules=[
+        'dotfiles'
+    ],
+    setup_requires=[
+        'pytest-runner',
+        'flake8',
+    ],
     install_requires=[
         'click',
         'py',
+    ],
+    tests_require=[
+        'pytest'
     ],
     entry_points={
         'console_scripts': [

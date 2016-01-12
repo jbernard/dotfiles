@@ -10,6 +10,7 @@ __pycache__/
 build/
 dist/
 dotfiles.egg-info/
+.eggs/
 
 Gemfile
 Gemfile.lock
