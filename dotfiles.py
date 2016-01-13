@@ -122,6 +122,14 @@ class Repository(object):
 
         return Dotfile(name, target)
 
+    def dotfiles(self, path):
+        """Return a list of dotfiles given a path."""
+
+        if path.check(dir=1):
+            raise IsDirectory(path)
+
+        return self.dotfile(path)
+
     def contents(self):
         """Return a list of all dotfiles in the repository path."""
         contents = []
