@@ -70,6 +70,14 @@ class TestRepository(object):
         assert contents[1].target == target_b
         assert contents[2].target == target_c
 
+    @pytest.mark.xfail(reason='nesting not yet supported')
+    def test_nested_name_to_target(self, repo, home):
+        r = Repository(repo, home)
+
+        actual = r._name_to_target(home.join('.vim/.mrconfig'))
+        expected = repo.join('vim/.mrconfig')
+        assert actual == expected
+
 
 class TestDotfile(object):
 
