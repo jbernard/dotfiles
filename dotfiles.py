@@ -149,6 +149,30 @@ class Dotfile(object):
     def __repr__(self):
         return '<Dotfile %r>' % self.name
 
+    def _add(self, verbose):
+        if verbose:
+            click.echo('MOVE   %s -> %s' % (self.name, self.target))
+        self.name.move(self.target)
+        # self._link(verbose)
+        self.link(verbose)
+
+    def _remove(self, verbose):
+        # self._unlink(verbose)
+        self.unlink(verbose)
+        if verbose:
+            click.echo('MOVE   %s -> %s' % (self.target, self.name))
+        self.target.move(self.name)
+
+    def _link(self, verbose):
+        if verbose:
+            click.echo('LINK   %s -> %s' % (self.name, self.target))
+        self.name.mksymlinkto(self.target, absolute=0)
+
+    def _unlink(self, verbose):
+        if verbose:
+            click.echo('REMOVE %s' % self.name)
+        self.name.remove()
+
     @property
     def state(self):
         if self.target.check(exists=0):
@@ -162,34 +186,28 @@ class Dotfile(object):
             return 'conflict'
         return 'ok'
 
+    # TODO: update below exceptions
+
     def add(self, verbose=False):
         if self.name.check(file=0):
             raise Exception('%s is not a file' % self.name.basename)
         if self.target.check(exists=1):
             raise OSError(errno.EEXIST, self.target)
-        if verbose:
-            click.echo('MOVE   %s -> %s' % (self.name, self.target))
-        self.name.move(self.target)
-        self.link(verbose)
+        self._add(verbose)
 
     def remove(self, verbose=False):
         if not self.name.check(link=1):
             raise Exception('%s is not a symlink' % self.name.basename)
         if self.target.check(exists=0):
             raise OSError(errno.ENOENT, self.target)
-        self.unlink(verbose)
-        if verbose:
-            click.echo('MOVE   %s -> %s' % (self.target, self.name))
-        self.target.move(self.name)
+        self._remove(verbose)
 
     def link(self, verbose=False):
         if self.name.check(exists=1):
             raise OSError(errno.EEXIST, self.name)
         if self.target.check(exists=0):
             raise OSError(errno.ENOENT, self.target)
-        if verbose:
-            click.echo('LINK   %s -> %s' % (self.name, self.target))
-        self.name.mksymlinkto(self.target, absolute=0)
+        self._link(verbose)
 
     def unlink(self, verbose=False):
         if self.name.check(link=0):
@@ -198,9 +216,7 @@ class Dotfile(object):
             raise Exception('%s does not exist' % self.target)
         if not self.name.samefile(self.target):
             raise Exception('good lord')
-        if verbose:
-            click.echo('REMOVE %s' % self.name)
-        self.name.remove()
+        self._unlink(verbose)
 
 
 pass_repo = click.make_pass_decorator(Repository)
