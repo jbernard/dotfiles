@@ -5,11 +5,14 @@ from dotfiles import Repository, Dotfile, cli
 
 class TestCli(object):
 
-    @pytest.mark.xfail(reason='global overrides not working')
     def test_status(self, runner, repo, home, monkeypatch):
-        # FIXME: this approach does not work
-        monkeypatch.setattr('dotfiles.DEFAULT_HOMEDIR', str(home))
-        monkeypatch.setattr('dotfiles.DEFAULT_REPO_PATH', str(repo))
+
+        def repo_init(self, *args, **kwargs):
+            self.ignore = []
+            self.homedir = home
+            self.repodir = repo.ensure(dir=1)
+
+        monkeypatch.setattr(Repository, '__init__', repo_init)
 
         result = runner.invoke(cli, ['status'])
         assert not result.exception
