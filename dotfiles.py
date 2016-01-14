@@ -176,7 +176,7 @@ class Dotfile(object):
 
     def _unlink(self, verbose):
         if verbose:
-            click.echo('REMOVE %s' % self.name)
+            click.echo('UNLINK %s' % self.name)
         self.name.remove()
 
     @property
