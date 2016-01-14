@@ -161,12 +161,10 @@ class Dotfile(object):
         if verbose:
             click.echo('MOVE   %s -> %s' % (self.name, self.target))
         self.name.move(self.target)
-        # self._link(verbose)
-        self.link(verbose)
+        self._link(verbose)
 
     def _remove(self, verbose):
-        # self._unlink(verbose)
-        self.unlink(verbose)
+        self._unlink(verbose)
         if verbose:
             click.echo('MOVE   %s -> %s' % (self.target, self.name))
         self.target.move(self.name)
