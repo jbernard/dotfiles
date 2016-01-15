@@ -1,9 +1,10 @@
 from setuptools import setup
+from dotfiles import __version__
 
 
 setup(
     name='dotfiles',
-    version='0.7.dev0',
+    version=__version__,
     author='Jon Bernard',
     author_email='jbernard@tuxion.com',
     description='Easily manage your dotfiles',
@@ -12,9 +13,7 @@ setup(
                       open('LICENSE.rst').read() + '\n\n' +
                       open('HISTORY.rst').read()),
     license='ISC',
-    py_modules=[
-        'dotfiles'
-    ],
+    packages=['dotfiles'],
     setup_requires=[
         'pytest-runner',
         'flake8',
@@ -28,7 +27,7 @@ setup(
     ],
     entry_points={
         'console_scripts': [
-            'dotfiles=dotfiles:cli',
+            'dotfiles=dotfiles.dotfiles:cli',
         ],
     },
     classifiers=[
