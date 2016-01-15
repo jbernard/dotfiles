@@ -115,7 +115,7 @@ class Repository(object):
 
     def _name_to_target(self, name):
         """Return the expected repository target for the given symlink."""
-        return self.repodir.join(name.basename[1:])
+        return self.repodir.join(self.homedir.bestrelpath(name)[1:])
 
     def dotfile(self, name):
         """Return a valid dotfile for the given path."""
@@ -134,12 +134,10 @@ class Repository(object):
                 # this occurs when the symlink does not yet exist
                 continue
 
-        if not self.homedir.samefile(name.dirname):
-            raise NotRootedInHome(name)
-
-        if name.dirname != self.homedir:
-            raise IsNested(name)
-
+        # if not self.homedir.samefile(name.dirname):
+        #     raise NotRootedInHome(name)
+        # if name.dirname != self.homedir:
+        #     raise IsNested(name)
         if name.basename[0] != '.':
             raise NotADotfile(name)
 
@@ -180,7 +178,15 @@ class Dotfile(object):
     def __repr__(self):
         return '<Dotfile %r>' % self.name
 
+    def _ensure_target_dir(self, verbose):
+        target_dir = py.path.local(self.target.dirname)
+        if not target_dir.check():
+            if verbose:
+                click.echo('MKDIR  %s' % self.target.dirname)
+            target_dir.ensure(dir=1)
+
     def _add(self, verbose):
+        self._ensure_target_dir(verbose)
         if verbose:
             click.echo('MOVE   %s -> %s' % (self.name, self.target))
         self.name.move(self.target)
@@ -191,6 +197,7 @@ class Dotfile(object):
         if verbose:
             click.echo('MOVE   %s -> %s' % (self.target, self.name))
         self.target.move(self.name)
+        # TODO: remove directory if empty
 
     def _link(self, verbose):
         if verbose:
