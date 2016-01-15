@@ -13,54 +13,78 @@ DEFAULT_REPO_IGNORE = ['.git', '.gitignore']
 class DotfileException(Exception):
     """An exception the CLI can handle and show to the user."""
 
-    def __init__(self, message):
-        Exception.__init__(self, message)
-        self.message = message
+    def __init__(self, path, message='an unknown error occurred'):
+        self.message = '\'%s\' %s' % (path, message)
+        Exception.__init__(self, self.message)
 
     def __str__(self):
-        return 'Error: %s' % self.message
+        return 'ERROR: %s' % self.message
 
 
 class TargetIgnored(DotfileException):
 
     def __init__(self, path):
-        message = '%s targets an ignored file' % path.basename
-        DotfileException.__init__(self, message)
+        DotfileException.__init__(self, path, 'targets an ignored file')
 
 
 class IsDirectory(DotfileException):
 
     def __init__(self, path):
-        message = '%s is a directory' % path.basename
-        DotfileException.__init__(self, message)
+        DotfileException.__init__(self, path, 'is a directory')
+
+
+class IsSymlink(DotfileException):
+
+    def __init__(self, path):
+        DotfileException.__init__(self, path, 'is a symlink')
+
+
+class NotASymlink(DotfileException):
+
+    def __init__(self, path):
+        DotfileException.__init__(self, path, 'is not a symlink')
 
 
 class InRepository(DotfileException):
 
     def __init__(self, path):
-        message = '%s is within the repository' % path.basename
-        DotfileException.__init__(self, message)
+        DotfileException.__init__(self, path, 'is within the repository')
 
 
 class NotRootedInHome(DotfileException):
 
     def __init__(self, path):
-        message = '%s is not rooted in the home directory' % path.basename
-        DotfileException.__init__(self, message)
+        DotfileException.__init__(self, path, 'not rooted in home directory')
 
 
 class IsNested(DotfileException):
 
     def __init__(self, path):
-        message = '%s is nested' % path.basename
-        DotfileException.__init__(self, message)
+        DotfileException.__init__(self, path, 'is nested')
 
 
 class NotADotfile(DotfileException):
 
     def __init__(self, path):
-        message = '%s is not a dotfile' % path.basename
-        DotfileException.__init__(self, message)
+        DotfileException.__init__(self, path, 'is not a dotfile')
+
+
+class DoesNotExist(DotfileException):
+
+    def __init__(self, path):
+        DotfileException.__init__(self, path, 'doest not exist')
+
+
+class TargetExists(DotfileException):
+
+    def __init__(self, path):
+        DotfileException.__init__(self, path, 'target already exists')
+
+
+class TargetMissing(DotfileException):
+
+    def __init__(self, path):
+        DotfileException.__init__(self, path, 'target is missing')
 
 
 class Repository(object):
@@ -192,21 +216,25 @@ class Dotfile(object):
             return 'conflict'
         return 'ok'
 
-    # TODO: update below exceptions
-
     def add(self, verbose=False):
         if self.name.check(file=0):
-            raise Exception('%s is not a file' % self.name.basename)
+            raise DoesNotExist(self.name)
+        if self.name.check(dir=1):
+            raise IsDirectory(self.name)
+        if self.name.check(link=1):
+            raise IsSymlink(self.name)
         if self.target.check(exists=1):
-            raise OSError(errno.EEXIST, self.target)
+            raise TargetExists(self.name)
         self._add(verbose)
 
     def remove(self, verbose=False):
         if not self.name.check(link=1):
-            raise Exception('%s is not a symlink' % self.name.basename)
+            raise NotASymlink(self.name)
         if self.target.check(exists=0):
-            raise OSError(errno.ENOENT, self.target)
+            raise TargetMissing(self.name)
         self._remove(verbose)
+
+    # TODO: replace exceptions
 
     def link(self, verbose=False):
         if self.name.check(exists=1):

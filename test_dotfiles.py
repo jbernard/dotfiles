@@ -1,6 +1,7 @@
 import pytest
 
 from dotfiles import Repository, Dotfile, cli
+from dotfiles import IsSymlink
 
 
 class TestCli(object):
@@ -116,8 +117,7 @@ class TestDotfile(object):
         assert name.samefile(target)
 
         for x in range(2, times):
-            with pytest.raises(OSError):
-                # TODO: verify exception type once those exists
+            with pytest.raises(IsSymlink):
                 Dotfile(name, target).add()
             assert target.check(file=1, link=0)
             assert name.check(file=1, link=1)
