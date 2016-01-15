@@ -123,7 +123,6 @@ class Repository(object):
         target = self._name_to_target(name)
         if target.basename in self.ignore:
             raise TargetIgnored(name)
-
         if name.check(dir=1):
             raise IsDirectory(name)
 
@@ -276,9 +275,11 @@ def cli(ctx, repository):
 @pass_repo
 def add(repo, verbose, files):
     """Replace file with symlink."""
+    # TODO: repo.dotfiles() for directories
     for filename in files:
         try:
             repo.dotfile(py.path.local(filename)).add(verbose)
+            click.echo('added \'%s\'' % filename)
         except DotfileException as err:
             click.echo(err)
 
@@ -290,7 +291,11 @@ def add(repo, verbose, files):
 def remove(repo, verbose, files):
     """Replace symlink with file."""
     for filename in files:
-        repo.dotfile(py.path.local(filename)).remove(verbose)
+        try:
+            repo.dotfile(py.path.local(filename)).remove(verbose)
+            click.echo('removed \'%s\'' % filename)
+        except DotfileException as err:
+            click.echo(err)
 
 
 @cli.command()
@@ -329,8 +334,13 @@ def status(repo, verbose, color):
 @pass_repo
 def link(repo, verbose, files):
     """Create missing symlinks."""
+    # TODO: no files should be interpreted as all files with confirmation
     for filename in files:
-        repo.dotfile(py.path.local(filename)).link(verbose)
+        try:
+            repo.dotfile(py.path.local(filename)).link(verbose)
+            click.echo('linked \'%s\'' % filename)
+        except DotfileException as err:
+            click.echo(err)
 
 
 @cli.command()
@@ -339,5 +349,10 @@ def link(repo, verbose, files):
 @pass_repo
 def unlink(repo, verbose, files):
     """Remove existing symlinks."""
+    # TODO: no files should be interpreted as all files with confirmation
     for filename in files:
-        repo.dotfile(py.path.local(filename)).unlink(verbose)
+        try:
+            repo.dotfile(py.path.local(filename)).unlink(verbose)
+            click.echo('unlinked \'%s\'' % filename)
+        except DotfileException as err:
+            click.echo(err)
