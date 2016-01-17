@@ -15,16 +15,18 @@ class Repository(object):
     :param ignore:  a list of targets to ignore
     """
 
-    def __init__(self, repodir, homedir, ignore=[]):
-        self.ignore = ignore
-        self.homedir = homedir
+    homedir = py.path.local('~/', expanduser=True)
+    ignore = ['.git', '.hg']
 
-        # create repository if needed
+    def __init__(self, repodir, homedir=homedir, ignore=ignore):
         self.repodir = repodir.ensure(dir=1)
+        self.homedir = homedir
+        self.ignore = ignore
 
     def __str__(self):
         """Return human-readable repository contents."""
-        return ''.join('%s\n' % item for item in self.contents()).rstrip()
+        return ''.join('%s\n' % item.short_name(self.homedir)
+                       for item in self.contents()).rstrip()
 
     def __repr__(self):
         return '<Repository %r>' % self.repodir
@@ -37,13 +39,20 @@ class Repository(object):
         """Return the expected repository target for the given symlink."""
         return self.repodir.join(self.homedir.bestrelpath(name))
 
-    def dotfile(self, name):
+    def _dotfile(self, name):
         """Return a valid dotfile for the given path."""
 
         # XXX: it must be below the home directory
         #      it cannot be contained in the repository
         #      it cannot be ignored
         #      it must be a file
+
+        # if not self.homedir.samefile(name.dirname):
+        #     raise NotRootedInHome(name)
+        # if name.dirname != self.homedir:
+        #     raise IsNested(name)
+        # if name.basename[0] != '.':
+        #     raise NotADotfile(name)
 
         target = self._name_to_target(name)
         if target.basename in self.ignore:
@@ -59,13 +68,6 @@ class Repository(object):
                 # this occurs when the symlink does not yet exist
                 continue
 
-        # if not self.homedir.samefile(name.dirname):
-        #     raise NotRootedInHome(name)
-        # if name.dirname != self.homedir:
-        #     raise IsNested(name)
-        # if name.basename[0] != '.':
-        #     raise NotADotfile(name)
-
         return Dotfile(name, target)
 
     def dotfiles(self, paths):
@@ -74,7 +76,7 @@ class Repository(object):
         paths = map(py.path.local, paths)
         for path in paths:
             try:
-                dotfiles.append(self.dotfile(path))
+                dotfiles.append(self._dotfile(path))
             except DotfileException as err:
                 echo(err)
         return dotfiles

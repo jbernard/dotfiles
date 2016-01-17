@@ -6,10 +6,7 @@ from .repository import Repository
 from .exceptions import DotfileException
 
 
-DEFAULT_HOMEDIR = os.path.expanduser('~/')
 DEFAULT_REPO_PATH = os.path.expanduser('~/Dotfiles')
-DEFAULT_REPO_IGNORE = ['.git']
-
 pass_repo = click.make_pass_decorator(Repository)
 
 
@@ -33,9 +30,7 @@ def cli(ctx, repository):
     """Dotfiles is a tool to make managing your dotfile symlinks in $HOME easy,
     allowing you to keep all your dotfiles in a single directory.
     """
-    ctx.obj = Repository(py.path.local(repository),
-                         py.path.local(DEFAULT_HOMEDIR),
-                         DEFAULT_REPO_IGNORE)
+    ctx.obj = Repository(py.path.local(repository))
 
 
 @cli.command()
@@ -56,6 +51,26 @@ def add(repo, debug, files):
 def remove(repo, debug, files):
     """Replace symlink with file."""
     perform(repo, debug, files, 'remove')
+
+
+@cli.command()
+@click.option('-v', '--verbose', is_flag=True, help='Show executed commands.')
+@click.argument('files', nargs=-1, type=click.Path())
+@pass_repo
+def link(repo, verbose, files):
+    """Create missing symlinks."""
+    # TODO: no files should be interpreted as all files
+    raise RuntimeError('Not implemented yet')
+
+
+@cli.command()
+@click.option('-v', '--verbose', is_flag=True, help='Show executed commands.')
+@click.argument('files', nargs=-1, type=click.Path(exists=True))
+@pass_repo
+def unlink(repo, verbose, files):
+    """Remove existing symlinks."""
+    # TODO: no files should be interpreted as all files with confirmation
+    raise RuntimeError('Not implemented yet')
 
 
 @cli.command()
@@ -86,23 +101,3 @@ def status(repo, all, color):
             click.secho('%c %s' % (char, name), fg=color)
         except KeyError:
             continue
-
-
-@cli.command()
-@click.option('-v', '--verbose', is_flag=True, help='Show executed commands.')
-@click.argument('files', nargs=-1, type=click.Path())
-@pass_repo
-def link(repo, verbose, files):
-    """Create missing symlinks."""
-    # TODO: no files should be interpreted as all files
-    raise RuntimeError('Not implemented yet')
-
-
-@cli.command()
-@click.option('-v', '--verbose', is_flag=True, help='Show executed commands.')
-@click.argument('files', nargs=-1, type=click.Path(exists=True))
-@pass_repo
-def unlink(repo, verbose, files):
-    """Remove existing symlinks."""
-    # TODO: no files should be interpreted as all files with confirmation
-    raise RuntimeError('Not implemented yet')
