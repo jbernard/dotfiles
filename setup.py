@@ -27,7 +27,7 @@ setup(
     ],
     entry_points={
         'console_scripts': [
-            'dotfiles=dotfiles.dotfiles:cli',
+            'dotfiles=dotfiles.cli:cli',
         ],
     },
     classifiers=[

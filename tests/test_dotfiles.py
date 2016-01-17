@@ -1,7 +1,9 @@
 import pytest
 
-from dotfiles.dotfiles import Repository, Dotfile, cli
-from dotfiles.dotfiles import IsSymlink
+from dotfiles.cli import cli
+from dotfiles.dotfile import Dotfile
+from dotfiles.repository import Repository
+from dotfiles.exceptions import IsSymlink
 
 
 class TestCli(object):
