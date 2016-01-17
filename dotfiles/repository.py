@@ -1,5 +1,6 @@
 import py
 from click import echo
+from operator import attrgetter
 
 from .dotfile import Dotfile
 from .exceptions import DotfileException, TargetIgnored, IsDirectory, \
@@ -92,4 +93,5 @@ class Repository(object):
         def construct(target):
             return Dotfile(self._target_to_name(target), target)
 
-        return map(construct, self.repodir.visit(filter, recurse, sort=True))
+        contents = self.repodir.visit(filter, recurse)
+        return sorted(map(construct, contents), key=attrgetter('name'))
