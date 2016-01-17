@@ -12,5 +12,8 @@ dist/
 dotfiles.egg-info/
 .eggs/
 
+tasks
+.tasks.done
+
 Gemfile
 Gemfile.lock
