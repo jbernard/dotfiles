@@ -13,6 +13,17 @@ DEFAULT_REPO_IGNORE = ['.git']
 pass_repo = click.make_pass_decorator(Repository)
 
 
+def perform(repo, debug, files, method):
+    for dotfile in repo.dotfiles(files):
+        try:
+            getattr(dotfile, method)(debug)
+            if not debug:
+                click.echo('%sed %s' % (method,
+                                        dotfile.short_name(repo.homedir)))
+        except DotfileException as err:
+            click.echo(err)
+
+
 @click.group(context_settings=dict(help_option_names=['-h', '--help']))
 @click.option('-r', '--repository', type=click.Path(), show_default=True,
               default=DEFAULT_REPO_PATH)
@@ -34,15 +45,7 @@ def cli(ctx, repository):
 @pass_repo
 def add(repo, debug, files):
     """Replace file with symlink."""
-    for dotfile in repo.dotfiles(files):
-        dotfile.add(debug)
-
-        # try:
-        #     repo.dotfile(py.path.local(filename)).add(debug)
-        #     if not debug:
-        #         click.echo('added \'%s\'' % filename)
-        # except DotfileException as err:
-        #     click.echo(err)
+    perform(repo, debug, files, 'add')
 
 
 @cli.command()
@@ -52,18 +55,7 @@ def add(repo, debug, files):
 @pass_repo
 def remove(repo, debug, files):
     """Replace symlink with file."""
-    for filename in files:
-        try:
-            repo.dotfile(py.path.local(filename)).remove(debug)
-            if not debug:
-                click.echo('removed \'%s\'' % filename)
-        except DotfileException as err:
-            click.echo(err)
-
-
-def show_dotfile(homedir, char, dotfile, color):
-    display_name = homedir.bestrelpath(dotfile.name)
-    click.secho('%c %s' % (char, display_name), fg=color)
+    perform(repo, debug, files, 'remove')
 
 
 @cli.command()
@@ -72,7 +64,6 @@ def show_dotfile(homedir, char, dotfile, color):
 @pass_repo
 def status(repo, all, color):
     """Show all dotfiles in a non-OK state."""
-
     state_info = {
         'error':    {'char': 'E', 'color': None},
         'missing':  {'char': '?', 'color': None},
@@ -89,9 +80,10 @@ def status(repo, all, color):
 
     for dotfile in repo.contents():
         try:
+            name = dotfile.short_name(repo.homedir)
             char = state_info[dotfile.state]['char']
             color = state_info[dotfile.state]['color']
-            show_dotfile(repo.homedir, char, dotfile, color)
+            click.secho('%c %s' % (char, name), fg=color)
         except KeyError:
             continue
 
@@ -102,13 +94,8 @@ def status(repo, all, color):
 @pass_repo
 def link(repo, verbose, files):
     """Create missing symlinks."""
-    # TODO: no files should be interpreted as all files with confirmation
-    for filename in files:
-        try:
-            repo.dotfile(py.path.local(filename)).link(verbose)
-            click.echo('linked \'%s\'' % filename)
-        except DotfileException as err:
-            click.echo(err)
+    # TODO: no files should be interpreted as all files
+    raise RuntimeError('Not implemented yet')
 
 
 @cli.command()
@@ -118,9 +105,4 @@ def link(repo, verbose, files):
 def unlink(repo, verbose, files):
     """Remove existing symlinks."""
     # TODO: no files should be interpreted as all files with confirmation
-    for filename in files:
-        try:
-            repo.dotfile(py.path.local(filename)).unlink(verbose)
-            click.echo('unlinked \'%s\'' % filename)
-        except DotfileException as err:
-            click.echo(err)
+    raise RuntimeError('Not implemented yet')

@@ -70,17 +70,14 @@ class Repository(object):
 
     def dotfiles(self, paths):
         """Return a list of dotfiles given a path."""
-
+        dotfiles = []
         paths = map(py.path.local, paths)
-
-        rv = []
         for path in paths:
             try:
-                rv.append(self.dotfile(path))
+                dotfiles.append(self.dotfile(path))
             except DotfileException as err:
                 echo(err)
-
-        return rv
+        return dotfiles
 
     def contents(self):
         """Return a list of all dotfiles in the repository path."""

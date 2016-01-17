@@ -63,6 +63,9 @@ class Dotfile(object):
         else:
             self.name.remove()
 
+    def short_name(self, homedir):
+        return homedir.bestrelpath(self.name)
+
     @property
     def state(self):
         if self.target.check(exists=0):
@@ -77,12 +80,15 @@ class Dotfile(object):
         return 'ok'
 
     def add(self, debug=False):
+        # these invariants are ensured in Repositry
         if self.name.check(file=0):
             raise DoesNotExist(self.name)
         if self.name.check(dir=1):
             raise IsDirectory(self.name)
         if self.name.check(link=1):
             raise IsSymlink(self.name)
+
+        # but not this one, it is valid
         if self.target.check(exists=1):
             raise TargetExists(self.name)
         self._add(debug)
