@@ -6,31 +6,47 @@ from .repository import Repository
 from .exceptions import DotfileException
 
 
-DEFAULT_REPO_PATH = os.path.expanduser('~/Dotfiles')
-pass_repo = click.make_pass_decorator(Repository)
+DEFAULT_REPODIR = os.path.expanduser('~/Dotfiles')
 
 
-def perform(repo, debug, files, method):
+def confirm(method, files, repo):
+    if files:
+        return files
+    message = 'Are you sure you want to %s all dotfiles?' % method
+    click.confirm(message, abort=True)
+    return str(repo).split()
+
+
+def perform(method, files, repo, debug):
     for dotfile in repo.dotfiles(files):
         try:
             getattr(dotfile, method)(debug)
             if not debug:
-                click.echo('%sed %s' % (method,
-                                        dotfile.short_name(repo.homedir)))
+                msg = '%s%s' % (method, 'd' if method[-1] == 'e' else 'ed')
+                click.echo('%s %s' % (msg, dotfile.short_name(repo.homedir)))
         except DotfileException as err:
             click.echo(err)
 
 
+pass_repo = click.make_pass_decorator(Repository)
+
+
 @click.group(context_settings=dict(help_option_names=['-h', '--help']))
-@click.option('-r', '--repository', type=click.Path(), show_default=True,
-              default=DEFAULT_REPO_PATH)
+@click.option('-r', '--repo', type=click.Path(), show_default=True,
+              default=DEFAULT_REPODIR, envvar='DOTFILES_REPO')
 @click.version_option()
 @click.pass_context
-def cli(ctx, repository):
+def cli(ctx, repo):
     """Dotfiles is a tool to make managing your dotfile symlinks in $HOME easy,
     allowing you to keep all your dotfiles in a single directory.
+
+    The following environment variables are recognized at runtime:
+
+    \b
+    DOTFILES_REPO:  Set this to the location of your repository.
+    DOTFILES_COLOR: Set this to 'True' to enable color output.
     """
-    ctx.obj = Repository(py.path.local(repository))
+    ctx.obj = Repository(py.path.local(py.path.local(repo)))
 
 
 @cli.command()
@@ -40,7 +56,7 @@ def cli(ctx, repository):
 @pass_repo
 def add(repo, debug, files):
     """Replace file with symlink."""
-    perform(repo, debug, files, 'add')
+    perform('add', files, repo, debug)
 
 
 @cli.command()
@@ -50,32 +66,38 @@ def add(repo, debug, files):
 @pass_repo
 def remove(repo, debug, files):
     """Replace symlink with file."""
-    perform(repo, debug, files, 'remove')
+    files = confirm('remove', files, repo)
+    perform('remove', files, repo, debug)
+    if not debug:
+        repo.prune()
 
 
 @cli.command()
-@click.option('-v', '--verbose', is_flag=True, help='Show executed commands.')
+@click.option('-d', '--debug', is_flag=True,
+              help='Show commands that would be executed.')
 @click.argument('files', nargs=-1, type=click.Path())
 @pass_repo
-def link(repo, verbose, files):
+def link(repo, debug, files):
     """Create missing symlinks."""
-    # TODO: no files should be interpreted as all files
-    raise RuntimeError('Not implemented yet')
+    files = confirm('link', files, repo)
+    perform('link', files, repo, debug)
 
 
 @cli.command()
-@click.option('-v', '--verbose', is_flag=True, help='Show executed commands.')
+@click.option('-d', '--debug', is_flag=True,
+              help='Show commands that would be executed.')
 @click.argument('files', nargs=-1, type=click.Path(exists=True))
 @pass_repo
-def unlink(repo, verbose, files):
+def unlink(repo, debug, files):
     """Remove existing symlinks."""
-    # TODO: no files should be interpreted as all files with confirmation
-    raise RuntimeError('Not implemented yet')
+    files = confirm('unlink', files, repo)
+    perform('unlink', files, repo, debug)
 
 
 @cli.command()
 @click.option('-a', '--all',   is_flag=True, help='Show all dotfiles.')
-@click.option('-c', '--color', is_flag=True, help='Enable color output.')
+@click.option('-c', '--color', is_flag=True, help='Enable color output.',
+              envvar='DOTFILES_COLOR')
 @pass_repo
 def status(repo, all, color):
     """Show all dotfiles in a non-OK state."""
