@@ -3,8 +3,8 @@ from click import echo
 from operator import attrgetter
 
 from .dotfile import Dotfile
-from .exceptions import DotfileException, TargetIgnored, IsDirectory, \
-    InRepository
+from .exceptions import DotfileException, TargetIgnored
+from .exceptions import NotRootedInHome, InRepository, IsDirectory
 
 
 class Repository(object):
@@ -18,79 +18,91 @@ class Repository(object):
     homedir = py.path.local('~/', expanduser=True)
     ignore = ['.git', '.hg']
 
-    def __init__(self, repodir, homedir=homedir, ignore=ignore):
+    def __init__(self, repodir, homedir=homedir, ignore=ignore, dot=True):
         self.repodir = repodir.ensure(dir=1)
         self.homedir = homedir
         self.ignore = ignore
+        self.dot = dot
 
     def __str__(self):
         """Return human-readable repository contents."""
-        return ''.join('%s\n' % item.short_name(self.homedir)
-                       for item in self.contents()).rstrip()
+        return ''.join('%s\n' % item for item in self.contents()).rstrip()
 
     def __repr__(self):
         return '<Repository %r>' % self.repodir
 
     def _target_to_name(self, target):
         """Return the expected symlink for the given repository target."""
-        return self.homedir.join(self.repodir.bestrelpath(target))
+        relpath = self.repodir.bestrelpath(target)
+        if self.dot:
+            return self.homedir.join(relpath)
+        else:
+            return self.homedir.join('.%s' % relpath)
 
     def _name_to_target(self, name):
         """Return the expected repository target for the given symlink."""
-        return self.repodir.join(self.homedir.bestrelpath(name))
+        relpath = self.homedir.bestrelpath(name)
+        if self.dot:
+            return self.repodir.join(relpath)
+        else:
+            return self.repodir.join(relpath[1:])
 
     def _dotfile(self, name):
         """Return a valid dotfile for the given path."""
-
-        # XXX: it must be below the home directory
-        #      it cannot be contained in the repository
-        #      it cannot be ignored
-        #      it must be a file
-
-        # if not self.homedir.samefile(name.dirname):
-        #     raise NotRootedInHome(name)
-        # if name.dirname != self.homedir:
-        #     raise IsNested(name)
-        # if name.basename[0] != '.':
-        #     raise NotADotfile(name)
-
         target = self._name_to_target(name)
+
+        if not name.fnmatch('%s/*' % self.homedir):
+            raise NotRootedInHome(name)
+        if name.fnmatch('%s/*' % self.repodir):
+            raise InRepository(name)
         if target.basename in self.ignore:
             raise TargetIgnored(name)
         if name.check(dir=1):
             raise IsDirectory(name)
 
-        for path in name.parts():
-            try:
-                if self.repodir.samefile(path):
-                    raise InRepository(name)
-            except py.error.ENOENT:
-                # this occurs when the symlink does not yet exist
-                continue
-
         return Dotfile(name, target)
 
-    def dotfiles(self, paths):
-        """Return a list of dotfiles given a path."""
-        dotfiles = []
-        paths = map(py.path.local, paths)
-        for path in paths:
-            try:
-                dotfiles.append(self._dotfile(path))
-            except DotfileException as err:
-                echo(err)
-        return dotfiles
-
-    def contents(self):
-        """Return a list of all dotfiles in the repository path."""
+    def _contents(self, dir):
         def filter(node):
             return node.check(dir=0) and node.basename not in self.ignore
 
         def recurse(node):
             return node.basename not in self.ignore
 
+        return dir.visit(filter, recurse)
+
+    def dotfiles(self, paths):
+        paths = list(set(map(py.path.local, paths)))
+
+        for path in paths:
+            if path.check(dir=1):
+                paths.extend(self._contents(path))
+                paths.remove(path)
+
+        def construct(path):
+            try:
+                return self._dotfile(path)
+            except DotfileException as err:
+                echo(err)
+                return None
+
+        return [d for d in map(construct, paths) if d is not None]
+
+    def contents(self):
         def construct(target):
             return Dotfile(self._target_to_name(target), target)
 
-        contents = self.repodir.visit(filter, recurse)
+        contents = self._contents(self.repodir)
         return sorted(map(construct, contents), key=attrgetter('name'))
+
+    def prune(self):
+        """Remove any empty directories in the repository."""
+        def filter(node):
+            return node.check(dir=1) and node.basename not in self.ignore
+
+        def recurse(node):
+            return node.basename not in self.ignore
+
+        for dir in self.repodir.visit(filter, recurse):
+            if not len(dir.listdir()):
+                dir.remove()
