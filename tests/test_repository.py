@@ -41,7 +41,7 @@ class TestRepository(object):
         assert actual == expected
 
     @pytest.mark.xfail(reason='TODO')
-    def test_dotifle(self):
+    def test_dotfile(self):
         assert False
 
     def test_contents(self, repo, home):
