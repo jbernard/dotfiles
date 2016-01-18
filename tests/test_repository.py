@@ -15,12 +15,15 @@ class TestRepository(object):
         assert repo.check(exists=1, dir=1)
 
     def test_str(self, repo, home):
-        repo.ensure('a')
-        repo.ensure('b')
-        repo.ensure('c')
-        assert str(Repository(repo, home)) == ('.a\n'
-                                               '.b\n'
-                                               '.c')
+        repo.ensure('.a')
+        repo.ensure('.b')
+        repo.ensure('.c')
+
+        r = Repository(repo, home)
+
+        assert str(r) == ('%s\n%s\n%s' % (home.join('.a'),
+                                          home.join('.b'),
+                                          home.join('.c')))
 
     def test_repr(self, repo):
         actual = '%r' % Repository(repo, None)
@@ -28,13 +31,13 @@ class TestRepository(object):
         assert actual == expected
 
     def test_target_to_name(self, repo, home):
-        actual = Repository(repo, home)._target_to_name(repo.join('foo'))
+        actual = Repository(repo, home)._target_to_name(repo.join('.foo'))
         expected = home.join('.foo')
         assert actual == expected
 
     def test_name_to_target(self, repo, home):
         actual = Repository(repo, home)._name_to_target(home.join('.foo'))
-        expected = repo.join('foo')
+        expected = repo.join('.foo')
         assert actual == expected
 
     @pytest.mark.xfail(reason='TODO')
@@ -58,5 +61,5 @@ class TestRepository(object):
         r = Repository(repo, home)
 
         actual = r._name_to_target(home.join('.vim/.mrconfig'))
-        expected = repo.join('vim/.mrconfig')
+        expected = repo.join('.vim/.mrconfig')
         assert actual == expected
