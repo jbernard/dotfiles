@@ -1,9 +1,9 @@
 import py
 from click import echo
-from errno import EEXIST, ENOENT
 
-from .exceptions import IsDirectory, IsSymlink, NotASymlink, DoesNotExist, \
-    TargetExists, TargetMissing
+from .exceptions import IsSymlink, NotASymlink
+from .exceptions import TargetExists, TargetMissing
+from .exceptions import Exists
 
 
 class Dotfile(object):
@@ -23,39 +23,21 @@ class Dotfile(object):
     def __repr__(self):
         return '<Dotfile %r>' % self.name
 
-    def _ensure_subdirs(self, debug):
-        target_dir = py.path.local(self.target.dirname)
-        if not target_dir.check():
-            if debug:
-                echo('MKDIR  %s' % self.target.dirname)
-            else:
-                target_dir.ensure_dir()
-
-    def _remove_subdirs(self, debug):
-        # TODO
-        pass
-
-    def _add(self, debug):
-        self._ensure_subdirs(debug)
-        if debug:
-            echo('MOVE   %s -> %s' % (self.name, self.target))
-        else:
-            self.name.move(self.target)
-        self._link(debug)
-
-    def _remove(self, debug):
-        self._unlink(debug)
-        if debug:
-            echo('MOVE   %s -> %s' % (self.target, self.name))
-        else:
-            self.target.move(self.name)
-        self._remove_subdirs(debug)
-
     def _link(self, debug):
         if debug:
             echo('LINK   %s -> %s' % (self.name, self.target))
         else:
             self.name.mksymlinkto(self.target, absolute=0)
+
+    def _ensure_dirs(self, debug):
+        def ensure(dir, debug):
+            if not dir.check():
+                if debug:
+                    echo('MKDIR  %s' % dir)
+                else:
+                    dir.ensure_dir()
+        ensure(py.path.local(self.name.dirname), debug)
+        ensure(py.path.local(self.target.dirname), debug)
 
     def _unlink(self, debug):
         if debug:
@@ -80,40 +62,41 @@ class Dotfile(object):
         return 'ok'
 
     def add(self, debug=False):
-        # these invariants are ensured in Repositry
-        if self.name.check(file=0):
-            raise DoesNotExist(self.name)
-        if self.name.check(dir=1):
-            raise IsDirectory(self.name)
         if self.name.check(link=1):
             raise IsSymlink(self.name)
-
-        # but not this one, it is valid
         if self.target.check(exists=1):
             raise TargetExists(self.name)
-        self._add(debug)
+        self._ensure_dirs(debug)
+        if debug:
+            echo('MOVE   %s -> %s' % (self.name, self.target))
+        else:
+            self.name.move(self.target)
+        self._link(debug)
 
     def remove(self, debug=False):
-        if not self.name.check(link=1):
+        if self.name.check(link=0):
             raise NotASymlink(self.name)
         if self.target.check(exists=0):
             raise TargetMissing(self.name)
-        self._remove(debug)
-
-    # TODO: replace exceptions
+        self._unlink(debug)
+        if debug:
+            echo('MOVE   %s -> %s' % (self.target, self.name))
+        else:
+            self.target.move(self.name)
 
     def link(self, debug=False):
         if self.name.check(exists=1):
-            raise OSError(EEXIST, self.name)
+            raise Exists(self.name)
         if self.target.check(exists=0):
-            raise OSError(ENOENT, self.target)
+            raise TargetMissing(self.name)
+        self._ensure_dirs(debug)
         self._link(debug)
 
     def unlink(self, debug=False):
         if self.name.check(link=0):
-            raise Exception('%s is not a symlink' % self.name.basename)
+            raise NotASymlink(self.name)
         if self.target.check(exists=0):
-            raise Exception('%s does not exist' % self.target)
+            raise TargetMissing(self.name)
         if not self.name.samefile(self.target):
-            raise Exception('good lord')
+            raise RuntimeError
         self._unlink(debug)
