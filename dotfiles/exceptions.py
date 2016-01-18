@@ -63,6 +63,12 @@ class DoesNotExist(DotfileException):
         DotfileException.__init__(self, path, 'doest not exist')
 
 
+class Exists(DotfileException):
+
+    def __init__(self, path):
+        DotfileException.__init__(self, path, 'already exists')
+
+
 class TargetExists(DotfileException):
 
     def __init__(self, path):
