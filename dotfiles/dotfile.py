@@ -23,12 +23,6 @@ class Dotfile(object):
     def __repr__(self):
         return '<Dotfile %r>' % self.name
 
-    def _link(self, debug):
-        if debug:
-            echo('LINK   %s -> %s' % (self.name, self.target))
-        else:
-            self.name.mksymlinkto(self.target, absolute=0)
-
     def _ensure_dirs(self, debug):
         def ensure(dir, debug):
             if not dir.check():
@@ -38,6 +32,12 @@ class Dotfile(object):
                     dir.ensure_dir()
         ensure(py.path.local(self.name.dirname), debug)
         ensure(py.path.local(self.target.dirname), debug)
+
+    def _link(self, debug):
+        if debug:
+            echo('LINK   %s -> %s' % (self.name, self.target))
+        else:
+            self.name.mksymlinkto(self.target, absolute=0)
 
     def _unlink(self, debug):
         if debug:
