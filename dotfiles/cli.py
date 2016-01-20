@@ -41,19 +41,22 @@ pass_repo = click.make_pass_decorator(Repository)
 @click.group(context_settings=dict(help_option_names=['-h', '--help']))
 @click.option('-r', '--repo', type=click.Path(), show_default=True,
               default=DEFAULT_REPODIR, envvar='DOTFILES_REPO')
+@click.option('--dot/--no-dot', default=True, show_default=DEFAULT_DOT,
+              envvar='DOTFILES_DOT')
 @click.version_option()
 @click.pass_context
-def cli(ctx, repo):
+def cli(ctx, repo, dot):
     """Dotfiles is a tool to make managing your dotfile symlinks in $HOME easy,
     allowing you to keep all your dotfiles in a single directory.
 
     The following environment variables are recognized at runtime:
 
     \b
+    DOTFILES_DOT:   Set this to 'False' to remove the leading dot.
     DOTFILES_REPO:  Set this to the location of your repository.
     DOTFILES_COLOR: Set this to 'True' to enable color output.
     """
-    ctx.obj = Repository(py.path.local(py.path.local(repo)))
+    ctx.obj = Repository(repodir=repo, ignore=DEFAULT_IGNORE, dot=dot)
 
 
 @cli.command()

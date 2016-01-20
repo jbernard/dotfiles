@@ -13,14 +13,14 @@ class Repository(object):
     :param repodir: the location of the repository directory
     :param homedir: the location of the home directory (primarily for testing)
     :param ignore:  a list of targets to ignore
+    :param dot:     wether to preserve the target's leading dot
     """
 
     homedir = py.path.local('~/', expanduser=True)
-    ignore = ['.git', '.hg']
 
-    def __init__(self, repodir, homedir=homedir, ignore=ignore, dot=True):
-        self.repodir = repodir.ensure(dir=1)
-        self.homedir = homedir
+    def __init__(self, repodir, homedir=homedir, ignore=[], dot=True):
+        self.repodir = py.path.local(repodir).ensure_dir()
+        self.homedir = py.path.local(homedir)
         self.ignore = ignore
         self.dot = dot
 
