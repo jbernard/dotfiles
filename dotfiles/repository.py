@@ -63,6 +63,7 @@ class Repository(object):
         return Dotfile(name, target)
 
     def _contents(self, dir):
+        """Return all unignored files contained below a directory."""
         def filter(node):
             return node.check(dir=0) and node.basename not in self.ignore
 
@@ -72,6 +73,14 @@ class Repository(object):
         return dir.visit(filter, recurse)
 
     def dotfiles(self, paths):
+        """Return a collection of dotfiles given a list of paths.
+
+        This function takes a list of paths where each path can be a file or a
+        directory.  Each directory is recursively expaned into file paths.
+        Once the list is converted into only files, dotifles are constructed
+        for each path in the set.  This set of dotfiles is returned to the
+        caller.
+        """
         paths = list(set(map(py.path.local, paths)))
 
         for path in paths:
@@ -89,6 +98,7 @@ class Repository(object):
         return [d for d in map(construct, paths) if d is not None]
 
     def contents(self):
+        """Return a list of dotfiles for each file in the repository."""
         def construct(target):
             return Dotfile(self._target_to_name(target), target)
 
@@ -96,7 +106,12 @@ class Repository(object):
         return sorted(map(construct, contents), key=attrgetter('name'))
 
     def prune(self):
-        """Remove any empty directories in the repository."""
+        """Remove any empty directories in the repository.
+
+        After a remove operation, there may be empty directories remaining.
+        The Dotfile class has no knowledge of other dotfiles in the repository,
+        so pruning must take place explicitly after such operations occur.
+        """
         def filter(node):
             return node.check(dir=1) and node.basename not in self.ignore
 
