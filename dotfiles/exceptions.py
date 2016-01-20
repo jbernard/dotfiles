@@ -9,12 +9,6 @@ class DotfileException(Exception):
         return 'ERROR: %s' % self.message
 
 
-class TargetIgnored(DotfileException):
-
-    def __init__(self, path):
-        DotfileException.__init__(self, path, 'targets an ignored file')
-
-
 class IsDirectory(DotfileException):
 
     def __init__(self, path):
@@ -45,28 +39,16 @@ class NotRootedInHome(DotfileException):
         DotfileException.__init__(self, path, 'not rooted in home directory')
 
 
-class IsNested(DotfileException):
-
-    def __init__(self, path):
-        DotfileException.__init__(self, path, 'is nested')
-
-
-class NotADotfile(DotfileException):
-
-    def __init__(self, path):
-        DotfileException.__init__(self, path, 'is not a dotfile')
-
-
-class DoesNotExist(DotfileException):
-
-    def __init__(self, path):
-        DotfileException.__init__(self, path, 'doest not exist')
-
-
 class Exists(DotfileException):
 
     def __init__(self, path):
         DotfileException.__init__(self, path, 'already exists')
+
+
+class TargetIgnored(DotfileException):
+
+    def __init__(self, path):
+        DotfileException.__init__(self, path, 'targets an ignored file')
 
 
 class TargetExists(DotfileException):
