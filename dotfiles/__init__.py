@@ -1,1 +1,12 @@
-__version__ = '0.7.dev0'
+"""
+    dotfiles
+    ~~~~~~~~
+
+    Dotfiles is a tool to make managing your dotfile symlinks in $HOME easy,
+    allowing you to keep all your dotfiles in a single directory.
+
+    :copyright: (c) 2011-2016 by Jon Bernard.
+    :license: ISC, see LICENSE.rst for more details.
+"""
+
+__version__ = '0.9.dev0'
