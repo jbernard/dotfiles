@@ -24,6 +24,11 @@ class Dotfile(object):
         return '<Dotfile %r>' % self.name
 
     def _ensure_dirs(self, debug):
+        """Ensure the directories for both name and target are in place.
+
+        This is needed for the 'add' and 'link' operations where the
+        directory structure is expected to exist.
+        """
         def ensure(dir, debug):
             if not dir.check():
                 if debug:
@@ -34,22 +39,26 @@ class Dotfile(object):
         ensure(py.path.local(self.target.dirname), debug)
 
     def _link(self, debug):
+        """Create a symlink from name to target, no error checking."""
         if debug:
             echo('LINK   %s -> %s' % (self.name, self.target))
         else:
             self.name.mksymlinkto(self.target, absolute=0)
 
     def _unlink(self, debug):
+        """Remove a symlink in the home directory, no error checking."""
         if debug:
             echo('UNLINK %s' % self.name)
         else:
             self.name.remove()
 
     def short_name(self, homedir):
+        """A shorter, more readable name given a home directory."""
         return homedir.bestrelpath(self.name)
 
     @property
     def state(self):
+        """The current state of this dotfile."""
         if self.target.check(exists=0):
             # only for testing, cli should never reach this state
             return 'error'
@@ -62,6 +71,7 @@ class Dotfile(object):
         return 'ok'
 
     def add(self, debug=False):
+        """Move a dotfile to it's target and create a symlink."""
         if self.name.check(link=1):
             raise IsSymlink(self.name)
         if self.target.check(exists=1):
@@ -74,6 +84,7 @@ class Dotfile(object):
         self._link(debug)
 
     def remove(self, debug=False):
+        """Remove a symlink and move the target back to its name."""
         if self.name.check(link=0):
             raise NotASymlink(self.name)
         if self.target.check(exists=0):
@@ -85,6 +96,7 @@ class Dotfile(object):
             self.target.move(self.name)
 
     def link(self, debug=False):
+        """Create a symlink from name to target."""
         if self.name.check(exists=1):
             raise Exists(self.name)
         if self.target.check(exists=0):
@@ -93,6 +105,7 @@ class Dotfile(object):
         self._link(debug)
 
     def unlink(self, debug=False):
+        """Remove a symlink from name to target."""
         if self.name.check(link=0):
             raise NotASymlink(self.name)
         if self.target.check(exists=0):
