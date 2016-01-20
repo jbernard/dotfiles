@@ -1,5 +1,4 @@
 import os
-import py
 import click
 
 from .repository import Repository
@@ -7,17 +6,25 @@ from .exceptions import DotfileException
 
 
 DEFAULT_REPODIR = os.path.expanduser('~/Dotfiles')
+DEFAULT_IGNORE = ['.git', '.hg']
+DEFAULT_DOT = True
 
 
 def confirm(method, files, repo):
+    """Return a list of files, or all files if none were specified."""
+
     if files:
+        # user has specified specific files, so we are not assuming all
         return files
+
+    # no files provided, so we assume all files after confimration
     message = 'Are you sure you want to %s all dotfiles?' % method
     click.confirm(message, abort=True)
     return str(repo).split()
 
 
 def perform(method, files, repo, debug):
+    """Perform an operation on a set of dotfiles."""
     for dotfile in repo.dotfiles(files):
         try:
             getattr(dotfile, method)(debug)
@@ -55,7 +62,7 @@ def cli(ctx, repo):
 @click.argument('files', nargs=-1, type=click.Path(exists=True))
 @pass_repo
 def add(repo, debug, files):
-    """Replace file with symlink."""
+    """Add dotfiles to your repository."""
     perform('add', files, repo, debug)
 
 
@@ -65,7 +72,7 @@ def add(repo, debug, files):
 @click.argument('files', nargs=-1, type=click.Path(exists=True))
 @pass_repo
 def remove(repo, debug, files):
-    """Replace symlink with file."""
+    """Remove dotfiles from your repository."""
     files = confirm('remove', files, repo)
     perform('remove', files, repo, debug)
     if not debug:
