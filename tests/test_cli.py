@@ -4,12 +4,13 @@ from dotfiles.repository import Repository
 
 class TestCli(object):
 
-    def test_status(self, runner, repo, home, monkeypatch):
+    def test_status(self, runner, repo, monkeypatch):
 
         def repo_init(self, *args, **kwargs):
-            self.ignore = []
-            self.homedir = home
-            self.repodir = repo.ensure(dir=1)
+            self.path = repo.path.ensure_dir()
+            self.homedir = repo.homedir
+            self.ignore_patterns = repo.ignore_patterns
+            self.preserve_leading_dot = repo.preserve_leading_dot
 
         monkeypatch.setattr(Repository, '__init__', repo_init)
 

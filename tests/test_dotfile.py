@@ -6,140 +6,138 @@ from dotfiles.exceptions import IsSymlink, NotASymlink
 from dotfiles.exceptions import TargetExists, TargetMissing, Exists
 
 
-def test_str(repo, home):
-    dotfile = Dotfile(home.join('.a'), repo.join('.b'))
-    assert str(dotfile) == home.join('.a')
+def _dotfile(repo, name, target=None):
+    return Dotfile(repo.homedir.join(name),
+                   repo.path.join(target if target is not None else name))
 
 
-def test_short_name(repo, home):
-    dotfile = Dotfile(home.join('.foo'), repo.join('.foo'))
-    assert dotfile.name == home.join('.foo')
-    assert dotfile.short_name(home) == '.foo'
+def test_str(repo):
+    dotfile = _dotfile(repo, '.a', '.b')
+    assert str(dotfile) == repo.homedir.join('.a')
 
 
-def test_state_error(repo, home):
-    dotfile = Dotfile(home.join('.vimrc'), repo.join('.vimrc'))
+def test_short_name(repo):
+    dotfile = _dotfile(repo, '.foo')
+    assert dotfile.name == repo.homedir.join('.foo')
+    assert dotfile.short_name(repo.homedir) == '.foo'
+
+
+def test_state_error(repo):
+    dotfile = _dotfile(repo, '.vimrc')
     assert dotfile.state == 'error'
 
 
-def test_state_missing(repo, home):
-    dotfile = Dotfile(home.join('.vimrc'), repo.ensure('.vimrc'))
+def test_state_missing(repo):
+    dotfile = _dotfile(repo, '.vimrc')
+    dotfile.target.ensure()
     assert dotfile.state == 'missing'
 
 
-def test_state_conflict(repo, home):
-    dotfile = Dotfile(home.ensure('.vimrc'), repo.ensure('.vimrc'))
+def test_state_conflict(repo):
+    dotfile = _dotfile(repo, '.vimrc')
+    dotfile.target.ensure()
+    dotfile.name.ensure()
     assert dotfile.state == 'conflict'
 
 
-def test_state_ok(repo, home):
-    name = home.join('.vimrc')
-    target = repo.ensure('vimrc')
-
-    dotfile = Dotfile(name, target)
-    name.mksymlinkto(target)
+def test_state_ok(repo):
+    dotfile = _dotfile(repo, '.vimrc', 'vimrc')
+    dotfile.target.ensure()
+    dotfile.name.mksymlinkto(dotfile.target)
     assert dotfile.state == 'ok'
-
-    name.remove()
+    dotfile.name.remove()
     assert dotfile.state == 'missing'
 
 
 @pytest.mark.parametrize('path', ['.foo', '.foo/bar/baz'])
-def test_add(repo, home, path):
-    name = home.ensure(path)
-    target = repo.ensure(path)
-    dotfile = Dotfile(name, target)
+def test_add(repo, path):
+    dotfile = _dotfile(repo, path)
+    dotfile.target.ensure()
+    dotfile.name.ensure()
 
     with pytest.raises(TargetExists):
         dotfile.add()
 
-    target.remove()
+    dotfile.target.remove()
     dotfile.add()
 
-    assert target.check(file=1, link=0)
-    assert name.check(file=1, link=1)
-    assert name.samefile(target)
+    assert dotfile.target.check(file=1, link=0)
+    assert dotfile.name.check(file=1, link=1)
+    assert dotfile.name.samefile(dotfile.target)
 
     with pytest.raises(IsSymlink):
         dotfile.add()
 
-    assert target.check(file=1, link=0)
-    assert name.check(file=1, link=1)
-    assert name.samefile(target)
+    assert dotfile.target.check(file=1, link=0)
+    assert dotfile.name.check(file=1, link=1)
+    assert dotfile.name.samefile(dotfile.target)
 
 
 @pytest.mark.parametrize('path', ['.foo', '.foo/bar/baz'])
-def test_remove(repo, home, path):
-    name = home.join(path)
-    target = repo.join(path)
-    dotfile = Dotfile(name, target)
-
-    py.path.local(name.dirname).ensure_dir()
-    name.mksymlinkto(target)
+def test_remove(repo, path):
+    dotfile = _dotfile(repo, path)
+    py.path.local(dotfile.name.dirname).ensure_dir()
+    dotfile.name.mksymlinkto(dotfile.target)
 
     with pytest.raises(TargetMissing):
         dotfile.remove()
 
-    target.ensure()
+    dotfile.target.ensure()
     dotfile.remove()
 
-    assert target.check(exists=0)
-    assert name.check(file=1, link=0)
+    assert dotfile.target.check(exists=0)
+    assert dotfile.name.check(file=1, link=0)
 
     with pytest.raises(NotASymlink):
         dotfile.remove()
 
-    assert target.check(exists=0)
-    assert name.check(file=1, link=0)
+    assert dotfile.target.check(exists=0)
+    assert dotfile.name.check(file=1, link=0)
 
 
 @pytest.mark.parametrize('path', ['.foo', '.foo/bar/baz'])
-def test_link(repo, home, path):
-    name = home.join(path)
-    target = repo.join(path)
-    dotfile = Dotfile(name, target)
+def test_link(repo, path):
+    dotfile = _dotfile(repo, path)
 
     with pytest.raises(TargetMissing):
         dotfile.link()
 
-    target.ensure()
+    dotfile.target.ensure()
     dotfile.link()
 
-    assert target.check(file=1, link=0)
-    assert name.check(file=1, link=1)
-    assert name.samefile(target)
+    assert dotfile.target.check(file=1, link=0)
+    assert dotfile.name.check(file=1, link=1)
+    assert dotfile.name.samefile(dotfile.target)
 
     with pytest.raises(Exists):
         dotfile.link()
 
-    assert target.check(file=1, link=0)
-    assert name.check(file=1, link=1)
-    assert name.samefile(target)
+    assert dotfile.target.check(file=1, link=0)
+    assert dotfile.name.check(file=1, link=1)
+    assert dotfile.name.samefile(dotfile.target)
 
 
 @pytest.mark.parametrize('path', ['.foo', '.foo/bar/baz'])
-def test_unlink(repo, home, path):
-    name = home.join(path)
-    target = repo.join(path)
-    dotfile = Dotfile(name, target)
+def test_unlink(repo, path):
+    dotfile = _dotfile(repo, path)
 
     with pytest.raises(NotASymlink):
         dotfile.unlink()
 
-    py.path.local(name.dirname).ensure_dir()
-    name.mksymlinkto(target)
+    py.path.local(dotfile.name.dirname).ensure_dir()
+    dotfile.name.mksymlinkto(dotfile.target)
 
     with pytest.raises(TargetMissing):
         dotfile.unlink()
 
-    target.ensure()
+    dotfile.target.ensure()
     dotfile.unlink()
 
-    assert target.check(file=1, link=0)
-    assert name.check(exists=0)
+    assert dotfile.target.check(file=1, link=0)
+    assert dotfile.name.check(exists=0)
 
     with pytest.raises(NotASymlink):
         dotfile.unlink()
 
-    assert target.check(file=1, link=0)
-    assert name.check(exists=0)
+    assert dotfile.target.check(file=1, link=0)
+    assert dotfile.name.check(exists=0)

@@ -1,15 +1,14 @@
 import pytest
 from click.testing import CliRunner
 
+from dotfiles.repository import Repository
+
 
 @pytest.fixture(scope='function', params=['', 'home'])
-def home(request, tmpdir):
-    return tmpdir.ensure_dir(request.param)
-
-
-@pytest.fixture(scope='function')
-def repo(tmpdir):
-    return tmpdir.ensure_dir('repo')
+def repo(request, tmpdir):
+    path = tmpdir.ensure_dir('repo')
+    home = tmpdir.ensure_dir(request.param)
+    return Repository(path, home)
 
 
 @pytest.fixture(scope='function')
