@@ -41,9 +41,11 @@ pass_repo = click.make_pass_decorator(Repository)
 
 @click.group(context_settings=dict(help_option_names=['-h', '--help']))
 @click.option('-r', '--repo', type=click.Path(), show_default=True,
-              default=REPOSITORY_PATH, envvar='DOTFILES_REPO')
-@click.option('--dot/--dot', show_default=True,
-              default=PRESERVE_LEADING_DOT, envvar='DOTFILES_DOT')
+              default=REPOSITORY_PATH, envvar='DOTFILES_REPO',
+              help='The repository path')
+@click.option('--dot/--no-dot', show_default=True,
+              default=PRESERVE_LEADING_DOT, envvar='DOTFILES_DOT',
+              help='Preserve the leading dot')
 @click.version_option()
 @click.pass_context
 def cli(ctx, repo, dot):
@@ -57,8 +59,7 @@ def cli(ctx, repo, dot):
     DOTFILES_COLOR: Set this to 'True' to enable color output.
     DOTFILES_DOT:   Set this to 'True' to preserve the leading dot.
     """
-    ctx.obj = Repository(path=repo,
-                         ignore_patterns=IGNORE_PATTERNS,
+    ctx.obj = Repository(repo, ignore_patterns=IGNORE_PATTERNS,
                          preserve_leading_dot=dot)
 
 

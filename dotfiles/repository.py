@@ -11,22 +11,20 @@ class Repository(object):
     """A repository is a directory that contains dotfiles.
 
     :param path: the location of the repository directory
+    :param homedir: the location of the home directory
     :param ignore_patterns: a list of glob patterns to ignore
     :param preserve_leading_dot: whether to preserve the target's leading dot
-    :param home_directory: the location of the home directory
     """
 
-    home_directory = py.path.local('~/', expanduser=True)
+    default_homedir = py.path.local('~/', expanduser=True)
 
-    def __init__(self, path,
-                 ignore_patterns=[],
-                 preserve_leading_dot=False,
-                 home_directory=home_directory):
+    def __init__(self, path, homedir=default_homedir, ignore_patterns=[],
+                 preserve_leading_dot=False):
 
         # create repository directory if not found
         self.path = py.path.local(path).ensure_dir()
 
-        self.home_directory = home_directory
+        self.homedir = homedir
         self.ignore_patterns = ignore_patterns
         self.preserve_leading_dot = preserve_leading_dot
 
@@ -47,13 +45,13 @@ class Repository(object):
         """Return the expected symlink for the given repository target."""
         relpath = self.path.bestrelpath(target)
         if self.preserve_leading_dot:
-            return self.home_directory.join(relpath)
+            return self.homedir.join(relpath)
         else:
-            return self.home_directory.join('.%s' % relpath)
+            return self.homedir.join('.%s' % relpath)
 
     def _dotfile_target(self, path):
         """Return the expected repository target for the given symlink."""
-        relpath = self.home_directory.bestrelpath(path)
+        relpath = self.homedir.bestrelpath(path)
         if self.preserve_leading_dot:
             return self.path.join(relpath)
         else:
@@ -63,7 +61,7 @@ class Repository(object):
         """Return a valid dotfile for the given path."""
         target = self._dotfile_target(path)
 
-        if not path.fnmatch('%s/*' % self.home_directory):
+        if not path.fnmatch('%s/*' % self.homedir):
             raise NotRootedInHome(path)
         if path.fnmatch('%s/*' % self.path):
             raise InRepository(path)
@@ -87,7 +85,7 @@ class Repository(object):
             return Dotfile(self._dotfile_path(target), target)
 
         contents = self._contents(self.path)
-        return sorted(map(construct, contents), key=attrgetter('path'))
+        return sorted(map(construct, contents), key=attrgetter('name'))
 
     def dotfiles(self, paths):
         """Return a collection of dotfiles given a list of paths.
