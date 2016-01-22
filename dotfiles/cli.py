@@ -5,9 +5,10 @@ from .repository import Repository
 from .exceptions import DotfileException
 
 
-DEFAULT_REPODIR = os.path.expanduser('~/Dotfiles')
-DEFAULT_IGNORE = ['.git', '.hg']
-DEFAULT_DOT = True
+# Defaults
+REPOSITORY_PATH = os.path.expanduser('~/Dotfiles')
+IGNORE_PATTERNS = ['.git', '.hg', '*~']
+PRESERVE_LEADING_DOT = False
 
 
 def confirm(method, files, repo):
@@ -17,7 +18,7 @@ def confirm(method, files, repo):
         # user has specified specific files, so we are not assuming all
         return files
 
-    # no files provided, so we assume all files after confimration
+    # no files provided, so we assume all files after confirmation
     message = 'Are you sure you want to %s all dotfiles?' % method
     click.confirm(message, abort=True)
     return str(repo).split()
@@ -40,9 +41,9 @@ pass_repo = click.make_pass_decorator(Repository)
 
 @click.group(context_settings=dict(help_option_names=['-h', '--help']))
 @click.option('-r', '--repo', type=click.Path(), show_default=True,
-              default=DEFAULT_REPODIR, envvar='DOTFILES_REPO')
-@click.option('--dot/--no-dot', default=True, show_default=DEFAULT_DOT,
-              envvar='DOTFILES_DOT')
+              default=REPOSITORY_PATH, envvar='DOTFILES_REPO')
+@click.option('--dot/--dot', show_default=True,
+              default=PRESERVE_LEADING_DOT, envvar='DOTFILES_DOT')
 @click.version_option()
 @click.pass_context
 def cli(ctx, repo, dot):
@@ -52,11 +53,13 @@ def cli(ctx, repo, dot):
     The following environment variables are recognized at runtime:
 
     \b
-    DOTFILES_DOT:   Set this to 'False' to remove the leading dot.
     DOTFILES_REPO:  Set this to the location of your repository.
     DOTFILES_COLOR: Set this to 'True' to enable color output.
+    DOTFILES_DOT:   Set this to 'True' to preserve the leading dot.
     """
-    ctx.obj = Repository(repodir=repo, ignore=DEFAULT_IGNORE, dot=dot)
+    ctx.obj = Repository(path=repo,
+                         ignore_patterns=IGNORE_PATTERNS,
+                         preserve_leading_dot=dot)
 
 
 @cli.command()

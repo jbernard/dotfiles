@@ -1,5 +1,5 @@
-import py
 import pytest
+import py.path
 
 from dotfiles.repository import Repository
 from dotfiles.exceptions import NotRootedInHome, InRepository, TargetIgnored, \
@@ -48,9 +48,11 @@ def test_dotfile(repo, home):
     with pytest.raises(NotRootedInHome):
         Repository(repo, home)._dotfile(py.path.local('/tmp/foo'))
     with pytest.raises(TargetIgnored):
-        Repository(repo, home, ignore=['.foo'])._dotfile(home.join('.foo'))
+        Repository(repo, home,
+                   ignore_patterns=['.foo'])._dotfile(home.join('.foo'))
     with pytest.raises(TargetIgnored):
-        Repository(repo, home, ignore=['foo'])._dotfile(home.join('.bar/foo'))
+        Repository(repo, home,
+                   ignore_patterns=['foo'])._dotfile(home.join('.bar/foo'))
     with pytest.raises(IsDirectory):
         Repository(repo, home)._dotfile(home.ensure_dir('.config'))
 

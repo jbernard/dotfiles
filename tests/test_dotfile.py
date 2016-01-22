@@ -1,5 +1,5 @@
-import py
 import pytest
+import py.path
 
 from dotfiles.dotfile import Dotfile
 from dotfiles.exceptions import IsSymlink, NotASymlink
