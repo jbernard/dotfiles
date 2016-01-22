@@ -1,4 +1,4 @@
-import py
+import py.path
 from click import echo
 
 from .exceptions import IsSymlink, NotASymlink
