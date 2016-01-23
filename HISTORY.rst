@@ -1,6 +1,15 @@
 History
 -------
 
+0.9.0
++++++
+
+* Completely new git-like UI based on Click
+* Behaviour change to symlink files at any depth
+   - backwards incompatible, see README.rst
+* Lots of refactoring and cleanups
+* Several new tests to improve coverage
+
 0.6.4
 +++++
 
