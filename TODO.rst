@@ -1,6 +1,8 @@
 TODO
 ----
 
+* Update README and release version 0.9
+
 * Multiple repositories, which allows users to compose a few separate
   repositories into a single set of symlinks.
 
