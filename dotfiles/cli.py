@@ -5,19 +5,25 @@ from .repository import Repository
 from .exceptions import DotfileException
 
 
-# Defaults
-REPOSITORY_PATH = os.path.expanduser('~/Dotfiles')
-IGNORE_PATTERNS = ['.git', '.hg', '*~']
-PRESERVE_LEADING_DOT = False
+DEFAULT_DOT = False
+DEFAULT_REPO = os.path.expanduser('~/Dotfiles')
+DEFAULT_IGNORE_PATTERNS = ['.git', '.hg', '*~']
+CONTEXT_SETTINGS = dict(auto_envvar_prefix='DOTFILES',
+                        help_option_names=['-h', '--help'])
+
+
+def get_single_repo(context):
+    if len(context.obj) > 1:
+        raise click.BadParameter('Must specify exactly one repository.',
+                                 param_hint=['-r', '--repo'])
+    return context.obj[0]
 
 
 def confirm(method, files, repo):
     """Return a list of files, or all files if none were specified."""
-
     if files:
         # user has specified specific files, so we are not assuming all
         return files
-
     # no files provided, so we assume all files after confirmation
     message = 'Are you sure you want to %s all dotfiles?' % method
     click.confirm(message, abort=True)
@@ -36,50 +42,44 @@ def perform(method, files, repo, debug):
             click.echo(err)
 
 
-pass_repo = click.make_pass_decorator(Repository)
-
-
-@click.group(context_settings=dict(help_option_names=['-h', '--help']))
-@click.option('-r', '--repo', type=click.Path(), show_default=True,
-              default=REPOSITORY_PATH, envvar='DOTFILES_REPO',
-              help='The repository path')
-@click.option('--dot/--no-dot', show_default=True,
-              default=PRESERVE_LEADING_DOT, envvar='DOTFILES_DOT',
-              help='Preserve the leading dot')
-@click.version_option()
+@click.group(context_settings=CONTEXT_SETTINGS)
+@click.option('-r', '--repo',
+              type=click.Path(exists=True, file_okay=False, dir_okay=True),
+              default=[DEFAULT_REPO], show_default=True, multiple=True,
+              help='A repository path.')
+@click.option('-d', '--dot', is_flag=True, help='Preserve the leading dot.')
+@click.version_option(None, '-v', '--version')
 @click.pass_context
 def cli(ctx, repo, dot):
     """Dotfiles is a tool to make managing your dotfile symlinks in $HOME easy,
     allowing you to keep all your dotfiles in a single directory.
-
-    The following environment variables are recognized at runtime:
-
-    \b
-    DOTFILES_REPO:  Set this to the location of your repository.
-    DOTFILES_COLOR: Set this to 'True' to enable color output.
-    DOTFILES_DOT:   Set this to 'True' to preserve the leading dot.
     """
-    ctx.obj = Repository(repo, ignore_patterns=IGNORE_PATTERNS,
-                         preserve_leading_dot=dot)
+    ctx.obj = []
+    for path in repo:
+        ctx.obj.append(Repository(path,
+                                  ignore_patterns=DEFAULT_IGNORE_PATTERNS,
+                                  preserve_leading_dot=dot))
 
 
 @cli.command()
 @click.option('-d', '--debug', is_flag=True,
-              help='Show commands that would be executed.')
+              help='Show what would be executed.')
 @click.argument('files', nargs=-1, type=click.Path(exists=True))
-@pass_repo
-def add(repo, debug, files):
-    """Add dotfiles to your repository."""
+@click.pass_context
+def add(ctx, debug, files):
+    """Add dotfiles to a repository."""
+    repo = get_single_repo(ctx)
     perform('add', files, repo, debug)
 
 
 @cli.command()
 @click.option('-d', '--debug', is_flag=True,
-              help='Show commands that would be executed.')
+              help='Show what would be executed.')
 @click.argument('files', nargs=-1, type=click.Path(exists=True))
-@pass_repo
-def remove(repo, debug, files):
-    """Remove dotfiles from your repository."""
+@click.pass_context
+def remove(ctx, debug, files):
+    """Remove dotfiles from a repository."""
+    repo = get_single_repo(ctx)
     files = confirm('remove', files, repo)
     perform('remove', files, repo, debug)
     if not debug:
@@ -88,32 +88,33 @@ def remove(repo, debug, files):
 
 @cli.command()
 @click.option('-d', '--debug', is_flag=True,
-              help='Show commands that would be executed.')
+              help='Show what would be executed.')
 @click.argument('files', nargs=-1, type=click.Path())
-@pass_repo
-def link(repo, debug, files):
+@click.pass_context
+def link(ctx, debug, files):
     """Create missing symlinks."""
+    repo = get_single_repo(ctx)
     files = confirm('link', files, repo)
     perform('link', files, repo, debug)
 
 
 @cli.command()
 @click.option('-d', '--debug', is_flag=True,
-              help='Show commands that would be executed.')
+              help='Show what would be executed.')
 @click.argument('files', nargs=-1, type=click.Path(exists=True))
-@pass_repo
-def unlink(repo, debug, files):
+@click.pass_context
+def unlink(ctx, debug, files):
     """Remove existing symlinks."""
+    repo = get_single_repo(ctx)
     files = confirm('unlink', files, repo)
     perform('unlink', files, repo, debug)
 
 
 @cli.command()
 @click.option('-a', '--all',   is_flag=True, help='Show all dotfiles.')
-@click.option('-c', '--color', is_flag=True, help='Enable color output.',
-              envvar='DOTFILES_COLOR')
-@pass_repo
-def status(repo, all, color):
+@click.option('-c', '--color', is_flag=True, help='Enable color output.')
+@click.pass_context
+def status(ctx, all, color):
     """Show all dotfiles in a non-OK state."""
     state_info = {
         'error':    {'char': 'E', 'color': None},
@@ -129,11 +130,14 @@ def status(repo, all, color):
         state_info['missing']['color'] = 'yellow'
         state_info['conflict']['color'] = 'magenta'
 
-    for dotfile in repo.contents():
-        try:
-            name = dotfile.short_name(repo.homedir)
-            char = state_info[dotfile.state]['char']
-            color = state_info[dotfile.state]['color']
-            click.secho('%c %s' % (char, name), fg=color)
-        except KeyError:
-            continue
+    for repo in ctx.obj:
+        if len(ctx.obj) > 1:
+            click.secho('%s:' % repo.path)
+        for dotfile in repo.contents():
+            try:
+                name = dotfile.short_name(repo.homedir)
+                char = state_info[dotfile.state]['char']
+                color = state_info[dotfile.state]['color']
+                click.secho('%c %s' % (char, name), fg=color)
+            except KeyError:
+                continue
