@@ -1,5 +1,4 @@
 from dotfiles.cli import cli
-from dotfiles.repository import Repository
 
 
 class TestCli(object):
