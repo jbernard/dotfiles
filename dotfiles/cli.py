@@ -43,9 +43,8 @@ def perform(method, files, repo, debug):
 
 
 @click.group(context_settings=CONTEXT_SETTINGS)
-@click.option('-r', '--repo',
-              type=click.Path(exists=True, file_okay=False, dir_okay=True),
-              default=[DEFAULT_REPO], show_default=True, multiple=True,
+@click.option('-r', '--repo', type=click.Path(), multiple=True,
+              default=[DEFAULT_REPO], show_default=True,
               help='A repository path.')
 @click.option('-d', '--dot', is_flag=True, help='Preserve the leading dot.')
 @click.version_option(None, '-v', '--version')
