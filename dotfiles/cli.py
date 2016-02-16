@@ -1,22 +1,21 @@
 import os
 import click
 
-from .repository import Repository
 from .exceptions import DotfileException
+from .repositories import Repositories
 
 
 DEFAULT_DOT = False
 DEFAULT_REPO = os.path.expanduser('~/Dotfiles')
-DEFAULT_IGNORE_PATTERNS = ['.git', '.hg', '*~']
 CONTEXT_SETTINGS = dict(auto_envvar_prefix='DOTFILES',
                         help_option_names=['-h', '--help'])
 
 
-def get_single_repo(context):
-    if len(context.obj) > 1:
+def get_single_repo(repos):
+    if len(repos) > 1:
         raise click.BadParameter('Must specify exactly one repository.',
                                  param_hint=['-r', '--repo'])
-    return context.obj[0]
+    return repos[0]
 
 
 def confirm(method, files, repo):
@@ -42,6 +41,9 @@ def perform(method, files, repo, debug):
             click.echo(err)
 
 
+pass_repos = click.make_pass_decorator(Repositories)
+
+
 @click.group(context_settings=CONTEXT_SETTINGS)
 @click.option('-r', '--repo', type=click.Path(), multiple=True,
               default=[DEFAULT_REPO], show_default=True,
@@ -53,21 +55,17 @@ def cli(ctx, repo, dot):
     """Dotfiles is a tool to make managing your dotfile symlinks in $HOME easy,
     allowing you to keep all your dotfiles in a single directory.
     """
-    ctx.obj = []
-    for path in repo:
-        ctx.obj.append(Repository(path,
-                                  ignore_patterns=DEFAULT_IGNORE_PATTERNS,
-                                  preserve_leading_dot=dot))
+    ctx.obj = Repositories(repo, dot)
 
 
 @cli.command()
 @click.option('-d', '--debug', is_flag=True,
               help='Show what would be executed.')
 @click.argument('files', nargs=-1, type=click.Path(exists=True))
-@click.pass_context
-def add(ctx, debug, files):
+@pass_repos
+def add(repos, debug, files):
     """Add dotfiles to a repository."""
-    repo = get_single_repo(ctx)
+    repo = get_single_repo(repos)
     perform('add', files, repo, debug)
 
 
@@ -75,10 +73,10 @@ def add(ctx, debug, files):
 @click.option('-d', '--debug', is_flag=True,
               help='Show what would be executed.')
 @click.argument('files', nargs=-1, type=click.Path(exists=True))
-@click.pass_context
-def remove(ctx, debug, files):
+@pass_repos
+def remove(repos, debug, files):
     """Remove dotfiles from a repository."""
-    repo = get_single_repo(ctx)
+    repo = get_single_repo(repos)
     files = confirm('remove', files, repo)
     perform('remove', files, repo, debug)
     if not debug:
@@ -89,10 +87,11 @@ def remove(ctx, debug, files):
 @click.option('-d', '--debug', is_flag=True,
               help='Show what would be executed.')
 @click.argument('files', nargs=-1, type=click.Path())
-@click.pass_context
-def link(ctx, debug, files):
+@pass_repos
+def link(repos, debug, files):
     """Create missing symlinks."""
-    repo = get_single_repo(ctx)
+    # TODO: allow all repos?  It *could* be fine...
+    repo = get_single_repo(repos)
     files = confirm('link', files, repo)
     perform('link', files, repo, debug)
 
@@ -101,10 +100,10 @@ def link(ctx, debug, files):
 @click.option('-d', '--debug', is_flag=True,
               help='Show what would be executed.')
 @click.argument('files', nargs=-1, type=click.Path(exists=True))
-@click.pass_context
-def unlink(ctx, debug, files):
+@pass_repos
+def unlink(repos, debug, files):
     """Remove existing symlinks."""
-    repo = get_single_repo(ctx)
+    repo = get_single_repo(repos)
     files = confirm('unlink', files, repo)
     perform('unlink', files, repo, debug)
 
@@ -112,8 +111,8 @@ def unlink(ctx, debug, files):
 @cli.command()
 @click.option('-a', '--all',   is_flag=True, help='Show all dotfiles.')
 @click.option('-c', '--color', is_flag=True, help='Enable color output.')
-@click.pass_context
-def status(ctx, all, color):
+@pass_repos
+def status(repos, all, color):
     """Show all dotfiles in a non-OK state."""
     state_info = {
         'error':    {'char': 'E', 'color': None},
@@ -129,8 +128,8 @@ def status(ctx, all, color):
         state_info['missing']['color'] = 'yellow'
         state_info['conflict']['color'] = 'magenta'
 
-    for repo in ctx.obj:
-        if len(ctx.obj) > 1:
+    for repo in repos:
+        if len(repos) > 1:
             click.secho('%s:' % repo.path)
         for dotfile in repo.contents():
             try:
