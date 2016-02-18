@@ -1,14 +1,69 @@
 import os
+import copy
 import click
+import py.path
 
+try:
+    import ConfigParser as configparser
+except ImportError:
+    import configparser
+
+from .repository import Repository
 from .exceptions import DotfileException
-from .repositories import Repositories
 
 
 DEFAULT_DOT = False
 DEFAULT_REPO = os.path.expanduser('~/Dotfiles')
+DEFAULT_IGNORE_PATTERNS = ['README*', '.git', '.hg', '*~']
+
 CONTEXT_SETTINGS = dict(auto_envvar_prefix='DOTFILES',
                         help_option_names=['-h', '--help'])
+
+
+class Config(object):
+
+    def __init__(self, paths):
+        self.settings = self.parse_config({})
+
+        # repositories specified on the command line take precedence
+        if paths:
+            self.settings.update({'repositories': str(set(paths))})
+
+        # assume default repository at this point
+        if not 'repositories' in self.settings:
+            self.settings.update({'repositories': str([DEFAULT_REPO])})
+
+        # TODO: apply repository configuration, if available
+
+    def parse_config(path, settings):
+        settings = copy.deepcopy(settings)
+        cfg = os.path.join(click.get_app_dir('Dotfiles'), 'config.ini')
+        parser = configparser.RawConfigParser()
+        parser.read([cfg])
+        try:
+            settings.update(parser.items('dotfiles'))
+        except configparser.NoSectionError:
+            pass
+        return settings
+
+
+class Repositories(object):
+
+    def __init__(self, paths, dot):
+        config = Config(paths)
+
+        self.repos = []
+        for path in eval(config.settings['repositories']):
+            self.repos.append(
+                Repository(py.path.local(path, expanduser=True),
+                           ignore_patterns=DEFAULT_IGNORE_PATTERNS,
+                           preserve_leading_dot=dot))
+
+    def __len__(self):
+        return len(self.repos)
+
+    def __getitem__(self, index):
+        return self.repos[index]
 
 
 def get_single_repo(repos):
@@ -42,13 +97,12 @@ def perform(method, files, repo, debug):
 
 
 pass_repos = click.make_pass_decorator(Repositories)
-
+repo_help = 'A repository path.'
+dot_help = 'Preserve the leading dot.'
 
 @click.group(context_settings=CONTEXT_SETTINGS)
-@click.option('-r', '--repo', type=click.Path(), multiple=True,
-              default=[DEFAULT_REPO], show_default=True,
-              help='A repository path.')
-@click.option('-d', '--dot', is_flag=True, help='Preserve the leading dot.')
+@click.option('-r', '--repo', type=click.Path(), multiple=True, help=repo_help)
+@click.option('-d', '--dot', is_flag=True, help=dot_help)
 @click.version_option(None, '-v', '--version')
 @click.pass_context
 def cli(ctx, repo, dot):
