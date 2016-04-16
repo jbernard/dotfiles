@@ -21,6 +21,18 @@ CONTEXT_SETTINGS = dict(auto_envvar_prefix='DOTFILES',
 
 
 class Config(object):
+    """The configuration information for a set of repositories.
+
+    Each repository has its own configuration defined by the contents of a
+    repository-specific configuration file.  If such a file is present, the
+    fields it defines will be added to any existing global configuration.
+
+    The command line will override all of this.
+
+    And this all needs to be implemented.
+
+    :param paths: a list of repository path locations
+    """
 
     def __init__(self, paths):
         self.settings = self.parse_config({})
