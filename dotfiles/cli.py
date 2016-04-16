@@ -114,12 +114,12 @@ def perform(method, files, repo, debug):
 
 
 pass_repos = click.make_pass_decorator(Repositories)
-repo_help = 'A repository path.'
-dot_help = 'Preserve the leading dot.'
+
 
 @click.group(context_settings=CONTEXT_SETTINGS)
-@click.option('-r', '--repo', type=click.Path(), multiple=True, help=repo_help)
-@click.option('-d', '--dot', is_flag=True, help=dot_help)
+@click.option('-r', '--repo', type=click.Path(), multiple=True,
+              help='A repository path.')
+@click.option('-d', '--dot', is_flag=True, help='Preserve the leading dot.')
 @click.version_option(None, '-v', '--version')
 @click.pass_context
 def cli(ctx, repo, dot):
