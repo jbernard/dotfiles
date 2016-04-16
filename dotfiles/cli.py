@@ -30,12 +30,15 @@ class Config(object):
             self.settings.update({'repositories': str(set(paths))})
 
         # assume default repository at this point
-        if not 'repositories' in self.settings:
+        if 'repositories' not in self.settings:
             self.settings.update({'repositories': str([DEFAULT_REPO])})
+        if 'ignore_patterns' not in self.settings:
+            self.settings.update({'ignore_patterns':
+                                  str(DEFAULT_IGNORE_PATTERNS)})
 
         # TODO: apply repository configuration, if available
 
-    def parse_config(path, settings):
+    def parse_config(self, settings):
         settings = copy.deepcopy(settings)
         cfg = os.path.join(click.get_app_dir('Dotfiles'), 'config.ini')
         parser = configparser.RawConfigParser()
@@ -46,6 +49,17 @@ class Config(object):
             pass
         return settings
 
+    def _get_setting(self, setting):
+        return eval(self.settings[setting])
+
+    @property
+    def repositories(self):
+        return self._get_setting('repositories')
+
+    @property
+    def ignore_patterns(self):
+        return self._get_setting('ignore_patterns')
+
 
 class Repositories(object):
 
@@ -53,10 +67,13 @@ class Repositories(object):
         config = Config(paths)
 
         self.repos = []
-        for path in eval(config.settings['repositories']):
+        # for path in eval(config.settings['repositories']):
+        for path in config.repositories:
+            # will this ever change, why is this in the loop?
+            ignore_patterns = config.ignore_patterns
             self.repos.append(
                 Repository(py.path.local(path, expanduser=True),
-                           ignore_patterns=DEFAULT_IGNORE_PATTERNS,
+                           ignore_patterns=ignore_patterns,
                            preserve_leading_dot=dot))
 
     def __len__(self):
