@@ -1,68 +1,6 @@
 import click
 
-try:
-    import ConfigParser as configparser
-except ImportError:
-    import configparser
-
 from .exceptions import DotfileException
-CONTEXT_SETTINGS = dict(auto_envvar_prefix='DOTFILES',
-                        help_option_names=['-h', '--help'])
-
-
-class Config(object):
-    """The configuration information for a set of repositories.
-
-    Each repository has its own configuration defined by the contents of a
-    repository-specific configuration file.  If such a file is present, the
-    fields it defines will be added to any existing global configuration.
-
-    The command line will override all of this.
-
-    And this all needs to be implemented.
-
-    :param paths: a list of repository path locations
-    """
-
-    def __init__(self, paths):
-        self.settings = self.parse_config({})
-
-        # repositories specified on the command line take precedence
-        if paths:
-            self.settings.update({'repositories': str(set(paths))})
-
-        # assume default repository at this point
-        if 'repositories' not in self.settings:
-            self.settings.update({'repositories': str([DEFAULT_REPO])})
-        if 'ignore_patterns' not in self.settings:
-            self.settings.update({'ignore_patterns':
-                                  str(DEFAULT_IGNORE_PATTERNS)})
-
-        # TODO: apply repository configuration, if available
-
-    def parse_config(self, settings):
-        settings = copy.deepcopy(settings)
-        cfg = os.path.join(click.get_app_dir('Dotfiles'), 'config.ini')
-        parser = configparser.RawConfigParser()
-        parser.read([cfg])
-        try:
-            settings.update(parser.items('dotfiles'))
-        except configparser.NoSectionError:
-            pass
-        return settings
-
-    def _get_setting(self, setting):
-        return eval(self.settings[setting])
-
-    @property
-    def repositories(self):
-        return self._get_setting('repositories')
-
-    @property
-    def ignore_patterns(self):
-        return self._get_setting('ignore_patterns')
-
-
 from .repository import Repositories, DEFAULT_PATH, DEFAULT_REMOVE_LEADING_DOT
 
 
@@ -97,12 +35,16 @@ def perform(method, files, repo, debug):
 
 
 pass_repos = click.make_pass_decorator(Repositories)
+CONTEXT_SETTINGS = dict(auto_envvar_prefix='DOTFILES',
+                        help_option_names=['-h', '--help'])
 
 
 @click.group(context_settings=CONTEXT_SETTINGS)
-@click.option('-r', '--repo', type=click.Path(), multiple=True,
-              help='A repository path.')
-@click.option('-d', '--dot', is_flag=True, help='Preserve the leading dot.')
+@click.option('--repo', '-r', type=click.Path(), multiple=True,
+              help='A repository path. Default: %s' % (DEFAULT_PATH))
+@click.option('--dot/--no-dot', '-d/-D', default=None,
+              help='Whether to remove the leading dot. Default: %s' % (
+                  DEFAULT_REMOVE_LEADING_DOT))
 @click.version_option(None, '-v', '--version')
 @click.pass_context
 def cli(ctx, repo, dot):
