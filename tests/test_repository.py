@@ -25,20 +25,20 @@ def test_str(repo):
 
 @pytest.mark.parametrize('path', ['.foo', '.foo/bar/baz'])
 def test_dotfile_path(repo, path):
-    repo.preserve_leading_dot = True
+    repo.remove_leading_dot = False
     assert (repo._dotfile_path(repo.path.join(path)) ==
             repo.homedir.join(path))
-    repo.preserve_leading_dot = False
+    repo.remove_leading_dot = True
     assert (repo._dotfile_path(repo.path.join(path)) ==
             repo.homedir.join('.%s' % path))
 
 
 @pytest.mark.parametrize('path', ['.foo', '.foo/bar/baz'])
 def test_dotfile_target(repo, path):
-    repo.preserve_leading_dot = True
+    repo.remove_leading_dot = False
     assert (repo._dotfile_target(repo.homedir.join(path)) ==
             repo.path.join(path))
-    repo.preserve_leading_dot = False
+    repo.remove_leading_dot = True
     assert (repo._dotfile_target(repo.homedir.join(path)) ==
             repo.path.join(path[1:]))
 
@@ -48,7 +48,7 @@ def test_dotfile(repo):
         repo._dotfile(py.path.local('/tmp/foo'))
     with pytest.raises(TargetIgnored):
         repo.ignore_patterns = ['.foo']
-        repo.preserve_leading_dot = True
+        repo.remove_leading_dot = False
         repo._dotfile(py.path.local(repo.homedir.join('.foo')))
     with pytest.raises(TargetIgnored):
         repo.ignore_patterns = ['foo']

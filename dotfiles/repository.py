@@ -13,20 +13,20 @@ class Repository(object):
     :param path: the location of the repository directory
     :param homedir: the location of the home directory
     :param ignore_patterns: a list of glob patterns to ignore
-    :param preserve_leading_dot: whether to preserve the target's leading dot
+    :param remove_leading_dot: whether to remove the target's leading dot
     """
 
-    default_homedir = py.path.local('~/', expanduser=True)
-
-    def __init__(self, path, homedir=default_homedir, ignore_patterns=[],
-                 preserve_leading_dot=False):
+    def __init__(self, path,
+                 remove_leading_dot=DEFAULT_REMOVE_LEADING_DOT,
+                 ignore_patterns=DEFAULT_IGNORE_PATTERNS,
+                 homedir=DEFAULT_HOMEDIR):
 
         # create repository directory if not found
         self.path = py.path.local(path).ensure_dir()
 
         self.homedir = homedir
         self.ignore_patterns = ignore_patterns
-        self.preserve_leading_dot = preserve_leading_dot
+        self.remove_leading_dot = remove_leading_dot
 
     def __str__(self):
         """Return human-readable repository contents."""
@@ -44,18 +44,18 @@ class Repository(object):
     def _dotfile_path(self, target):
         """Return the expected symlink for the given repository target."""
         relpath = self.path.bestrelpath(target)
-        if self.preserve_leading_dot:
-            return self.homedir.join(relpath)
-        else:
+        if self.remove_leading_dot:
             return self.homedir.join('.%s' % relpath)
+        else:
+            return self.homedir.join(relpath)
 
     def _dotfile_target(self, path):
         """Return the expected repository target for the given symlink."""
         relpath = self.homedir.bestrelpath(path)
-        if self.preserve_leading_dot:
-            return self.path.join(relpath)
-        else:
+        if self.remove_leading_dot:
             return self.path.join(relpath[1:])
+        else:
+            return self.path.join(relpath)
 
     def _dotfile(self, path):
         """Return a valid dotfile for the given path."""
