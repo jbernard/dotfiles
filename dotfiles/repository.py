@@ -6,6 +6,32 @@ from .dotfile import Dotfile
 from .exceptions import DotfileException, TargetIgnored
 from .exceptions import NotRootedInHome, InRepository, IsDirectory
 
+DEFAULT_PATH = '~/Dotfiles'
+DEFAULT_REMOVE_LEADING_DOT = True
+DEFAULT_IGNORE_PATTERNS = ['.git', 'README*', '*~']
+DEFAULT_HOMEDIR = py.path.local('~/', expanduser=True)
+
+
+class Repositories(object):
+    """An iterable collection of repository objects."""
+
+    def __init__(self, paths, dot):
+        if not paths:
+            paths = [DEFAULT_PATH]
+        if dot is None:
+            dot = DEFAULT_REMOVE_LEADING_DOT
+
+        self.repos = []
+        for path in paths:
+            path = py.path.local(path, expanduser=True)
+            self.repos.append(Repository(path, dot))
+
+    def __len__(self):
+        return len(self.repos)
+
+    def __getitem__(self, index):
+        return self.repos[index]
+
 
 class Repository(object):
     """A repository is a directory that contains dotfiles.

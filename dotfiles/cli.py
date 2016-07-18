@@ -1,21 +1,11 @@
-import os
-import copy
 import click
-import py.path
 
 try:
     import ConfigParser as configparser
 except ImportError:
     import configparser
 
-from .repository import Repository
 from .exceptions import DotfileException
-
-
-DEFAULT_DOT = False
-DEFAULT_REPO = os.path.expanduser('~/Dotfiles')
-DEFAULT_IGNORE_PATTERNS = ['README*', '.git', '.hg', '*~']
-
 CONTEXT_SETTINGS = dict(auto_envvar_prefix='DOTFILES',
                         help_option_names=['-h', '--help'])
 
@@ -73,26 +63,7 @@ class Config(object):
         return self._get_setting('ignore_patterns')
 
 
-class Repositories(object):
-
-    def __init__(self, paths, dot):
-        config = Config(paths)
-
-        self.repos = []
-        # for path in eval(config.settings['repositories']):
-        for path in config.repositories:
-            # will this ever change, why is this in the loop?
-            ignore_patterns = config.ignore_patterns
-            self.repos.append(
-                Repository(py.path.local(path, expanduser=True),
-                           ignore_patterns=ignore_patterns,
-                           preserve_leading_dot=dot))
-
-    def __len__(self):
-        return len(self.repos)
-
-    def __getitem__(self, index):
-        return self.repos[index]
+from .repository import Repositories, DEFAULT_PATH, DEFAULT_REMOVE_LEADING_DOT
 
 
 def get_single_repo(repos):
