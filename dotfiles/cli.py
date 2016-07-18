@@ -196,7 +196,12 @@ def unlink(repos, debug, files):
 @click.option('-c', '--color', is_flag=True, help='Enable color output.')
 @pass_repos
 def status(repos, all, color):
-    """Show all dotfiles in a non-OK state."""
+    """Show all dotfiles in a non-OK state.
+
+    Legend:
+
+      ?: missing  !: conflict  E: error"""
+
     state_info = {
         'error':    {'char': 'E', 'color': None},
         'missing':  {'char': '?', 'color': None},
