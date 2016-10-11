@@ -8,7 +8,7 @@ from .exceptions import NotRootedInHome, InRepository, IsDirectory
 
 DEFAULT_PATH = '~/Dotfiles'
 DEFAULT_REMOVE_LEADING_DOT = True
-DEFAULT_IGNORE_PATTERNS = ['.git', 'README*', '*~']
+DEFAULT_IGNORE_PATTERNS = ['.git', '.gitignore', 'README*', '*~']
 DEFAULT_HOMEDIR = py.path.local('~/', expanduser=True)
 
 
