@@ -2,8 +2,8 @@ import pytest
 import py.path
 
 from dotfiles.dotfile import Dotfile
-from dotfiles.exceptions import IsSymlink, NotASymlink
-from dotfiles.exceptions import TargetExists, TargetMissing, Exists
+from dotfiles.exceptions import \
+    IsSymlink, NotASymlink, TargetExists, TargetMissing, Exists
 
 
 def _dotfile(repo, name, target=None):

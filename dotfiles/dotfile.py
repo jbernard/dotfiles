@@ -1,13 +1,12 @@
 import py.path
 from click import echo
 
-from .exceptions import IsSymlink, NotASymlink
-from .exceptions import TargetExists, TargetMissing
-from .exceptions import Exists
+from .exceptions import \
+    IsSymlink, NotASymlink, TargetExists, TargetMissing, Exists
 
 
 class Dotfile(object):
-    """An configuration file managed within a repository.
+    """A configuration file managed within a repository.
 
     :param name:   name of the symlink in the home directory (~/.vimrc)
     :param target: where the symlink should point to (~/Dotfiles/vimrc)
@@ -73,6 +72,7 @@ class Dotfile(object):
     def add(self, debug=False):
         """Move a dotfile to it's target and create a symlink."""
         if self.name.check(link=1):
+            # XXX: if the name is already a link, we *could* just move it.
             raise IsSymlink(self.name)
         if self.target.check(exists=1):
             raise TargetExists(self.name)
