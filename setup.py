@@ -6,7 +6,7 @@ setup(
     name='dotfiles',
     version=__version__,
     author='Jon Bernard',
-    author_email='jbernard@tuxion.com',
+    author_email='jbernard@jbernard.io',
     description='Easily manage your dotfiles',
     url='https://github.com/jbernard/dotfiles',
     long_description=(open('README.rst').read() + '\n\n' +
