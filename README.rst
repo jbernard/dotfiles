@@ -1,7 +1,25 @@
-*Update:*  I've managed to find some free time recently and have been making
-some changes and improvements that hopefully people will appreciate.  At the
-moment the ``master`` branch is in a state of flux until I get all of the
-pieces included.
+Dotfile management made easy
+============================
+
+``dotfiles`` is a tool to make managing your dotfile symlinks in ``$HOME``
+easy, allowing you to keep all your dotfiles in a single directory.
+
+Hosting is up to you. You can use a VCS like git, Dropbox, or even rsync to
+distribute your dotfiles repository across multiple hosts.
+
+The repository can be specified at runtime, so you can manage multiple
+repositories without hassle. See the Configuration_ section below for further
+details.
+
+Directories are supported as well. Any file object in your home directory that
+starts with a ``.`` is fair game.
+
+Recent Changes
+--------------
+
+I've managed to find some free time recently and have been making some changes
+and improvements that hopefully people will appreciate.  At the moment the
+``master`` branch is in a state of flux until I get all of the pieces included.
 
 Feel free to use the latest stable version ``0.6.4`` on pypi if that's what
 you're looking for.
@@ -19,22 +37,6 @@ Thanks for baring with me, I hope to have this new version in good shape and
 released soon.  There are some changes in interface and behaviour from the
 previous version and I hope it doesn't frustrate folks too much.  Feel free to
 submit an issue if you find something intolerable.
-
-Dotfile management made easy
-============================
-
-``dotfiles`` is a tool to make managing your dotfile symlinks in ``$HOME``
-easy, allowing you to keep all your dotfiles in a single directory.
-
-Hosting is up to you. You can use a VCS like git, Dropbox, or even rsync to
-distribute your dotfiles repository across multiple hosts.
-
-The repository can be specified at runtime, so you can manage multiple
-repositories without hassle. See the Configuration_ section below for further
-details.
-
-Directories are supported as well. Any file object in your home directory that
-starts with a ``.`` is fair game.
 
 Interface
 ---------
