@@ -206,3 +206,8 @@ AUTHORS_ or I'll do it when I merge your changes.
 
 .. _`the repository`: https://github.com/jbernard/dotfiles
 .. _AUTHORS: https://github.com/jbernard/dotfiles/blob/master/AUTHORS.rst
+
+
+.. image:: https://badges.gitter.im/jbernard/dotfiles.svg
+   :alt: Join the chat at https://gitter.im/jbernard/dotfiles
+   :target: https://gitter.im/jbernard/dotfiles?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
