@@ -5,7 +5,7 @@
     Dotfiles is a tool to make managing your dotfile symlinks in $HOME easy,
     allowing you to keep all your dotfiles in a single directory.
 
-    :copyright: (c) 2011-2016 by Jon Bernard.
+    :copyright: (c) 2011-2018 by Jon Bernard.
     :license: ISC, see LICENSE.rst for more details.
 """
 
