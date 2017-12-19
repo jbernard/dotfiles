@@ -39,10 +39,15 @@ class Dotfile(object):
 
     def _link(self, debug):
         """Create a symlink from name to target, no error checking."""
+        source = self.name
+        target = self.target
+        if self.name.islink():
+            source = self.target
+            target = self.name.realpath()
         if debug:
-            echo('LINK   %s -> %s' % (self.name, self.target))
+            echo('LINK   %s -> %s' % (source, target))
         else:
-            self.name.mksymlinkto(self.target, absolute=0)
+            source.mksymlinkto(target, absolute=0)
 
     def _unlink(self, debug):
         """Remove a symlink in the home directory, no error checking."""
@@ -54,6 +59,10 @@ class Dotfile(object):
     def short_name(self, homedir):
         """A shorter, more readable name given a home directory."""
         return homedir.bestrelpath(self.name)
+
+    def is_present(self):
+        """Is this dotfile present in the repository?"""
+        return self.name.islink() and (self.name.realpath() == self.target)
 
     @property
     def state(self):
@@ -71,16 +80,16 @@ class Dotfile(object):
 
     def add(self, debug=False):
         """Move a dotfile to it's target and create a symlink."""
-        if self.name.check(link=1):
-            # XXX: if the name is already a link, we *could* just move it.
+        if self.is_present():
             raise IsSymlink(self.name)
         if self.target.check(exists=1):
             raise TargetExists(self.name)
         self._ensure_dirs(debug)
-        if debug:
-            echo('MOVE   %s -> %s' % (self.name, self.target))
-        else:
-            self.name.move(self.target)
+        if not self.name.islink():
+            if debug:
+                echo('MOVE   %s -> %s' % (self.name, self.target))
+            else:
+                self.name.move(self.target)
         self._link(debug)
 
     def remove(self, debug=False):
