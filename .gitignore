@@ -1,19 +1,11 @@
 *.pyc
 *.pyo
 __pycache__/
-.cache/
+.pytest_cache/
 
-.venv/
 .tox
-.bundle/
 
 build/
 dist/
 dotfiles.egg-info/
 .eggs/
-
-tasks
-.tasks.done
-
-Gemfile
-Gemfile.lock
