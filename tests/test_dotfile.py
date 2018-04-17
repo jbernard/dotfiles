@@ -11,15 +11,17 @@ def _dotfile(repo, name, target=None):
                    repo.path.join(target if target is not None else name))
 
 
-def test_str(repo):
-    dotfile = _dotfile(repo, '.a', '.b')
-    assert str(dotfile) == repo.homedir.join('.a')
+@pytest.mark.parametrize('name', ['.a'])
+def test_str(repo, name):
+    dotfile = _dotfile(repo, name, '.b')
+    assert str(dotfile) == repo.homedir.join(name)
 
 
-def test_short_name(repo):
-    dotfile = _dotfile(repo, '.foo')
-    assert dotfile.name == repo.homedir.join('.foo')
-    assert dotfile.short_name(repo.homedir) == '.foo'
+@pytest.mark.parametrize('name', ['.foo'])
+def test_short_name(repo, name):
+    dotfile = _dotfile(repo, name)
+    assert dotfile.name == repo.homedir.join(name)
+    assert dotfile.short_name(repo.homedir) == name
 
 
 def test_state_error(repo):
