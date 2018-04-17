@@ -34,6 +34,7 @@ class Dotfile(object):
                     echo('MKDIR  %s' % dir)
                 else:
                     dir.ensure_dir()
+
         ensure(py.path.local(self.name.dirname), debug)
         ensure(py.path.local(self.target.dirname), debug)
 
@@ -71,11 +72,16 @@ class Dotfile(object):
             # only for testing, cli should never reach this state
             return 'error'
         elif self.name.check(exists=0):
-            # no $HOME symlink
+            # no $HOME file or symlink
             return 'missing'
-        elif self.name.check(link=0) or not self.name.samefile(self.target):
-            # if name exists but isn't a link to the target
-            return 'conflict'
+        elif self.name.islink():
+            # name exists, is a link, but isn't a link to the target
+            if not self.name.samefile(self.target):
+                return 'conflict'
+        else:
+            # name exists, is a file, but differs from the target
+            if self.name.computehash() != self.target.computehash():
+                return 'conflict'
         return 'ok'
 
     def add(self, debug=False):
