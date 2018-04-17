@@ -1,12 +1,16 @@
 {
-	"dotfiles/*.py": {
-		"alternate": "tests/test_{}.py",
-		"type": "source"
-	},
-	"tests/test_*.py": {
-		"alternate": "dotfiles/{}.py",
-		"type": "test"
-	},
-	"*.py": {"dispatch": "flake8 {file}"},
-	"*": {"make": "pytest -q"}
+   "dotfiles/*.py": {
+      "alternate": "tests/test_{}.py",
+      "type": "source"
+   },
+   "tests/test_*.py": {
+      "alternate": "dotfiles/{}.py",
+      "type": "test"
+   },
+   "*.py": {
+      "dispatch": "flake8 {file}"
+   },
+   "*": {
+      "make": "pytest -q"
+   }
 }
