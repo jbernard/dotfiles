@@ -1,11 +1,16 @@
 language: python
 
-env:
-  - TOXENV=py27
-  - TOXENV=py36
-  - TOXENV=pypy
-  - TOXENV=pypy3
-  - TOXENV=flake8
+matrix:
+  include:
+    - python: 2.7
+      env: TOXENV=py27
+    - python: 3.6
+      env: TOXENV=py36
+    - python: pypy
+      env: TOXENV=pypy
+    - python: pypy3
+      env: TOXENV=pypy3
+    - env: TOXENV=flake8
 
 install:
   - pip install tox
