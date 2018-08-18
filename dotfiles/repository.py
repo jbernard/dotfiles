@@ -37,9 +37,9 @@ class Repository(object):
     """A repository is a directory that contains dotfiles.
 
     :param path: the location of the repository directory
-    :param homedir: the location of the home directory
-    :param ignore_patterns: a list of glob patterns to ignore
     :param remove_leading_dot: whether to remove the target's leading dot
+    :param ignore_patterns: a list of glob patterns to ignore
+    :param homedir: the location of the home directory
     """
 
     def __init__(self, path,
@@ -49,13 +49,13 @@ class Repository(object):
 
         # create repository directory if not found
         self.path = py.path.local(path).ensure_dir()
-
-        self.homedir = homedir
-        self.ignore_patterns = ignore_patterns
         self.remove_leading_dot = remove_leading_dot
+        self.ignore_patterns = ignore_patterns
+        self.homedir = homedir
 
     def __str__(self):
         """Return human-readable repository contents."""
+
         return ''.join('%s\n' % item for item in self.contents()).rstrip()
 
     def __repr__(self):
@@ -69,6 +69,7 @@ class Repository(object):
 
     def _dotfile_path(self, target):
         """Return the expected symlink for the given repository target."""
+
         relpath = self.path.bestrelpath(target)
         if self.remove_leading_dot:
             return self.homedir.join('.%s' % relpath)
@@ -77,6 +78,7 @@ class Repository(object):
 
     def _dotfile_target(self, path):
         """Return the expected repository target for the given symlink."""
+
         relpath = self.homedir.bestrelpath(path)
         if self.remove_leading_dot:
             return self.path.join(relpath[1:])
@@ -85,6 +87,7 @@ class Repository(object):
 
     def _dotfile(self, path):
         """Return a valid dotfile for the given path."""
+
         target = self._dotfile_target(path)
 
         if not path.fnmatch('%s/*' % self.homedir):
@@ -100,6 +103,7 @@ class Repository(object):
 
     def _contents(self, dir):
         """Return all unignored files contained below a directory."""
+
         def filter(node):
             return node.check(dir=0) and not self._ignore(node)
 
@@ -107,6 +111,7 @@ class Repository(object):
 
     def contents(self):
         """Return a list of dotfiles for each file in the repository."""
+
         def construct(target):
             return Dotfile(self._dotfile_path(target), target)
 
@@ -122,6 +127,7 @@ class Repository(object):
         for each path in the set.  This set of dotfiles is returned to the
         caller.
         """
+
         paths = list(set(map(py.path.local, paths)))
 
         for path in paths:
@@ -145,6 +151,7 @@ class Repository(object):
         The Dotfile class has no knowledge of other dotfiles in the repository,
         so pruning must take place explicitly after such operations occur.
         """
+
         def filter(node):
             return node.check(dir=1) and not self._ignore(node)
 
