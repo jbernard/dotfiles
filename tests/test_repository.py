@@ -1,7 +1,8 @@
 import pytest
 import py.path
 
-from dotfiles.repository import Repository
+from dotfiles.repository import Repository, \
+    DEFAULT_REMOVE_LEADING_DOT, DEFAULT_IGNORE_PATTERNS
 from dotfiles.exceptions import NotRootedInHome, InRepository, TargetIgnored, \
     IsDirectory
 
@@ -11,6 +12,22 @@ def test_repo_create(repo):
     assert repo.path.check(exists=0)
     Repository(repo.path, repo.homedir)
     assert repo.path.check(exists=1, dir=1)
+
+
+@pytest.mark.parametrize('remove_leading_dot',
+                         [DEFAULT_REMOVE_LEADING_DOT,
+                          not DEFAULT_REMOVE_LEADING_DOT])
+@pytest.mark.parametrize('ignore_patterns', [DEFAULT_IGNORE_PATTERNS,
+                                             ['foo', 'bar', 'baz']])
+def test_repo_params(repo, remove_leading_dot, ignore_patterns):
+    _repo = Repository(repo.path,
+                       remove_leading_dot=remove_leading_dot,
+                       ignore_patterns=ignore_patterns,
+                       homedir=repo.homedir)
+    assert _repo.path == repo.path
+    assert _repo.homedir == repo.homedir
+    assert _repo.remove_leading_dot == remove_leading_dot
+    assert _repo.ignore_patterns == ignore_patterns
 
 
 def test_str(repo):
