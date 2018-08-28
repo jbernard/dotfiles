@@ -1,42 +1,56 @@
-Dotfile management made easy
+Dotfile Management Made Easy
 ============================
 
-``dotfiles`` is a tool to make managing your dotfile symlinks in ``$HOME``
-easy, allowing you to keep all your dotfiles in a single directory.
+``dotfiles`` is a tool to make managing your dotfile symlinks in
+``$HOME`` easy, allowing you to keep all your dotfiles in a single
+directory.
 
-Hosting is up to you. You can use a VCS like git, Dropbox, or even rsync to
-distribute your dotfiles repository across multiple hosts.
+Hosting is up to you. You can use a VCS like git, Dropbox, or even rsync
+to distribute your dotfiles repository across multiple hosts.
 
-The repository can be specified at runtime, so you can manage multiple
-repositories without hassle. See the Configuration_ section below for further
-details.
+One or more repositories can be specified at runtime or with an
+environment variable, so you can manage multiple repositories without
+hassle.  See the Configuration_ section below for further details.
 
-Directories are supported as well. Any file object in your home directory that
-starts with a ``.`` is fair game.
+You can choose to have your dotfiles linked with symbolic links or
+copied into place, either way ``dotfiles`` will keep track of what's
+missing and what's different.
 
-Recent Changes
---------------
+``dotfiles`` is unique in the way it manages links and copies.  The
+entire directory structure leading to a file is preserved and only the
+file itself is considered managed.  This allows managed and unmanaged
+files to live next to each other without needing to specify complicated
+ignore rules.  If you want to be less selective, you can specify a
+directory that contains several files, and ``dotfiles`` will grab all of
+them in whatever hierarchy they exist.
 
-I've managed to find some free time recently and have been making some changes
-and improvements that hopefully people will appreciate.  At the moment the
-``master`` branch is in a state of flux until I get all of the pieces included.
 
-Feel free to use the latest stable version ``0.6.4`` on pypi if that's what
-you're looking for.
+Upgrading From An Old Version
+-----------------------------
 
-Over time several features and improvements were merged and I feel now is a
-good time to step back and rethink the structure a bit.  I think I can support
-the ``packages`` feature in a much more general way that doesn't require
-configuration file changes and support the other features without having
-combinations that break in subtle ways.
+Much has changed in the most recent version.  If you're considering
+upgrading it's probably best to unlink everything and start with an
+empty repository.  This can be done with the following command:
 
-I've reworked the CLI to use click, which means a more git-like interface as
-well as shell completion for bash and colored output.
+  $ dotfiles --unsync
 
-Thanks for baring with me, I hope to have this new version in good shape and
-released soon.  There are some changes in interface and behaviour from the
-previous version and I hope it doesn't frustrate folks too much.  Feel free to
-submit an issue if you find something intolerable.
+
+Installation
+------------
+
+
+Getting Help And Discovering Commands
+-------------------------------------
+
+
+A Quick Example
+---------------
+
+
+
+
+
+
 
 Interface
 ---------
