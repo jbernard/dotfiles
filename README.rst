@@ -24,7 +24,6 @@ ignore rules.  If you want to be less selective, you can specify a
 directory that contains several files, and ``dotfiles`` will grab all of
 them in whatever hierarchy they exist.
 
-
 Upgrading From An Old Version
 -----------------------------
 
@@ -34,14 +33,43 @@ empty repository.  This can be done with the following command:
 
   $ dotfiles --unsync
 
-
 Installation
 ------------
 
+There are a few ways to install this thing.  The easiest way is using
+whatever package manager is available on your OS if there is an official
+package available.
+
+If not, you can install globally with pip:
+
+  $ pip install dotfiles
+
+If you don't want to or don't have permission to install it globally,
+you can install it just for your user:
+
+  $ pip install --user dotfiles
+
+If you just want to run it directly from the source tree, you can do
+that too:
+
+  $ git clone https://github.com/jbernard/dotfiles
+  $ cd dotfiles
+  $ git submodule update --init
+  $ ./bin/dotfiles --help
+
+Note: the source tree example above will run whatever code has been
+committed to your current checkout, whereas pip will fetch the latest
+official version from pypi.  This might be what you want, but you should
+be aware.
 
 Getting Help And Discovering Commands
 -------------------------------------
 
+``dotfiles`` uses click for its CLI interface, so every subcommand
+accepts the ``--help`` flag to offer additional information on what is
+available.  The aim is for this information to be sufficient for use.
+At some point I'll write a manpage, but do file a bug if any of the
+usage information is inaccurate or misleading.
 
 A Quick Example
 ---------------
