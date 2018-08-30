@@ -9,9 +9,10 @@ setup(
     author_email='jbernard@jbernard.io',
     description='Easily manage your dotfiles',
     url='https://github.com/jbernard/dotfiles',
-    long_description=(open('README.rst').read() + '\n\n' +
-                      open('LICENSE.rst').read() + '\n\n' +
-                      open('HISTORY.rst').read()),
+    long_description_content_type='text/markdown',
+    long_description=(open('README.md').read() + '\n\n' +
+                      open('LICENSE.md').read() + '\n\n' +
+                      open('HISTORY.md').read()),
     license='ISC',
     packages=['dotfiles'],
     setup_requires=[

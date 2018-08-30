@@ -1,40 +1,36 @@
-Dotfile Management Made Easy
-============================
+# Dotfile Management Made Easy
 
-``dotfiles`` is a tool to make managing your dotfile symlinks in
-``$HOME`` easy, allowing you to keep all your dotfiles in a single
-directory.
+`dotfiles` is a tool to make managing your dotfile symlinks in `$HOME`
+easy, allowing you to keep all your dotfiles in a single directory.
 
 Hosting is up to you. You can use a VCS like git, Dropbox, or even rsync
 to distribute your dotfiles repository across multiple hosts.
 
 One or more repositories can be specified at runtime or with an
 environment variable, so you can manage multiple repositories without
-hassle.  See the Configuration_ section below for further details.
+hassle.
 
 You can choose to have your dotfiles linked with symbolic links or
-copied into place, either way ``dotfiles`` will keep track of what's
+copied into place, either way `dotfiles` will keep track of what's
 missing and what's different.
 
-``dotfiles`` is unique in the way it manages links and copies.  The
-entire directory structure leading to a file is preserved and only the
-file itself is considered managed.  This allows managed and unmanaged
-files to live next to each other without needing to specify complicated
-ignore rules.  If you want to be less selective, you can specify a
-directory that contains several files, and ``dotfiles`` will grab all of
-them in whatever hierarchy they exist.
+`dotfiles` is unique in the way it manages links and copies.  The entire
+directory structure leading to a file is preserved and only the file
+itself is considered managed.  This allows managed and unmanaged files
+to live next to each other without needing to specify complicated ignore
+rules.  If you want to be less selective, you can specify a directory
+that contains several files, and `dotfiles` will grab all of them in
+whatever hierarchy they exist.
 
-Upgrading From An Old Version
------------------------------
+## Upgrading From An Old Version
 
 Much has changed in the most recent version.  If you're considering
 upgrading it's probably best to unlink everything and start with an
 empty repository.  This can be done with the following command:
 
-  $ dotfiles --unsync
+    $ dotfiles --unsync
 
-Installation
-------------
+## Installation
 
 There are a few ways to install this thing.  The easiest way is using
 whatever package manager is available on your OS if there is an official
@@ -42,37 +38,35 @@ package available.
 
 If not, you can install globally with pip:
 
-  $ pip install dotfiles
+    $ pip install dotfiles
 
 If you don't want to or don't have permission to install it globally,
 you can install it just for your user:
 
-  $ pip install --user dotfiles
+    $ pip install --user dotfiles
 
 If you just want to run it directly from the source tree, you can do
 that too:
 
-  $ git clone https://github.com/jbernard/dotfiles
-  $ cd dotfiles
-  $ git submodule update --init
-  $ ./bin/dotfiles --help
+    $ git clone https://github.com/jbernard/dotfiles
+    $ cd dotfiles
+    $ git submodule update --init
+    $ ./bin/dotfiles --help
 
 Note: the source tree example above will run whatever code has been
 committed to your current checkout, whereas pip will fetch the latest
 official version from pypi.  This might be what you want, but you should
 be aware.
 
-Getting Help And Discovering Commands
--------------------------------------
+## Getting Help And Discovering Commands
 
-``dotfiles`` uses click for its CLI interface, so every subcommand
-accepts the ``--help`` flag to offer additional information on what is
-available.  The aim is for this information to be sufficient for use.
-At some point I'll write a manpage, but do file a bug if any of the
-usage information is inaccurate or misleading.
+`dotfiles` uses click for its CLI interface, so every subcommand accepts
+the `--help` flag to offer additional information on what is available.
+The aim is for this information to be sufficient for use.  At some point
+I'll write a manpage, but do file a bug if any of the usage information
+is inaccurate or misleading.
 
-A Quick Example
----------------
+## A Quick Example
 
 
 
@@ -247,4 +241,4 @@ make sure tests pass, and send a pull request. Go ahead and add yourself to
 AUTHORS_ or I'll do it when I merge your changes.
 
 .. _`the repository`: https://github.com/jbernard/dotfiles
-.. _AUTHORS: https://github.com/jbernard/dotfiles/blob/master/AUTHORS.rst
+.. _AUTHORS: https://github.com/jbernard/dotfiles/blob/master/AUTHORS.md
