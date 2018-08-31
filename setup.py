@@ -1,24 +1,32 @@
+import io
 from setuptools import setup
 from dotfiles import __version__
 
+
+with io.open('README.md', 'rt', encoding='utf8') as f:
+    readme = f.read()
 
 setup(
     name='dotfiles',
     version=__version__,
     author='Jon Bernard',
     author_email='jbernard@jbernard.io',
-    description='Easily manage your dotfiles',
     url='https://github.com/jbernard/dotfiles',
+    description='Easily manage your dotfiles',
     long_description_content_type='text/markdown',
-    long_description=(open('README.md').read() + '\n\n' +
-                      open('LICENSE.md').read() + '\n\n' +
-                      open('HISTORY.md').read()),
+    long_description=readme,
     license='ISC',
     packages=['dotfiles'],
-    setup_requires=[
-        'pytest-runner',
-        'flake8',
-    ],
+    extras_require={
+        'dev': [
+            'pytest',
+            'flake8',
+        ],
+    },
+    # setup_requires=[
+    #     'pytest-runner',
+    #     'flake8',
+    # ],
     install_requires=[
         'click',
         'py',
