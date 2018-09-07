@@ -1,6 +1,6 @@
-[submodule "vendor/click"]
-	path = vendor/click
+[submodule "click"]
+	path = .vendor/click
 	url = https://github.com/pallets/click
-[submodule "vendor/py"]
-	path = vendor/py
+[submodule "py"]
+	path = .vendor/py
 	url = https://github.com/pytest-dev/py
