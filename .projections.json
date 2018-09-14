@@ -7,10 +7,7 @@
       "alternate": "dotfiles/{}.py",
       "type": "test"
    },
-   "*.py": {
-      "dispatch": "flake8 {file}"
-   },
    "*": {
-      "make": "pytest -q"
+      "make": "python3 setup.py -q test"
    }
 }
