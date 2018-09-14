@@ -1,47 +1,58 @@
-import io
-from setuptools import setup
+from io import open
+from os import path
+from setuptools import setup, find_packages
 from dotfiles import __version__
 
+here = path.abspath(path.dirname(__file__))
 
-with io.open('README.md', 'rt', encoding='utf8') as f:
-    readme = f.read()
+with open(path.join(here, 'README.md'), encoding='utf8') as f:
+    long_description = f.read()
+
+requirements = [
+    'click',
+    'py',
+]
+
+test_requirements = [
+    'pytest',
+    'pytest-pep8',
+    'pytest-flakes',
+]
 
 setup(
     name='dotfiles',
     version=__version__,
+    description='Easily manage your dotfiles',
+    long_description=long_description,
+    long_description_content_type='text/markdown',
+    url='https://github.com/jbernard/dotfiles',
     author='Jon Bernard',
     author_email='jbernard@jbernard.io',
-    url='https://github.com/jbernard/dotfiles',
-    description='Easily manage your dotfiles',
-    long_description_content_type='text/markdown',
-    long_description=readme,
-    license='ISC',
-    packages=['dotfiles'],
+    classifiers=[
+        'Development Status :: 4 - Beta',
+        'License :: OSI Approved :: ISC License (ISCL)'
+        'Programming Language :: Python :: 2',
+        'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.6',
+    ],
+    packages=find_packages(),
+    install_requires=requirements,
     extras_require={
-        'dev': [
-            'pytest',
-            'flake8',
-        ],
+        'dev': ['check-manifest'],
+        'test': test_requirements,
     },
-    # setup_requires=[
-    #     'pytest-runner',
-    #     'flake8',
-    # ],
-    install_requires=[
-        'click',
-        'py',
-    ],
-    tests_require=[
-        'pytest'
-    ],
     entry_points={
         'console_scripts': [
             'dotfiles=dotfiles.cli:cli',
         ],
     },
-    classifiers=[
-        'Programming Language :: Python',
-        'Programming Language :: Python :: 3',
-        'License :: OSI Approved :: ISC License (ISCL)'
-    ],
+    project_urls={
+        'Bug Reports': 'https://github.com/jbernard/dotfiles/issues',
+        'Source': 'https://github.com/jbernard/dotfiles',
+    },
+
+    # temporary
+    setup_requires=['pytest-runner'],
+    tests_require=test_requirements,
 )
