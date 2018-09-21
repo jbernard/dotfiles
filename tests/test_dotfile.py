@@ -24,31 +24,27 @@ def test_short_name(repo, name):
     assert dotfile.short_name(repo.homedir) == name
 
 
-def test_state_error(repo):
-    dotfile = _dotfile(repo, '.vimrc')
+def test_state(repo):
+    dotfile = _dotfile(repo, '.vimrc', 'vimrc')
     assert dotfile.state == 'error'
 
-
-def test_state_missing(repo):
-    dotfile = _dotfile(repo, '.vimrc')
-    dotfile.target.ensure()
-    assert dotfile.state == 'missing'
-
-
-def test_state_conflict(repo):
-    dotfile = _dotfile(repo, '.vimrc')
-    dotfile.target.ensure()
-    dotfile.name.ensure()
-    assert dotfile.state == 'conflict'
-
-
-def test_state_ok(repo):
-    dotfile = _dotfile(repo, '.vimrc', 'vimrc')
     dotfile.target.ensure()
     dotfile.name.mksymlinkto(dotfile.target)
     assert dotfile.state == 'ok'
+
     dotfile.name.remove()
     assert dotfile.state == 'missing'
+
+    dotfile.name.ensure()
+    assert dotfile.state == 'ok'
+
+    with open(dotfile.name, 'w') as f:
+        f.write('test content')
+    assert dotfile.state == 'conflict'
+
+    with open(dotfile.target, 'w') as f:
+        f.write('test content')
+    assert dotfile.state == 'ok'
 
 
 @pytest.mark.parametrize('path', ['.foo', '.foo/bar/baz'])
