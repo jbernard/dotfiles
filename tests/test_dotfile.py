@@ -38,12 +38,10 @@ def test_state(repo):
     dotfile.name.ensure()
     assert dotfile.state == 'ok'
 
-    with open(dotfile.name, 'w') as f:
-        f.write('test content')
+    dotfile.name.write('test content')
     assert dotfile.state == 'conflict'
 
-    with open(dotfile.target, 'w') as f:
-        f.write('test content')
+    dotfile.target.write('test content')
     assert dotfile.state == 'ok'
 
 
