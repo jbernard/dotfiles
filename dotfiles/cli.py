@@ -113,7 +113,18 @@ def status(repos, all, color):
 
     Legend:
 
-      ?: missing  !: conflict  E: error"""
+      ?: missing  !: conflict  E: error
+
+    Meaning:
+
+      * Missing: A dotfile in the repository is not present in your home
+      directory.
+
+      * Conflict: A dotfile in the repository is different from the file
+      in your home directory.
+
+      * Error: A dotfile expected in the repository is not present.  You
+      should never see this."""
 
     state_info = {
         'error':    {'char': 'E', 'color': None},
