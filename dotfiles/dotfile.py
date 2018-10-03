@@ -1,5 +1,5 @@
-import py.path
 from click import echo
+from pathlib import Path
 
 from .exceptions import \
     IsSymlink, NotASymlink, TargetExists, TargetMissing, Exists
@@ -59,7 +59,8 @@ class Dotfile(object):
 
     def short_name(self, homedir):
         """A shorter, more readable name given a home directory."""
-        return homedir.bestrelpath(self.name)
+        return self.name.relative_to(homedir)
+        # return homedir.bestrelpath(self.name)
 
     def is_present(self):
         """Is this dotfile present in the repository?"""

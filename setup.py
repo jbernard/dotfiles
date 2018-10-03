@@ -8,11 +8,6 @@ here = path.abspath(path.dirname(__file__))
 with open(path.join(here, 'README.md'), encoding='utf8') as f:
     long_description = f.read()
 
-requirements = [
-    'click',
-    'py',
-]
-
 test_requirements = [
     'pytest',
     'pytest-pep8',
@@ -37,11 +32,9 @@ setup(
         'Programming Language :: Python :: 3.6',
     ],
     packages=find_packages(),
-    install_requires=requirements,
-    extras_require={
-        'dev': ['check-manifest'],
-        'test': test_requirements,
-    },
+    install_requires=['click'],
+    setup_requires=['pytest-runner'],
+    tests_require=test_requirements,
     entry_points={
         'console_scripts': [
             'dotfiles=dotfiles.cli:cli',
@@ -51,8 +44,4 @@ setup(
         'Bug Reports': 'https://github.com/jbernard/dotfiles/issues',
         'Source': 'https://github.com/jbernard/dotfiles',
     },
-
-    # temporary
-    setup_requires=['pytest-runner'],
-    tests_require=test_requirements,
 )

@@ -1,15 +1,15 @@
-import click
-import py.path
+from click import echo
+from pathlib import Path
 from operator import attrgetter
 
 from .dotfile import Dotfile
 from .exceptions import DotfileException, TargetIgnored
 from .exceptions import NotRootedInHome, InRepository, IsDirectory
 
-DEFAULT_PATH = '~/Dotfiles'
-DEFAULT_REMOVE_LEADING_DOT = True
-DEFAULT_IGNORE_PATTERNS = ['.git', '.gitignore', 'README*', '*~']
-DEFAULT_HOMEDIR = py.path.local('~/', expanduser=True)
+PATH = '~/Dotfiles'
+HOMEDIR = Path.home()
+REMOVE_LEADING_DOT = True
+IGNORE_PATTERNS = ['.git', '.gitignore', 'README*', '*~']
 
 
 class Repositories(object):
@@ -17,13 +17,13 @@ class Repositories(object):
 
     def __init__(self, paths, dot):
         if not paths:
-            paths = [DEFAULT_PATH]
+            paths = [PATH]
         if dot is None:
-            dot = DEFAULT_REMOVE_LEADING_DOT
+            dot = REMOVE_LEADING_DOT
 
         self.repos = []
         for path in paths:
-            path = py.path.local(path, expanduser=True)
+            path = Path(path).expanduser()
             self.repos.append(Repository(path, dot))
 
     def __len__(self):
@@ -37,53 +37,55 @@ class Repository(object):
     """A repository is a directory that contains dotfiles.
 
     :param path: the location of the repository directory
+    :param homedir: the location of the home directory
     :param remove_leading_dot: whether to remove the target's leading dot
     :param ignore_patterns: a list of glob patterns to ignore
-    :param homedir: the location of the home directory
     """
 
     def __init__(self, path,
-                 remove_leading_dot=DEFAULT_REMOVE_LEADING_DOT,
-                 ignore_patterns=DEFAULT_IGNORE_PATTERNS,
-                 homedir=DEFAULT_HOMEDIR):
-
-        # create repository directory if not found
-        self.path = py.path.local(path).ensure_dir()
+                 homedir=HOMEDIR,
+                 remove_leading_dot=REMOVE_LEADING_DOT,
+                 ignore_patterns=IGNORE_PATTERNS):
+        self.path = Path(path)
+        self.homedir = Path(homedir)
         self.remove_leading_dot = remove_leading_dot
         self.ignore_patterns = ignore_patterns
-        self.homedir = homedir
+
+        # create repository directory if missing
+        self.path.mkdir(parents=True, exist_ok=True)
 
     def __str__(self):
         """Return human-readable repository contents."""
-
-        return ''.join('%s\n' % item for item in self.contents()).rstrip()
+        return ''.join('%s\n' % x for x in self.contents()).rstrip()
 
     def __repr__(self):
-        return '<Repository %r>' % self.path
+        return '<Repository %r>' % str(self.path)
 
     def _ignore(self, path):
+        if not path.is_file():
+            return True
         for pattern in self.ignore_patterns:
-            if path.fnmatch(pattern):
+            if path.match(pattern):
                 return True
         return False
 
     def _dotfile_path(self, target):
         """Return the expected symlink for the given repository target."""
 
-        relpath = self.path.bestrelpath(target)
+        relpath = target.relative_to(self.path)
         if self.remove_leading_dot:
-            return self.homedir.join('.%s' % relpath)
+            return self.homedir / ('.%s' % relpath)
         else:
-            return self.homedir.join(relpath)
+            return self.homedir / relpath
 
     def _dotfile_target(self, path):
         """Return the expected repository target for the given symlink."""
 
-        relpath = self.homedir.bestrelpath(path)
+        relpath = str(path.relative_to(self.homedir))
         if self.remove_leading_dot:
-            return self.path.join(relpath[1:])
+            return self.path / relpath[1:]
         else:
-            return self.path.join(relpath)
+            return self.path / relpath
 
     def _dotfile(self, path):
         """Return a valid dotfile for the given path."""
@@ -103,11 +105,7 @@ class Repository(object):
 
     def _contents(self, dir):
         """Return all unignored files contained below a directory."""
-
-        def filter(node):
-            return node.check(dir=0) and not self._ignore(node)
-
-        return dir.visit(filter, lambda x: not self._ignore(x))
+        return [x for x in dir.rglob('*') if not self._ignore(x)]
 
     def contents(self):
         """Return a list of dotfiles for each file in the repository."""
@@ -128,7 +126,7 @@ class Repository(object):
         caller.
         """
 
-        paths = list(set(map(py.path.local, paths)))
+        paths = list(set(map(Path, paths)))
 
         for path in paths:
             if path.check(dir=1):
@@ -139,7 +137,7 @@ class Repository(object):
             try:
                 return self._dotfile(path)
             except DotfileException as err:
-                click.echo(err)
+                echo(err)
                 return None
 
         return [d for d in map(construct, paths) if d is not None]
