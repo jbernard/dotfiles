@@ -1,6 +1,7 @@
 import pytest
 
 from pathlib import Path
+from dotfiles.exceptions import NotRootedInHome
 from dotfiles.repository import Repository, \
     REMOVE_LEADING_DOT, IGNORE_PATTERNS
 
@@ -86,17 +87,15 @@ def test_dotfile_target(repo, path):
             repo.path / path[1:])
 
 
-# from dotfiles.exceptions import NotRootedInHome, InRepository, TargetIgnored,
-#     IsDirectory
+def test_dotfile(repo):
+    with pytest.raises(NotRootedInHome):
+        repo._dotfile(Path('/tmp/foo'))
+    # with pytest.raises(TargetIgnored):
+    #     repo.ignore_patterns = ['.foo']
+    #     repo.remove_leading_dot = False
+    #     repo._dotfile(py.path.local(repo.homedir.join('.foo')))
+    #     repo._dotfile(repo.homedir / '.foo')
 
-
-# def test_dotfile(repo):
-#     with pytest.raises(NotRootedInHome):
-#         repo._dotfile(py.path.local('/tmp/foo'))
-#     with pytest.raises(TargetIgnored):
-#         repo.ignore_patterns = ['.foo']
-#         repo.remove_leading_dot = False
-#         repo._dotfile(py.path.local(repo.homedir.join('.foo')))
 #     with pytest.raises(TargetIgnored):
 #         repo.ignore_patterns = ['foo']
 #         repo._dotfile(repo.homedir.join('.bar/foo'))

@@ -81,7 +81,11 @@ class Repository(object):
     def _dotfile_target(self, path):
         """Return the expected repository target for the given symlink."""
 
-        relpath = str(path.relative_to(self.homedir))
+        try:
+            relpath = str(path.relative_to(self.homedir))
+        except ValueError:
+            raise NotRootedInHome(path)
+
         if self.remove_leading_dot:
             return self.path / relpath[1:]
         else:
