@@ -1,5 +1,8 @@
+import os
+
 from click import echo
 from pathlib import Path
+from fnmatch import fnmatch
 from operator import attrgetter
 
 from .dotfile import Dotfile
@@ -62,10 +65,8 @@ class Repository(object):
         return '<Repository %r>' % str(self.path)
 
     def _ignore(self, path):
-        if not path.is_file():
-            return True
         for pattern in self.ignore_patterns:
-            if path.match(pattern):
+            if fnmatch(path, '*/%s' % pattern):
                 return True
         return False
 
@@ -96,20 +97,24 @@ class Repository(object):
 
         target = self._dotfile_target(path)
 
-        if not path.fnmatch('%s/*' % self.homedir):
+        if not fnmatch(path, '%s/*' % self.homedir):
             raise NotRootedInHome(path)
-        if path.fnmatch('%s/*' % self.path):
+        if fnmatch(path, '%s/*' % self.path):
             raise InRepository(path)
         if self._ignore(target):
             raise TargetIgnored(path)
-        if path.check(dir=1):
+        if path.is_dir():
             raise IsDirectory(path)
 
         return Dotfile(path, target)
 
     def _contents(self, dir):
         """Return all unignored files contained below a directory."""
-        return [x for x in dir.rglob('*') if not self._ignore(x)]
+
+        def skip(path):
+            return path.is_dir() or self._ignore(path)
+
+        return [x for x in dir.rglob('*') if not skip(x)]
 
     def contents(self):
         """Return a list of dotfiles for each file in the repository."""
@@ -133,7 +138,7 @@ class Repository(object):
         paths = list(set(map(Path, paths)))
 
         for path in paths:
-            if path.check(dir=1):
+            if path.is_dir():
                 paths.extend(self._contents(path))
                 paths.remove(path)
 
@@ -146,7 +151,7 @@ class Repository(object):
 
         return [d for d in map(construct, paths) if d is not None]
 
-    def prune(self):
+    def prune(self, debug=False):
         """Remove any empty directories in the repository.
 
         After a remove operation, there may be empty directories remaining.
@@ -154,9 +159,14 @@ class Repository(object):
         so pruning must take place explicitly after such operations occur.
         """
 
-        def filter(node):
-            return node.check(dir=1) and not self._ignore(node)
+        def skip(path):
+            return self._ignore(path) or path == str(self.path)
 
-        for dir in self.path.visit(filter, lambda x: not self._ignore(x)):
-            if not len(dir.listdir()):
-                dir.remove()
+        dirs = reversed([dir for dir, subdirs, files in
+                         os.walk(self.path) if not skip(dir)])
+
+        for dir in dirs:
+            if not len(os.listdir(dir)):
+                if debug:
+                    echo('PRUNE  %s' % (dir))
+                os.rmdir(dir)

@@ -1,7 +1,8 @@
 import pytest
 
 from pathlib import Path
-from dotfiles.exceptions import NotRootedInHome
+from dotfiles.exceptions import NotRootedInHome, TargetIgnored, \
+    IsDirectory, InRepository
 from dotfiles.repository import Repository, \
     REMOVE_LEADING_DOT, IGNORE_PATTERNS
 
@@ -88,45 +89,73 @@ def test_dotfile_target(repo, path):
 
 
 def test_dotfile(repo):
+
     with pytest.raises(NotRootedInHome):
         repo._dotfile(Path('/tmp/foo'))
-    # with pytest.raises(TargetIgnored):
-    #     repo.ignore_patterns = ['.foo']
-    #     repo.remove_leading_dot = False
-    #     repo._dotfile(py.path.local(repo.homedir.join('.foo')))
-    #     repo._dotfile(repo.homedir / '.foo')
 
-#     with pytest.raises(TargetIgnored):
-#         repo.ignore_patterns = ['foo']
-#         repo._dotfile(repo.homedir.join('.bar/foo'))
-#     with pytest.raises(IsDirectory):
-#         repo._dotfile(repo.homedir.ensure_dir('.config'))
+    with pytest.raises(TargetIgnored):
+        repo.ignore_patterns = ['.foo']
+        repo.remove_leading_dot = False
+        repo._dotfile(repo.homedir / '.foo')
 
-#     # The repo fixture is parametrized, we can only expect InRepository
-#     # exception when the repository is contained in the home directory.
-#     if repo.path.dirname == repo.homedir.basename:
-#         with pytest.raises(InRepository):
-#             repo._dotfile(repo.path.join('.foo/bar'))
+    with pytest.raises(TargetIgnored):
+        repo.ignore_patterns = ['foo']
+        repo._dotfile(repo.homedir / '.bar/foo')
 
-#     repo._dotfile(repo.homedir.join('.foo'))
+    with pytest.raises(IsDirectory):
+        dir = repo.homedir / '.config'
+        dir.mkdir()
+        repo._dotfile(dir)
 
-
-# def test_dotfiles(repo):
-#     file = repo.homedir.join('.baz')
-#     dir = repo.homedir.ensure_dir('.dir')
-#     dir.ensure('foo/bat')
-#     dir.ensure('foo/buz')
-#     dir.ensure('bar')
-#     dir.ensure('boo')
-
-#     dotfiles = repo.dotfiles([str(file), str(dir)])
-#     assert len(dotfiles) == 5
+    # The repo fixture is parametrized, we can only expect InRepository
+    # exception when the repository is contained in the home directory.
+    if repo.path.parent == repo.homedir.name:
+        with pytest.raises(InRepository):
+            repo._dotfile(repo.path / '.foo/bar')
 
 
-# def test_prune(repo):
-#     repo.path.ensure_dir('.a/a')
-#     repo.path.ensure_dir('.b/b/b/b')
-#     repo.path.ensure_dir('.c/c/c/c/c/c/c/c')
+def test_dotfiles(repo):
 
-#     repo.prune()
-#     assert len(repo.path.listdir()) == 0
+    subdir_a = repo.homedir / '.dir'
+    subdir_b = repo.homedir / '.dir/foo'
+
+    for subdir in [subdir_a, subdir_b]:
+        subdir.mkdir()
+
+    file_a = repo.homedir / '.baz'
+    file_b = subdir_a / 'bar'
+    file_c = subdir_a / 'boo'
+    file_d = subdir_b / 'bat'
+    file_e = subdir_b / 'buz'
+
+    for file in [file_a, file_b, file_c, file_d, file_e]:
+        file.touch()
+
+    dotfiles = repo.dotfiles([str(file_a), str(subdir_a)])
+
+    assert len(dotfiles) == 5
+
+    for file in [file_a, file_b, file_c, file_d, file_e]:
+        assert str(file) in map(str, dotfiles)
+
+
+def test_prune(repo):
+    dir_a = repo.path / '.a/a'
+    dir_b = repo.path / '.b/b/b/b'
+    dir_c = repo.path / '.c/c/c/c/c/c/c/c'
+
+    for dir in [dir_a, dir_b, dir_c]:
+        dir.mkdir(parents=True)
+
+    repo.prune()
+    contents = [x for x in repo.path.rglob('*')]
+    assert len(contents) == 0
+
+    # verify ignored directories are excluded from pruning
+    dir_d = repo.path / '.git'
+    dir_d.mkdir()
+
+    repo.prune()
+    contents = [x for x in repo.path.rglob('*')]
+    assert str(dir_d) in map(str, contents)
+    assert len(contents) == 1
