@@ -13,8 +13,8 @@ class Dotfile(object):
     """
 
     def __init__(self, name, target):
-        self.name = name
-        self.target = target
+        self.name = Path(name)
+        self.target = Path(target)
 
     def __str__(self):
         return str(self.name)
@@ -29,14 +29,14 @@ class Dotfile(object):
         directory structure is expected to exist.
         """
         def ensure(dir, debug):
-            if not dir.check():
+            if not dir.is_dir():
                 if debug:
                     echo('MKDIR  %s' % dir)
                 else:
-                    dir.ensure_dir()
+                    dir.mkdir()
 
-        ensure(py.path.local(self.name.dirname), debug)
-        ensure(py.path.local(self.target.dirname), debug)
+        ensure(self.name.parent, debug)
+        ensure(self.target.parent, debug)
 
     def _link(self, debug):
         """Create a symlink from name to target, no error checking."""

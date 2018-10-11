@@ -1,7 +1,9 @@
 import click
 
 from .exceptions import DotfileException
-from .repository import Repositories, DEFAULT_PATH, DEFAULT_REMOVE_LEADING_DOT
+from .repository import Repositories
+from .repository import PATH as DEFAULT_PATH
+from .repository import REMOVE_LEADING_DOT as DEFAULT_REMOVE_LEADING_DOT
 
 
 def get_single_repo(repos):

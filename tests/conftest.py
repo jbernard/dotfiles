@@ -8,7 +8,7 @@ from dotfiles.repository import Repository
 def repo(request, tmpdir):
     path = tmpdir.ensure_dir('repo')
     home = tmpdir.ensure_dir(request.param)
-    return Repository(path, homedir=home)
+    return Repository(path, home)
 
 
 @pytest.fixture(scope='function')

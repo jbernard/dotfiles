@@ -26,8 +26,7 @@ class Repositories(object):
 
         self.repos = []
         for path in paths:
-            path = Path(path).expanduser()
-            self.repos.append(Repository(path, dot))
+            self.repos.append(Repository(path, remove_leading_dot=dot))
 
     def __len__(self):
         return len(self.repos)
@@ -49,7 +48,7 @@ class Repository(object):
                  homedir=HOMEDIR,
                  remove_leading_dot=REMOVE_LEADING_DOT,
                  ignore_patterns=IGNORE_PATTERNS):
-        self.path = Path(path)
+        self.path = Path(path).expanduser()
         self.homedir = Path(homedir)
         self.remove_leading_dot = remove_leading_dot
         self.ignore_patterns = ignore_patterns
