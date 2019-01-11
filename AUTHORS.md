@@ -14,3 +14,4 @@ Dotfiles is developed and maintained by the following folks:
 - Alexandre Viau
 - Michael Barrett
 - Ivan Malison
+- David Beitey
