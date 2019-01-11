@@ -1,7 +1,7 @@
 License
 -------
 
-ISC License. ::
+ISC License.
 
     Copyright (c) 2011-2018, Jon Bernard <jbernard@jbernard.io>
 
