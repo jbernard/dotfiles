@@ -3,7 +3,7 @@ License
 
 ISC License.
 
-    Copyright (c) 2011-2018, Jon Bernard <jbernard@jbernard.io>
+    Copyright (c) 2011-2019, Jon Bernard <jbernard@jbernard.io>
 
     Permission to use, copy, modify, and/or distribute this software for any
     purpose with or without fee is hereby granted, provided that the above
