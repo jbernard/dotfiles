@@ -142,6 +142,8 @@ def status(repos, all, color):
         state_info['missing']['color'] = 'yellow'
         state_info['conflict']['color'] = 'magenta'
 
+    # XXX: could display tree [https://realpython.com/python-pathlib/]
+
     for repo in repos:
         if len(repos) > 1:
             click.secho('%s:' % repo.path)

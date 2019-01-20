@@ -1,5 +1,12 @@
 import os
 
+# import sys
+# if sys.version_info < (3, 4):
+#     from pathlib2 import Path
+#     #import pathlib2 as pathlib
+# else:
+#     from pathlib import Path
+
 from click import echo
 from pathlib import Path
 from fnmatch import fnmatch
@@ -65,7 +72,7 @@ class Repository(object):
 
     def _ignore(self, path):
         for pattern in self.ignore_patterns:
-            if fnmatch(path, '*/%s' % pattern):
+            if fnmatch(str(path), '*/%s' % pattern):
                 return True
         return False
 
@@ -96,9 +103,9 @@ class Repository(object):
 
         target = self._dotfile_target(path)
 
-        if not fnmatch(path, '%s/*' % self.homedir):
+        if not fnmatch(str(path), '%s/*' % self.homedir):
             raise NotRootedInHome(path)
-        if fnmatch(path, '%s/*' % self.path):
+        if fnmatch(str(path), '%s/*' % self.path):
             raise InRepository(path)
         if self._ignore(target):
             raise TargetIgnored(path)
@@ -162,7 +169,7 @@ class Repository(object):
             return self._ignore(path) or path == str(self.path)
 
         dirs = reversed([dir for dir, subdirs, files in
-                         os.walk(self.path) if not skip(dir)])
+                         os.walk(str(self.path)) if not skip(dir)])
 
         for dir in dirs:
             if not len(os.listdir(dir)):
