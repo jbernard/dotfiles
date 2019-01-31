@@ -2,11 +2,15 @@ import click
 
 from .exceptions import DotfileException
 from .repository import Repositories
-from .repository import PATH as DEFAULT_PATH
-from .repository import REMOVE_LEADING_DOT as DEFAULT_REMOVE_LEADING_DOT
 
 
-def get_single_repo(repos):
+def single(repos):
+    """Raise an exception if multiple repositories are provided.
+
+    Certain operations (add, remove, etc...) can only be applied to a
+    single repository while other operations (list) can be applied
+    across multiple repositories.
+    """
     if len(repos) > 1:
         raise click.BadParameter('Must specify exactly one repository.',
                                  param_hint=['-r', '--repo'])
@@ -14,7 +18,11 @@ def get_single_repo(repos):
 
 
 def confirm(method, files, repo):
-    """Return a list of files, or all files if none were specified."""
+    """Return a list of files, or all files if none were specified.
+
+    When no files are specified, all files are assumed.  But before we
+    go ahead, confirm to make sure this is the intended operation.
+    """
     if files:
         # user has specified specific files, so we are not assuming all
         return files
@@ -24,14 +32,28 @@ def confirm(method, files, repo):
     return str(repo).split()
 
 
-def perform(method, files, repo, debug):
-    """Perform an operation on a set of dotfiles."""
+def show(repo, state):
+    """TODO"""
+    for dotfile in repo.contents():
+        try:
+            display = state[dotfile.state]
+        except KeyError:
+            continue
+        char  = display['char']
+        name = dotfile.short_name(repo.home)
+        fg = display.get('color', None)
+        bold = display.get('bold', False)
+        click.secho('%c %s' % (char, name), fg=fg, bold=bold)
+
+
+def perform(method, files, repo, copy, debug):
+    """Perform an operation on one or more dotfiles."""
     for dotfile in repo.dotfiles(files):
         try:
-            getattr(dotfile, method)(debug)
+            getattr(dotfile, method)(copy, debug)
             if not debug:
                 msg = '%s%s' % (method, 'd' if method[-1] == 'e' else 'ed')
-                click.echo('%s %s' % (msg, dotfile.short_name(repo.homedir)))
+                click.echo('%s %s' % (msg, dotfile.short_name(repo.home)))
         except DotfileException as err:
             click.echo(err)
 
@@ -43,28 +65,31 @@ CONTEXT_SETTINGS = dict(auto_envvar_prefix='DOTFILES',
 
 @click.group(context_settings=CONTEXT_SETTINGS)
 @click.option('--repo', '-r', type=click.Path(), multiple=True,
-              help='A repository path. Default: %s' % (DEFAULT_PATH))
-@click.option('--dot/--no-dot', '-d/-D', default=None,
-              help='Whether to remove the leading dot. Default: %s' % (
-                  DEFAULT_REMOVE_LEADING_DOT))
+              help='A repository path.', default=['~/Dotfiles'],
+              show_default=True)
 @click.version_option(None, '-v', '--version')
 @click.pass_context
-def cli(ctx, repo, dot):
+def cli(ctx, repo):
     """Dotfiles is a tool to make managing your dotfile symlinks in $HOME easy,
     allowing you to keep all your dotfiles in a single directory.
     """
-    ctx.obj = Repositories(repo, dot)
+    try:
+        ctx.obj = Repositories(repo)
+    except FileNotFoundError as e:
+        raise click.ClickException('Directory not found: %s' % e)
 
 
 @cli.command()
+@click.option('-c', '--copy',  is_flag=True,
+              help='Copy files instead of creating symlinks.')
 @click.option('-d', '--debug', is_flag=True,
               help='Show what would be executed.')
-@click.argument('files', nargs=-1, type=click.Path(exists=True))
+@click.argument('files', nargs=-1, type=click.Path())
 @pass_repos
-def add(repos, debug, files):
+def add(repos, copy, debug, files):
     """Add dotfiles to a repository."""
-    repo = get_single_repo(repos)
-    perform('add', files, repo, debug)
+    repo = single(repos)
+    perform('add', files, repo, copy, debug)
 
 
 @cli.command()
@@ -74,36 +99,12 @@ def add(repos, debug, files):
 @pass_repos
 def remove(repos, debug, files):
     """Remove dotfiles from a repository."""
-    repo = get_single_repo(repos)
+    repo = single(repos)
     files = confirm('remove', files, repo)
-    perform('remove', files, repo, debug)
+    perform('remove', files, repo, False, debug)
     if not debug:
+        # pruning will remove any remaining empty directories
         repo.prune()
-
-
-@cli.command()
-@click.option('-d', '--debug', is_flag=True,
-              help='Show what would be executed.')
-@click.argument('files', nargs=-1, type=click.Path())
-@pass_repos
-def link(repos, debug, files):
-    """Create missing symlinks."""
-    # TODO: allow all repos?  It *could* be fine...
-    repo = get_single_repo(repos)
-    files = confirm('link', files, repo)
-    perform('link', files, repo, debug)
-
-
-@cli.command()
-@click.option('-d', '--debug', is_flag=True,
-              help='Show what would be executed.')
-@click.argument('files', nargs=-1, type=click.Path(exists=True))
-@pass_repos
-def unlink(repos, debug, files):
-    """Remove existing symlinks."""
-    repo = get_single_repo(repos)
-    files = confirm('unlink', files, repo)
-    perform('unlink', files, repo, debug)
 
 
 @cli.command()
@@ -111,47 +112,63 @@ def unlink(repos, debug, files):
 @click.option('-c', '--color', is_flag=True, help='Enable color output.')
 @pass_repos
 def status(repos, all, color):
-    """Show all dotfiles in a non-OK state.
+    """Show current status of dotfiles.
+
+    By default only non-OK dotfiles are shown.  This can be overridden
+    with the '-a, --all' flag.
 
     Legend:
 
-      ?: missing  !: conflict  E: error
+      l: symlink  c: copy  e: external symlink
+
+      ?: missing  !: conflict
 
     Meaning:
 
-      * Missing: A dotfile in the repository is not present in your home
-      directory.
+      * Missing: Not found in your home directory.
 
-      * Conflict: A dotfile in the repository is different from the file
-      in your home directory.
-
-      * Error: A dotfile expected in the repository is not present.  You
-      should never see this."""
-
-    state_info = {
-        'error':    {'char': 'E', 'color': None},
-        'missing':  {'char': '?', 'color': None},
-        'conflict': {'char': '!', 'color': None},
+      * Conflict: Different from the file in your home directory.
+    """
+    bold = True if all and not color else False
+    state = {
+        'missing':  {'char': '?', 'bold': bold},
+        'conflict': {'char': '!', 'bold': bold},
     }
 
     if all:
-        state_info['ok'] = {'char': ' ', 'color': None}
+        state['link'] = {'char': 'l'}
+        state['copy'] = {'char': 'c'}
+        state['external'] = {'char': 'e'}
 
     if color:
-        state_info['error']['color'] = 'red'
-        state_info['missing']['color'] = 'yellow'
-        state_info['conflict']['color'] = 'magenta'
-
-    # XXX: could display tree [https://realpython.com/python-pathlib/]
+        state['missing'].update( {'color': 'yellow'})
+        state['conflict'].update({'color': 'magenta'})
 
     for repo in repos:
-        if len(repos) > 1:
-            click.secho('%s:' % repo.path)
-        for dotfile in repo.contents():
-            try:
-                name = dotfile.short_name(repo.homedir)
-                char = state_info[dotfile.state]['char']
-                color = state_info[dotfile.state]['color']
-                click.secho('%c %s' % (char, name), fg=color)
-            except KeyError:
-                continue
+        show(repo, state)
+
+
+@cli.command()
+@click.option('-c', '--copy',  is_flag=True,
+              help='Copy files instead of creating symlinks.')
+@click.option('-d', '--debug', is_flag=True,
+              help='Show what would be executed.')
+@click.argument('files', nargs=-1, type=click.Path())
+@pass_repos
+def enable(repos, copy, debug, files):
+    """Link dotfiles into your home directory."""
+    repo = single(repos)
+    files = confirm('enable', files, repo)
+    perform('enable', files, repo, copy, debug)
+
+
+@cli.command()
+@click.option('-d', '--debug', is_flag=True,
+              help='Show what would be executed.')
+@click.argument('files', nargs=-1, type=click.Path())
+@pass_repos
+def disable(repos, debug, files):
+    """Unlink dotfiles from your home directory."""
+    repo = single(repos)
+    files = confirm('disable', files, repo)
+    perform('disable', files, repo, False, debug)

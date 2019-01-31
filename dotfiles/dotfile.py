@@ -1,9 +1,14 @@
+import os
+
 from click import echo
 from hashlib import md5
 from pathlib import Path
 
 from .exceptions import \
-    IsSymlink, NotASymlink, TargetExists, TargetMissing, Exists
+    IsSymlink, NotASymlink, Exists, NotFound, Dangling, \
+    TargetExists, TargetMissing
+
+UNUSED = False
 
 
 class Dotfile(object):
@@ -12,8 +17,11 @@ class Dotfile(object):
     :param name:   name of the symlink in the home directory (~/.vimrc)
     :param target: where the symlink should point to (~/Dotfiles/vimrc)
     """
+    RELATIVE_SYMLINKS = True
 
     def __init__(self, name, target):
+        # if not name.is_file() and not name.is_symlink():
+        #     raise NotFound(name)
         self.name = Path(name)
         self.target = Path(target)
 
@@ -39,13 +47,22 @@ class Dotfile(object):
         ensure(self.name.parent, debug)
         ensure(self.target.parent, debug)
 
-    def _link(self, debug):
+    def _prune_dirs(self, debug):
+        # TODO
+        if debug:
+            echo('PRUNE  <TODO>')
+
+    def _link(self, debug, home):
         """Create a symlink from name to target, no error checking."""
         source = self.name
         target = self.target
+
         if self.name.is_symlink():
             source = self.target
-            target = self.name.realpath()
+            target = self.name.resolve()
+        elif self.RELATIVE_SYMLINKS:
+            target = os.path.relpath(target, source.parent)
+
         if debug:
             echo('LINK   %s -> %s' % (source, target))
         else:
@@ -58,44 +75,49 @@ class Dotfile(object):
         else:
             self.name.unlink()
 
-    def short_name(self, homedir):
+    def short_name(self, home):
         """A shorter, more readable name given a home directory."""
-        return self.name.relative_to(homedir)
-        # return homedir.bestrelpath(self.name)
+        return self.name.relative_to(home)
 
-    def is_present(self):
+    def _is_present(self):
         """Is this dotfile present in the repository?"""
-        # return self.name.islink() and (self.name.realpath() == self.target)
         return self.name.is_symlink() and (self.name.resolve() == self.target)
+
+    def _same_contents(self):
+        return (md5(self.name.read_bytes()).hexdigest() == \
+                md5(self.target.read_bytes()).hexdigest())
 
     @property
     def state(self):
         """The current state of this dotfile."""
-        if not self.target.exists():
-            # only for testing, cli should never reach this state
-            return 'error'
-        # elif self.name.check(exists=0):
-        elif not self.name.exists():
+        if self.target.is_symlink():
+            return 'external'
+
+        if not self.name.exists():
             # no $HOME file or symlink
             return 'missing'
-        # elif self.name.islink():
-        elif self.name.is_symlink():
+
+        if self.name.is_symlink():
             # name exists, is a link, but isn't a link to the target
             if not self.name.samefile(self.target):
                 return 'conflict'
-        else:
-            # name exists, is a file, but differs from the target
-            # if self.name.computehash() != self.target.computehash():
-            if md5(self.name.read_bytes()).hexdigest() != \
-               md5(self.target.read_bytes()).hexdigest():
-                return 'conflict'
-        return 'ok'
+            return 'link'
 
-    def add(self, debug=False):
-        """Move a dotfile to it's target and create a symlink."""
-        if self.is_present():
+        if not self._same_contents():
+            # name exists, is a file, but differs from the target
+            return 'conflict'
+
+        return 'copy'
+
+    def add(self, copy=False, debug=False, home=Path.home()):
+        """Move a dotfile to its target and create a link.
+
+        The link is either a symlink or a copy.
+        """
+        if copy:
+            raise NotImplementedError()
+        if self._is_present():
             raise IsSymlink(self.name)
-        # if self.target.check(exists=1):
         if self.target.exists():
             raise TargetExists(self.name)
         self._ensure_dirs(debug)
@@ -103,16 +125,13 @@ class Dotfile(object):
             if debug:
                 echo('MOVE   %s -> %s' % (self.name, self.target))
             else:
-                # self.name.move(self.target)
                 self.name.replace(self.target)
-        self._link(debug)
+        self._link(debug, home)
 
-    def remove(self, debug=False):
-        """Remove a symlink and move the target back to its name."""
-        # if self.name.check(link=0):
+    def remove(self, copy=UNUSED, debug=False):
+        """Remove a dotfile and move target to its original location."""
         if not self.name.is_symlink():
             raise NotASymlink(self.name)
-        # if self.target.check(exists=0):
         if not self.target.is_file():
             raise TargetMissing(self.name)
         self._unlink(debug)
@@ -121,24 +140,25 @@ class Dotfile(object):
         else:
             self.target.replace(self.name)
 
-    def link(self, debug=False):
-        """Create a symlink from name to target."""
-        # if self.name.check(exists=1):
+    def enable(self, copy=False, debug=False, home=Path.home()):
+        """Create a symlink or copy from name to target."""
+        if copy:
+            raise NotImplementedError()
         if self.name.exists():
             raise Exists(self.name)
-        # if self.target.check(exists=0):
         if not self.target.exists():
             raise TargetMissing(self.name)
         self._ensure_dirs(debug)
-        self._link(debug)
+        self._link(debug, home)
 
-    def unlink(self, debug=False):
-        """Remove a symlink from name to target."""
-        # if self.name.check(link=0):
+    def disable(self, copy=UNUSED, debug=False):
+        """Remove a dotfile from name to target."""
         if not self.name.is_symlink():
             raise NotASymlink(self.name)
-        if not self.target.exists():
-            raise TargetMissing(self.name)
-        if not self.name.samefile(self.target):
-            raise RuntimeError
+        if self.name.exists():
+            if not self.target.exists():
+                raise TargetMissing(self.name)
+            if not self.name.samefile(self.target):
+                raise RuntimeError
         self._unlink(debug)
+        self._prune_dirs(debug)

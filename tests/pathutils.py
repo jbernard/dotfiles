@@ -1,4 +1,5 @@
 # TODO: docstrings
+# XXX: can this move into tests/?
 
 
 def is_file(path):
