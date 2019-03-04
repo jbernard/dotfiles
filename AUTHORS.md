@@ -15,3 +15,4 @@ Dotfiles is developed and maintained by the following folks:
 - Michael Barrett
 - Ivan Malison
 - David Beitey
+- David Lozano Jarque
