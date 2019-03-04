@@ -227,5 +227,4 @@ Contribute
 If you'd like to contribute, simply fork [the
 repository](https://github.com/jbernard/dotfiles), commit your changes, make
 sure tests pass, and send a pull request. Go ahead and add yourself to
-[AUTHORS](https://github.com/plasticboy/vim-markdown/issues/408) AUTHORS_ or
-I'll do it when I merge your changes.
+[AUTHORS](AUTHORS.md) or I'll do it when I merge your changes.
