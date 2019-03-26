@@ -64,17 +64,24 @@ CONTEXT_SETTINGS = dict(auto_envvar_prefix='DOTFILES',
 
 
 @click.group(context_settings=CONTEXT_SETTINGS)
-@click.option('--repo', '-r', type=click.Path(), multiple=True,
-              help='A repository path.', default=['~/Dotfiles'],
+@click.option('--repos', '-r', type=click.Path(), multiple=True,
+              help='Repository locations.', default=['~/Dotfiles'],
               show_default=True)
 @click.version_option(None, '-v', '--version')
 @click.pass_context
-def cli(ctx, repo):
+def cli(ctx, repos):
     """Dotfiles is a tool to make managing your dotfile symlinks in $HOME easy,
     allowing you to keep all your dotfiles in a single directory.
     """
+
+    # temporary notice for folks tracking git
+    import os
+    if os.environ.get('DOTFILES_REPO'):
+        click.echo("Error: repository variable has changed to \"DOTFILES_REPOS\", please update")
+        exit(-1)
+
     try:
-        ctx.obj = Repositories(repo)
+        ctx.obj = Repositories(repos)
     except FileNotFoundError as e:
         raise click.ClickException('Directory not found: %s' % e)
 
