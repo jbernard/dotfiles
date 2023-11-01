@@ -147,7 +147,7 @@ def parse_args():
 
 
 def parse_config(config_file):
-    parser = configparser.SafeConfigParser()
+    parser = configparser.ConfigParser()
     parser.read(os.path.expanduser(config_file))
 
     opts = dict()
