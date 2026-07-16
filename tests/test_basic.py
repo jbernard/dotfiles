@@ -381,6 +381,102 @@ class DotfilesTestCase(unittest.TestCase):
                 os.path.join(self.repository, dotfile),
                 os.path.join(self.homedir, dotfile))
 
+    def test_unprefixed_entry_passthrough(self):
+        """Entries that don't start with the configured prefix must be left
+        alone rather than having a leading character chopped off.
+
+        Regression test for https://github.com/jbernard/dotfiles/issues/32
+        and https://github.com/jbernard/dotfiles/issues/53: with prefix='_'
+        set, a repo entry named 'bin' (no leading underscore) used to be
+        sliced to 'in' and re-dotted to '~/.in' instead of being linked as
+        '~/bin'.
+        """
+
+        touch(os.path.join(self.repository, '_bashrc'))
+        os.mkdir(os.path.join(self.repository, 'bin'))
+        touch(os.path.join(self.repository, 'bin', 'somescript'))
+
+        dotfiles = Dotfiles(
+                homedir=self.homedir, path=self.repository,
+                prefix='_', ignore=[], externals={}, packages=[],
+                dry_run=False)
+
+        dotfiles.sync()
+
+        self.assertPathEqual(
+                os.path.join(self.homedir, '.bashrc'),
+                os.path.join(self.repository, '_bashrc'))
+        self.assertPathEqual(
+                os.path.join(self.homedir, 'bin'),
+                os.path.join(self.repository, 'bin'))
+        self.assertFalse(os.path.exists(os.path.join(self.homedir, '.in')))
+
+    def test_unprefixed_entry_inside_package_passthrough(self):
+        """The passthrough fix must also apply one or more levels down,
+        inside a package directory, not just at the repo top level --
+        _load_recursive() is the same function at every depth.
+        """
+
+        join = os.path.join
+
+        os.makedirs(join(self.repository, 'claude'))
+        touch(join(self.repository, 'claude', '_skills_file'))
+        touch(join(self.repository, 'claude', 'notes.md'))
+
+        dotfiles = Dotfiles(
+                homedir=self.homedir, path=self.repository,
+                prefix='_', ignore=[], externals={},
+                packages=['claude'], dry_run=False)
+
+        dotfiles.sync()
+
+        # Prefixed entry inside the package: prefix stripped as normal.
+        self.assertPathEqual(
+                join(self.homedir, '.claude', 'skills_file'),
+                join(self.repository, 'claude', '_skills_file'))
+
+        # Unprefixed entry inside the package: passed through unchanged,
+        # not mangled into '.claude/otes.md'.
+        self.assertPathEqual(
+                join(self.homedir, '.claude', 'notes.md'),
+                join(self.repository, 'claude', 'notes.md'))
+        self.assertFalse(os.path.exists(
+                join(self.homedir, '.claude', 'otes.md')))
+
+    def test_nested_package(self):
+        """Nested packages (declared as 'parent/child') recurse and apply
+        the same prefix rules at every level."""
+
+        join = os.path.join
+
+        os.makedirs(join(self.repository, 'claude', 'subpkg'))
+        touch(join(self.repository, 'claude', '_top_level_file'))
+        touch(join(self.repository, 'claude', 'subpkg', '_nested_file'))
+
+        dotfiles = Dotfiles(
+                homedir=self.homedir, path=self.repository,
+                prefix='_', ignore=[], externals={},
+                packages=['claude', 'claude/subpkg'], dry_run=False)
+
+        dotfiles.sync()
+
+        self.assertPathEqual(
+                join(self.homedir, '.claude', 'top_level_file'),
+                join(self.repository, 'claude', '_top_level_file'))
+        self.assertPathEqual(
+                join(self.homedir, '.claude', 'subpkg', 'nested_file'),
+                join(self.repository, 'claude', 'subpkg', '_nested_file'))
+
+        # Negative: no mis-stripped or mis-nested paths were created.
+        self.assertFalse(os.path.exists(
+                join(self.homedir, '.claude', 'ubpkg')))
+        self.assertFalse(os.path.exists(
+                join(self.homedir, 'top_level_file')))
+        self.assertFalse(os.path.exists(
+                join(self.homedir, '.top_level_file')))
+        self.assertFalse(os.path.exists(
+                join(self.homedir, '.claude', 'subpkg', 'ested_file')))
+
     @pytest.mark.xfail()
     def test_add_package_file(self):
         """

@@ -157,8 +157,16 @@ class Dotfiles(object):
             if pkg_path in self.packages:
                 self._load_recursive(pkg_path)
             else:
-                add_dot = False if self.no_dot_prefix else not bool(sub_dir)
-                self.dotfiles.append(Dotfile(dotfile[len(self.prefix):],
+                if self.prefix and not dotfile.startswith(self.prefix):
+                    # Entry doesn't use the configured prefix convention;
+                    # leave it exactly as-is instead of chopping off
+                    # leading characters that don't belong to a prefix.
+                    name = dotfile
+                    add_dot = False
+                else:
+                    name = dotfile[len(self.prefix):]
+                    add_dot = False if self.no_dot_prefix else not bool(sub_dir)
+                self.dotfiles.append(Dotfile(name,
                     os.path.join(src_dir, dotfile), dst_dir,
                     add_dot=add_dot, dry_run=self.dry_run))
 
